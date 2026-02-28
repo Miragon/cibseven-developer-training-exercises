@@ -1,0 +1,49 @@
+[versions]
+spring_version = "3.5.9"
+spring_dependency_version = "1.1.7"
+kotlin_version = "2.3.0"
+kotlin_logging_version = "3.0.5"
+cib7_version = "2.1.0"
+process_engine_adapter_cib7_version = "2025.12.1"
+konsist_version = "0.17.3"
+
+[libraries]
+web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "spring_version" }
+devtools = { module = "org.springframework.boot:spring-boot-devtools", version.ref = "spring_version" }
+jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "spring_version" }
+postgres = { module = "org.postgresql:postgresql", version = "42.7.8" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin_version" }
+kotlin_logging = { module = "io.github.microutils:kotlin-logging", version.ref = "kotlin_logging_version" }
+
+# CIB7 dependencies
+cib7-webapp = { module = "org.cibseven.bpm.springboot:cibseven-bpm-spring-boot-starter-webapp", version.ref = "cib7_version" }
+
+# CIB7 Process Engine Adapter dependencies
+process-engine-api = { module = "dev.bpm-crafters.process-engine-api:process-engine-api", version = "1.4" }
+process-engine-worker = { module = "dev.bpm-crafters.process-engine-worker:process-engine-worker-spring-boot-starter", version = "0.7.0" }
+process-engine-adapter-cib7-embedded = { module = "dev.bpm-crafters.process-engine-adapters:process-engine-adapter-cib-seven-embedded-spring-boot-starter", version.ref = "process_engine_adapter_cib7_version" }
+process-engine-adapter-cib7-bom = { module = "dev.bpm-crafters.process-engine-adapters:process-engine-adapter-cib-seven-bom", version.ref = "process_engine_adapter_cib7_version" }
+
+# testing
+spring_test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "spring_version" }
+mockito = { module = "org.mockito:mockito-inline", version = "5.2.0" }
+kotlin_mockito = { module = "org.mockito.kotlin:mockito-kotlin", version = "6.1.0" }
+mockk = { module = "io.mockk:mockk", version = "1.14.7" }
+spring_mockk = { module = "com.ninja-squad:springmockk", version = "5.0.1" }
+konsist = { module = "com.lemonappdev:konsist", version.ref = "konsist_version" }
+
+[bundles]
+defaultService = ["kotlin-reflect", "kotlin_logging", "devtools", "web"]
+database = ["jpa", "postgres"]
+test = ["spring_test", "mockito", "mockk", "spring_mockk", "kotlin_mockito"]
+konsist = ["konsist"]
+processEngineApiCib7 = ["process-engine-api", "process-engine-adapter-cib7-embedded", "process-engine-worker"]
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin_version" }
+kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin_version" }
+kotlin-jpa = { id = "org.jetbrains.kotlin.plugin.jpa", version.ref = "kotlin_version" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin_version" }
+springframework = { id = "org.springframework.boot", version.ref = "spring_version" }
+spring-dependency = { id = "io.spring.dependency-management", version.ref = "spring_dependency_version" }
+bpmnToCode = { id = "io.github.emaarco.bpmn-to-code-gradle", version = "0.0.17" }

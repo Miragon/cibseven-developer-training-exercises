@@ -1,0 +1,50 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cibseven-training
+    username: admin
+    password: admin
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+dev:
+  bpm-crafters:
+    process-api:
+      worker:
+        deployment:
+          enabled: true
+          bpmnResourcePattern: "classpath*:/**/*.bpmn"
+          dmnResourcePattern: "classpath*:/**/*.dmn"
+      adapter:
+        cib-seven-embedded:
+          enabled: true
+          service-tasks:
+            delivery-strategy: embedded_scheduled
+            worker-id: worker
+            schedule-delivery-fixed-rate-in-seconds: 5
+          user-tasks:
+            delivery-strategy: embedded_scheduled
+            schedule-delivery-fixed-rate-in-seconds: 5
+
+camunda:
+  bpm:
+    admin-user:
+      id: admin
+      password: admin
+    webapp:
+      application-path: /camunda
+    database:
+      type: postgres
+      schema-update: true
+
+cibseven:
+  webclient:
+    authentication:
+      jwtSecret: RtURHZ7SQYfLoX902wcjlvduW2qe9g0bjMUczmffjiTjzU9phbv3mK54zHMqeGK6cqgoEBTIUE6RqwvemSqbpD40qUPXVRElvDHGhn4OAEfjeEP2ANah8GJejSA08E820mForcQHBmediqg2DzIrxnDXyf2

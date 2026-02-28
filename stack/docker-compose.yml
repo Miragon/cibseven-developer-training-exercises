@@ -1,0 +1,13 @@
+# Use this only in dev environments. It's not intended for production usage.
+services:
+
+  postgres:
+    image: postgres:${POSTGRES_VERSION}
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    restart: always
+    environment:
+      POSTGRES_DB: cibseven-training
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
