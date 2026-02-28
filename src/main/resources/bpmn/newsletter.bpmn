@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0i8hkta" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.41.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.24.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0i8hkta" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.44.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.24.0">
   <bpmn:process id="newsletterSubscription" isExecutable="true" camunda:historyTimeToLive="P5D">
     <bpmn:startEvent id="StartEvent_SubmitRegistrationForm" name="Submit newsletter form" camunda:asyncAfter="true" camunda:exclusive="false">
       <bpmn:outgoing>Flow_1csfyyz</bpmn:outgoing>
@@ -11,22 +11,14 @@
       <bpmn:startEvent id="StartEvent_RequestReceived" name="Subscription requested" camunda:asyncAfter="true">
         <bpmn:outgoing>Flow_05i3x1y</bpmn:outgoing>
       </bpmn:startEvent>
-      <bpmn:serviceTask id="Activity_SendConfirmationMail" name="Send confirmation mail" camunda:asyncAfter="true" camunda:type="external" camunda:topic="sendConfirmationMail">
-        <bpmn:extensionElements>
-          <camunda:inputOutput>
-            <camunda:inputParameter name="subscriptionId">${subscriptionId}</camunda:inputParameter>
-          </camunda:inputOutput>
-        </bpmn:extensionElements>
+      <bpmn:serviceTask id="Activity_SendConfirmationMail" name="Send confirmation mail" camunda:asyncAfter="true" camunda:type="external" camunda:topic="">
+        <bpmn:extensionElements />
         <bpmn:incoming>Flow_05i3x1y</bpmn:incoming>
         <bpmn:incoming>Flow_0x4ewvb</bpmn:incoming>
         <bpmn:outgoing>Flow_1bckm43</bpmn:outgoing>
       </bpmn:serviceTask>
       <bpmn:receiveTask id="Activity_ConfirmRegistration" name="Confirm subscription" camunda:asyncAfter="true" messageRef="Message_36dkcng">
-        <bpmn:extensionElements>
-          <camunda:inputOutput>
-            <camunda:inputParameter name="subscriptionId">${subscriptionId}</camunda:inputParameter>
-          </camunda:inputOutput>
-        </bpmn:extensionElements>
+        <bpmn:extensionElements />
         <bpmn:incoming>Flow_1bckm43</bpmn:incoming>
         <bpmn:outgoing>Flow_1cpwe57</bpmn:outgoing>
       </bpmn:receiveTask>
@@ -44,7 +36,7 @@
       <bpmn:sequenceFlow id="Flow_1bckm43" sourceRef="Activity_SendConfirmationMail" targetRef="Activity_ConfirmRegistration" />
       <bpmn:sequenceFlow id="Flow_1cpwe57" sourceRef="Activity_ConfirmRegistration" targetRef="EndEvent_SubscriptionConfirmed" />
     </bpmn:subProcess>
-    <bpmn:serviceTask id="Activity_AbortRegistration" name="Abort registration" camunda:asyncAfter="true" camunda:type="external" camunda:topic="abortRegistration">
+    <bpmn:serviceTask id="Activity_AbortRegistration" name="Abort registration" camunda:asyncAfter="true" camunda:type="external">
       <bpmn:extensionElements>
         <camunda:inputOutput>
           <camunda:inputParameter name="subscriptionId">${subscriptionId}</camunda:inputParameter>
@@ -56,12 +48,8 @@
     <bpmn:endEvent id="EndEvent_RegistrationAborted" name="Registration aborted">
       <bpmn:incoming>Flow_1bsb8no</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:serviceTask id="Activity_SendWelcomeMail" name="Send Welcome-Mail" camunda:asyncAfter="true" camunda:type="external" camunda:topic="sendWelcomeMail">
-      <bpmn:extensionElements>
-        <camunda:inputOutput>
-          <camunda:inputParameter name="subscriptionId">${subscriptionId}</camunda:inputParameter>
-        </camunda:inputOutput>
-      </bpmn:extensionElements>
+    <bpmn:serviceTask id="Activity_SendWelcomeMail" name="Send Welcome-Mail" camunda:asyncAfter="true" camunda:type="external">
+      <bpmn:extensionElements />
       <bpmn:incoming>Flow_09cuvzp</bpmn:incoming>
       <bpmn:outgoing>Flow_1i7hjid</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -76,7 +64,7 @@
     <bpmn:boundaryEvent id="Timer_After3Days" name="After 3 days" camunda:asyncAfter="true" attachedToRef="SubProcess_Confirmation">
       <bpmn:outgoing>Flow_1l1lj4m</bpmn:outgoing>
       <bpmn:timerEventDefinition id="TimerEventDefinition_17c99af">
-        <bpmn:timeDuration>PT2M30S</bpmn:timeDuration>
+        <bpmn:timeDuration />
       </bpmn:timerEventDefinition>
     </bpmn:boundaryEvent>
     <bpmn:sequenceFlow id="Flow_1csfyyz" sourceRef="StartEvent_SubmitRegistrationForm" targetRef="SubProcess_Confirmation" />
@@ -89,10 +77,10 @@
       <bpmn:incoming>Flow_1i7hjid</bpmn:incoming>
     </bpmn:endEvent>
   </bpmn:process>
-  <bpmn:message id="Message_04tc0t0" name="Message_FormSubmitted" />
+  <bpmn:message id="Message_04tc0t0" />
   <bpmn:signal id="Signal_14g8ki5" name="Signal_RegistrationNotPossible" />
-  <bpmn:error id="Error_0uxgmyc" name="Error_InvalidMail" errorCode="500" />
-  <bpmn:message id="Message_36dkcng" name="Message_SubscriptionConfirmed" />
+  <bpmn:error id="Error_0uxgmyc" />
+  <bpmn:message id="Message_36dkcng" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="newsletterSubscription">
       <bpmndi:BPMNShape id="Event_12xytcj_di" bpmnElement="StartEvent_SubmitRegistrationForm">
