@@ -58,7 +58,7 @@ object NewsletterSubscriptionProcessApi {
   }
 
   object Timers {
-    val TIMER_AFTER_3_DAYS: BpmnTimer = BpmnTimer("Duration", "PT2M30S")
+    val TIMER_AFTER_3_DAYS: BpmnTimer = BpmnTimer("Duration", "PT3M")
 
     val TIMER_EVERY_DAY: BpmnTimer = BpmnTimer("Duration", "PT1M")
 
