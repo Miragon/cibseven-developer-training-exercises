@@ -119,6 +119,7 @@ Their process landscape currently covers various areas such as:
 - Newsletter Registration
 
 This training takes place in the context of the **Newsletter Registration** process. Miravelo wants to automate how customers sign up for their newsletter — including sending a confirmation email, waiting for the customer to confirm, and eventually welcoming them or cleaning up if they never respond.
+![Process Model](docs/newsletter-subscription.png)
 
 ### Exercise Tasks
 

@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0i8hkta" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.44.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.24.0">
-  <bpmn:process id="newsletterSubscription" isExecutable="true" camunda:historyTimeToLive="P5D">
+  <bpmn:message id="Message_04tc0t0" />
+  <bpmn:signal id="Signal_14g8ki5" name="Signal_RegistrationNotPossible" />
+  <bpmn:error id="Error_0uxgmyc" />
+  <bpmn:message id="Message_36dkcng" />
+  <bpmn:collaboration id="Collaboration_1r5xlge">
+    <bpmn:participant id="Participant_miravelo" name="Newsletter Subscription Process" processRef="newsletterSubscription" />
+  </bpmn:collaboration>
+  <bpmn:process id="newsletterSubscription" name="Newsletter Subscription Process" isExecutable="true" camunda:historyTimeToLive="P5D">
     <bpmn:startEvent id="StartEvent_SubmitRegistrationForm" name="Submit newsletter form" camunda:asyncAfter="true" camunda:exclusive="false">
       <bpmn:outgoing>Flow_1csfyyz</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_15tyk9l" messageRef="Message_04tc0t0" />
@@ -57,15 +64,18 @@
       <bpmn:incoming>Flow_0i2ctuv</bpmn:incoming>
       <bpmn:signalEventDefinition id="SignalEventDefinition_0nwoc2u" signalRef="Signal_14g8ki5" />
     </bpmn:endEvent>
-    <bpmn:boundaryEvent id="ErrorEvent_InvalidMail" name="Invalid Mail" camunda:asyncAfter="true" camunda:exclusive="false" attachedToRef="SubProcess_Confirmation">
-      <bpmn:outgoing>Flow_0i2ctuv</bpmn:outgoing>
-      <bpmn:errorEventDefinition id="ErrorEventDefinition_0xoprsf" errorRef="Error_0uxgmyc" />
-    </bpmn:boundaryEvent>
+    <bpmn:endEvent id="EndEvent_RegistrationCompleted" name="Registration completed">
+      <bpmn:incoming>Flow_1i7hjid</bpmn:incoming>
+    </bpmn:endEvent>
     <bpmn:boundaryEvent id="Timer_After3Days" name="After 3 days" camunda:asyncAfter="true" attachedToRef="SubProcess_Confirmation">
       <bpmn:outgoing>Flow_1l1lj4m</bpmn:outgoing>
       <bpmn:timerEventDefinition id="TimerEventDefinition_17c99af">
         <bpmn:timeDuration />
       </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="ErrorEvent_InvalidMail" name="Invalid Mail" camunda:asyncAfter="true" camunda:exclusive="false" attachedToRef="SubProcess_Confirmation">
+      <bpmn:outgoing>Flow_0i2ctuv</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_0xoprsf" errorRef="Error_0uxgmyc" />
     </bpmn:boundaryEvent>
     <bpmn:sequenceFlow id="Flow_1csfyyz" sourceRef="StartEvent_SubmitRegistrationForm" targetRef="SubProcess_Confirmation" />
     <bpmn:sequenceFlow id="Flow_09cuvzp" sourceRef="SubProcess_Confirmation" targetRef="Activity_SendWelcomeMail" />
@@ -73,20 +83,43 @@
     <bpmn:sequenceFlow id="Flow_1bsb8no" sourceRef="Activity_AbortRegistration" targetRef="EndEvent_RegistrationAborted" />
     <bpmn:sequenceFlow id="Flow_1i7hjid" sourceRef="Activity_SendWelcomeMail" targetRef="EndEvent_RegistrationCompleted" />
     <bpmn:sequenceFlow id="Flow_0i2ctuv" sourceRef="ErrorEvent_InvalidMail" targetRef="EndEvent_RegistrationNotPossible" />
-    <bpmn:endEvent id="EndEvent_RegistrationCompleted" name="Registration completed">
-      <bpmn:incoming>Flow_1i7hjid</bpmn:incoming>
-    </bpmn:endEvent>
   </bpmn:process>
-  <bpmn:message id="Message_04tc0t0" />
-  <bpmn:signal id="Signal_14g8ki5" name="Signal_RegistrationNotPossible" />
-  <bpmn:error id="Error_0uxgmyc" />
-  <bpmn:message id="Message_36dkcng" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="newsletterSubscription">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1r5xlge">
+      <bpmndi:BPMNShape id="Participant_0s53vxh_di" bpmnElement="Participant_miravelo" isHorizontal="true">
+        <dc:Bounds x="120" y="59" width="930" height="500" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_12xytcj_di" bpmnElement="StartEvent_SubmitRegistrationForm">
         <dc:Bounds x="182" y="302" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="156" y="345" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0hslg4x_di" bpmnElement="Activity_AbortRegistration">
+        <dc:Bounds x="820" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1ew0xir_di" bpmnElement="EndEvent_RegistrationAborted">
+        <dc:Bounds x="982" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="971" y="145" width="59" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_105q7u2_di" bpmnElement="Activity_SendWelcomeMail">
+        <dc:Bounds x="820" y="280" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0l6q4ul_di" bpmnElement="EndEvent_RegistrationNotPossible">
+        <dc:Bounds x="852" y="502" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="832" y="545" width="78" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1s4khnp_di" bpmnElement="EndEvent_RegistrationCompleted">
+        <dc:Bounds x="992" y="302" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="981" y="345" width="59" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1gbt6dx_di" bpmnElement="SubProcess_Confirmation" isExpanded="true">
@@ -137,32 +170,6 @@
         <di:waypoint x="650" y="320" />
         <di:waypoint x="692" y="320" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="Activity_0hslg4x_di" bpmnElement="Activity_AbortRegistration">
-        <dc:Bounds x="820" y="80" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1ew0xir_di" bpmnElement="EndEvent_RegistrationAborted">
-        <dc:Bounds x="982" y="102" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="971" y="145" width="59" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_105q7u2_di" bpmnElement="Activity_SendWelcomeMail">
-        <dc:Bounds x="820" y="280" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0l6q4ul_di" bpmnElement="EndEvent_RegistrationNotPossible">
-        <dc:Bounds x="852" y="502" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="832" y="545" width="78" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1s4khnp_di" bpmnElement="EndEvent_RegistrationCompleted">
-        <dc:Bounds x="992" y="302" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="981" y="345" width="59" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0i6u6yw_di" bpmnElement="Timer_After3Days">
         <dc:Bounds x="652" y="202" width="36" height="36" />
         <bpmndi:BPMNLabel>
