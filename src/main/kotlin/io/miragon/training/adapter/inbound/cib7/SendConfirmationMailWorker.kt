@@ -5,7 +5,7 @@ import io.miragon.training.application.port.inbound.SendConfirmationMailUseCase
 import io.miragon.training.domain.SubscriptionId
 import dev.bpmcrafters.processengine.worker.ProcessEngineWorker
 import dev.bpmcrafters.processengine.worker.Variable
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 import java.util.*
 

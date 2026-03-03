@@ -7,9 +7,9 @@
 /dataSources/
 /dataSources.local.xml
 /.idea
-.gradle
-**/build/
 .DS_Store
-.kotlin/
 .vscode
 .claude
+
+# Maven
+target/
