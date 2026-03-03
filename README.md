@@ -36,9 +36,7 @@ cibseven-developer-training-exercises/
 ├── stack/
 │   ├── docker-compose.yml          # PostgreSQL for local development
 │   └── init-schemas.sql
-├── build.gradle.kts
-├── gradle/libs.versions.toml
-└── settings.gradle.kts
+└── pom.xml
 ```
 
 ---
@@ -52,7 +50,7 @@ cibseven-developer-training-exercises/
 | Process Engine | CIB Seven 2.1 |
 | Process Engine API | bpm-crafters process-engine-api 1.4 |
 | Database | PostgreSQL (JPA / Hibernate) |
-| Build | Gradle 9.2 with version catalog |
+| Build | Maven |
 | Architecture tests | Konsist |
 
 ---
@@ -184,7 +182,7 @@ Start the PostgreSQL database and the application:
 
 ```bash
 cd stack && docker-compose up -d
-./gradlew bootRun
+./mvnw spring-boot:run
 ```
 
 Once the application is up, open the CIB Seven Cockpit at `http://localhost:8080/camunda` (credentials: `admin` / `admin`) and keep it open — you can watch the process instance move through the flow in real time.

@@ -18,7 +18,7 @@ class SendWelcomeMailWorker(
     @ProcessEngineWorker(topic = TaskTypes.SEND_WELCOME_MAIL)
     fun sendWelcomeMail(@Variable subscriptionId: String): Map<String, Any> {
         log.debug { "Received task to send welcome mail for subscription: $subscriptionId" }
-
-        //TODO: Link Worker to Business Logic
+        useCase.sendWelcomeMail(SubscriptionId(UUID.fromString(subscriptionId)))
+        return emptyMap()
     }
 }
