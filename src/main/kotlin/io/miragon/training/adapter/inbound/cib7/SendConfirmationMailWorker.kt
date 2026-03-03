@@ -18,6 +18,7 @@ class SendConfirmationMailWorker(
     @ProcessEngineWorker(topic = TaskTypes.SEND_CONFIRMATION_MAIL)
     fun sendConfirmationMail(@Variable subscriptionId: String) {
         log.debug { "Received task to send confirmation mail for subscription: $subscriptionId" }
-        useCase.sendConfirmationMail(SubscriptionId(UUID.fromString(subscriptionId)))
+
+        //TODO: Link Worker to Business Logic
     }
 }

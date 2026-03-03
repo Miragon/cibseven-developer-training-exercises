@@ -31,14 +31,7 @@ class NewsletterSubscriptionProcessAdapter(
     }
 
     override fun confirmSubscription(id: SubscriptionId) {
-        correlationApi.correlateMessage(
-            cmd = CorrelateMessageCmd(
-                messageName = Messages.MESSAGE_SUBSCRIPTION_CONFIRMED,
-                payload = mapOf(Variables.SUBSCRIPTION_ID to id.value.toString()),
-                correlation = Correlation.withKey(id.value.toString()),
-                restrictions = messageEventRestrictions()
-            )
-        ).join()
+        //TODO: Implement message correlation
     }
 
     private fun messageEventRestrictions() = CommonRestrictions.builder()

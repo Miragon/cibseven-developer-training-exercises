@@ -120,7 +120,7 @@ Their process landscape currently covers various areas such as:
 
 This training takes place in the context of the **Newsletter Registration** process. Miravelo wants to automate how customers sign up for their newsletter — including sending a confirmation email, waiting for the customer to confirm, and eventually welcoming them or cleaning up if they never respond.
 
-![Process Model](doc/newsletter-subscription.png)
+![Process Model](docs/newsletter-subscription.png)
 
 ### Exercise Tasks
 
@@ -143,6 +143,7 @@ For each service task listed below, select the task in the modeler, set the **Ta
 | Abort registration | `abortRegistration` |
 
 The topic values must match exactly what is declared in the worker classes under `adapter/inbound/cib7/`.
+
 
 Beyond service tasks, the following elements also require technical configuration in the modeler:
 
