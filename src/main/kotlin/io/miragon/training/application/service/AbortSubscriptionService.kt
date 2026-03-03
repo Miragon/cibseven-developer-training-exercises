@@ -1,10 +1,10 @@
 package io.miragon.training.application.service
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.miragon.training.application.port.inbound.AbortSubscriptionUseCase
 import io.miragon.training.application.port.outbound.NewsletterSubscriptionRepository
 import io.miragon.training.domain.SubscriptionId
 import jakarta.transaction.Transactional
-import mu.KotlinLogging
 import org.springframework.stereotype.Service
 
 @Service

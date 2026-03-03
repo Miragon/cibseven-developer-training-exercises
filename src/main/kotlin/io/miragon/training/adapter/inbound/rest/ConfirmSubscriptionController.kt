@@ -1,8 +1,8 @@
 package io.miragon.training.adapter.inbound.rest
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.miragon.training.application.port.inbound.ConfirmSubscriptionUseCase
 import io.miragon.training.domain.SubscriptionId
-import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping

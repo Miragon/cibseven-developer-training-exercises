@@ -1,10 +1,10 @@
 package io.miragon.training.adapter.inbound.rest
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.miragon.training.application.port.inbound.SubscribeToNewsletterUseCase
 import io.miragon.training.domain.Email
 import io.miragon.training.domain.Name
 import io.miragon.training.domain.NewsletterId
-import mu.KotlinLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody

@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.9</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>io.miragon</groupId>
+    <artifactId>cibseven-developer-training-exercises</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>cibseven-developer-training-exercises</name>
+
+    <properties>
+        <!-- Override Spring Boot's managed Kotlin version with 2.3.0 -->
+        <kotlin.version>2.3.0</kotlin.version>
+        <java.version>21</java.version>
+        <postgresql.version>42.7.8</postgresql.version>
+        <cib7.version>2.1.0</cib7.version>
+        <process-engine-adapter-cib7.version>2025.12.1</process-engine-adapter-cib7.version>
+        <process-engine-api.version>1.4</process-engine-api.version>
+        <process-engine-worker.version>0.7.0</process-engine-worker.version>
+        <kotlin-logging.version>3.0.5</kotlin-logging.version>
+        <mockk.version>1.14.7</mockk.version>
+        <springmockk.version>5.0.1</springmockk.version>
+        <konsist.version>0.17.3</konsist.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>dev.bpm-crafters.process-engine-adapters</groupId>
+                <artifactId>process-engine-adapter-cib-seven-bom</artifactId>
+                <version>${process-engine-adapter-cib7.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- Kotlin -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.microutils</groupId>
+            <artifactId>kotlin-logging</artifactId>
+            <version>${kotlin-logging.version}</version>
+        </dependency>
+
+        <!-- Spring Boot Web & DevTools -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Database -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+
+        <!-- CIB Seven -->
+        <dependency>
+            <groupId>org.cibseven.bpm.springboot</groupId>
+            <artifactId>cibseven-bpm-spring-boot-starter-webapp</artifactId>
+            <version>${cib7.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.cibseven.bpm.springboot</groupId>
+            <artifactId>cibseven-bpm-spring-boot-starter-rest</artifactId>
+            <version>${cib7.version}</version>
+        </dependency>
+
+        <!-- Process Engine API (bpm-crafters) -->
+        <dependency>
+            <groupId>dev.bpm-crafters.process-engine-api</groupId>
+            <artifactId>process-engine-api</artifactId>
+            <version>${process-engine-api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.bpm-crafters.process-engine-adapters</groupId>
+            <artifactId>process-engine-adapter-cib-seven-embedded-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>dev.bpm-crafters.process-engine-worker</groupId>
+            <artifactId>process-engine-worker-spring-boot-starter</artifactId>
+            <version>${process-engine-worker.version}</version>
+        </dependency>
+
+        <!-- Test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-inline</artifactId>
+            <version>5.2.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito.kotlin</groupId>
+            <artifactId>mockito-kotlin</artifactId>
+            <version>6.1.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.mockk</groupId>
+            <artifactId>mockk</artifactId>
+            <version>${mockk.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ninja-squad</groupId>
+            <artifactId>springmockk</artifactId>
+            <version>${springmockk.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.lemonappdev</groupId>
+            <artifactId>konsist</artifactId>
+            <version>${konsist.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
+        <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <version>${kotlin.version}</version>
+                <configuration>
+                    <args>
+                        <arg>-Xjsr305=strict</arg>
+                    </args>
+                    <compilerPlugins>
+                        <plugin>spring</plugin>
+                        <plugin>jpa</plugin>
+                    </compilerPlugins>
+                    <jvmTarget>${java.version}</jvmTarget>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>kotlin-maven-allopen</artifactId>
+                        <version>${kotlin.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>kotlin-maven-noarg</artifactId>
+                        <version>${kotlin.version}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <goals><goal>compile</goal></goals>
+                        <phase>compile</phase>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <goals><goal>test-compile</goal></goals>
+                        <phase>test-compile</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Spring Boot fat-jar packaging -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- Kotlin top-level main() compiles to <FileName>Kt class -->
+                    <mainClass>io.miragon.training.NewsletterSubscriptionApplicationKt</mainClass>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-devtools</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+
+    <repositories>
+        <repository>
+            <id>mvn-cibseven-enterprise-snapshots</id>
+            <name>CIB seven EE Snapshots repository</name>
+            <url>https://artifacts.cibseven.org/repository/enterprise-snapshots</url>
+        </repository>
+    </repositories>
+
+</project>
