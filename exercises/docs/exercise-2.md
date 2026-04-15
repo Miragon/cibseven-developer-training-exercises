@@ -8,24 +8,23 @@
 
 ## Hintergrund
 
-Über Nacht haben sich 500 Leute angemeldet. Fünfhundert. Für einen Newsletter über einen
-Berliner Lifestyle-Meetup.
+Miravelo hat das neue **Apex Gravel 29er** gelauncht. Social Media dreht durch.
+Über Nacht: 500 Newsletter-Anmeldungen.
 
 Das Team starrt auf die Datenbank und beginnt, Fragen zu stellen:
 
 - Sind das echte E-Mail-Adressen?
 - Wer ist überhaupt diese `noreply@throwaway.xyz`?
-- Warten wir kurz – *sind wir noch ein Newsletter?*
-
-Zweites Problem, größeres Problem: Irgendwer hat `admin@miravelo.com` eingetragen. Als Witz.
-Wahrscheinlich.
+- Irgendwer hat `admin@miravelo.com` eingetragen. Als Witz. Wahrscheinlich.
 
 Das Team beschließt: Wir bauen einen **Bestätigungsschritt**. Erst Mail bestätigen,
-dann Welcome Mail. Klassisches Double-Opt-In. Und während wir dabei sind – vielleicht
-sind wir nicht mehr nur ein Newsletter. Vielleicht sind wir etwas... Exklusiveres.
+dann Welcome Mail. Klassisches Double-Opt-In.
+
+Und während wir dabei sind – wenn schon so viele Menschen Miravelo-Produkte wollen,
+vielleicht wollen sie auch mehr als nur einen Newsletter. Vielleicht wollen sie dazugehören.
 
 > *„500 Sign-ups. Das ist entweder viral oder ein Bot-Angriff."*
-> — CTO, beim zweiten Kaffee
+> — CTO, beim zweiten Kaffee (Siebträger, natürlich)
 
 ### Neuer Prozessablauf
 

@@ -9,25 +9,27 @@
 
 ## Hintergrund
 
-**Pivot-Meeting. Freitagnachmittag. Jemand hat Red Bull mitgebracht.**
+**Strategie-Meeting. Freitagnachmittag. Jemand hat Red Bull mitgebracht.**
 
-Miravelo ist kein Newsletter mehr. Miravelo ist jetzt eine **Membership**. Eine limitierte,
-exklusive, nur-wenn-du-gut-genug-bist Membership. Zehn Plätze. Zählt bis zehn. Das ist die
-Kapazität.
+Miravelo startet den **Miravelo Inner Circle** – eine limitierte, exklusive Membership
+für echte Fans der Marke. Gravel Bike im Keller, Siebträger auf der Arbeitsplatte,
+Halbmarathon im Kalender – du weißt, wen wir meinen.
+
+Zehn Plätze. Zählt bis zehn. Das ist die Kapazität.
 
 Warum zehn? Weil Knappheit Wert erzeugt. Weil FOMO ein Business-Modell ist. Weil irgendjemand
 ein Buch über Luxusmarken gelesen hat und jetzt „Premium Positioning" in jeden Satz einbaut.
 
 > *„Wir sind nicht exklusiv weil wir gut sind. Wir sind exklusiv weil wir nur zehn Plätze
-> haben und der Counter in der Datenbank liegt."*
+> haben und der Counter in der Datenbank auf 10 steht."*
 > — Ehrlichster Kommentar im Sprint Planning
 
 Das Gute daran: Aus Prozesssicht brauchen wir ein **Gateway**. Der gnadenlose Türsteher im
 Prozessfluss. Hat die Person einen Platz bekommen? Herzlichen Glückwunsch, weiter. Kein Platz?
 Ablehnungsmail. Kein Einspruch. Das Gateway entscheidet.
 
-Mit 27 eine Absage von einem Newsletter-Nachfolger zu bekommen trifft anders. Aber das ist
-jetzt Miravelons Problem, nicht deins.
+Mit 27 eine Absage vom Fahrradladen des Vertrauens zu bekommen trifft anders. Aber das ist
+jetzt das Problem der Bewerber, nicht deins.
 
 ### Neuer Prozessablauf
 

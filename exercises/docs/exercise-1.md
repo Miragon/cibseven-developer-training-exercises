@@ -9,14 +9,14 @@
 
 ## Hintergrund
 
-Der Newsletter läuft. Miravelo hat den Prozess modelliert – und irgendwer muss jetzt
-jede Anmeldung manuell im Cockpit durchklicken.
+Der Newsletter ist live. Seit dem Launch des neuen Apex Gravel 29er kommen die Sign-ups rein –
+und irgendwer muss jetzt jede Anmeldung manuell im Cockpit durchklicken.
 
 Das ist natürlich **keine** Lösung. Wir sind Entwickler. Wir automatisieren Dinge, selbst
-wenn es nur ein Newsletter ist, den niemand lesen wird.
+wenn es nur ein Newsletter für Fahrrad-Enthusiasten ist.
 
 > *„Ich klick das doch nicht 500 Mal von Hand durch."*
-> — Das gesamte Team, nach dem zweiten Meetup
+> — Das gesamte Team, zur Gravel-Bike-Saison
 
 Jetzt wird der Prozess technisch automatisiert: Der Service Task `Send Welcome Mail` soll
 echten Code ausführen.

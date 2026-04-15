@@ -9,11 +9,14 @@
 
 ## Hintergrund
 
-**Miravelo** – das neue Lifestyle-Startup aus Berlin – hat gerade seinen ersten
-Meetup-Abend hinter sich. 47 Leute in einem zu kleinen Raum, schlechtes WLAN,
-aber irgendwie war die Energie großartig. Alle wollen auf dem Laufenden bleiben.
+**Miravelo** ist ein Lifestyle-Online-Shop für Menschen in der Quarterlife-Crisis:
+Siebträger für den perfekten Morgenkaffee, Laufschuhe für den ersten Marathon,
+Gravel Bikes und Rennräder für die Wochenenden, die zählen.
 
-Das Team beschließt: Wir bauen einen **Newsletter**. Klassisch. Bodenständig. Kein Schnickschnack.
+Die Kundenbasis wächst. Neue Produkte kommen raus. Das Team beschließt:
+Wir bauen einen **Newsletter**. Damit Kunden über neue Drops, Produkt-Launches
+und exklusive Angebote informiert bleiben.
+Klassisch. Bodenständig. Kein Schnickschnack.
 Jemand trägt sich ein, kriegt eine Welcome Mail – fertig.
 
 > *„Das ist doch in einer Stunde gebaut."*

@@ -1,6 +1,13 @@
 # CIB Seven Developer Training – Exercises
 
-Willkommen zum CIB Seven Developer Training! In diesem Modul arbeitest du dich Schritt für Schritt durch 8 Aufgaben, die ein vollständiges Membership-System auf Basis von CIB Seven (Camunda Platform 7) aufbauen.
+Willkommen zum CIB Seven Developer Training!
+
+**Miravelo** ist ein Lifestyle-Online-Shop für Menschen in der Quarterlife-Crisis – Siebträger,
+Laufausrüstung, Gravel Bikes, Rennräder. Das Unternehmen wächst, die Kundenbasis wächst,
+und die Prozesse müssen mithalten.
+
+In diesem Modul arbeitest du dich Schritt für Schritt durch 8 Aufgaben, die ein vollständiges
+Newsletter- und Membership-System auf Basis von CIB Seven (Camunda Platform 7) aufbauen.
 
 ## Voraussetzungen
 
