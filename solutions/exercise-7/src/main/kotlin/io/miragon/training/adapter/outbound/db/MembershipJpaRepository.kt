@@ -1,6 +1,0 @@
-package io.miragon.training.adapter.outbound.db
-
-import org.springframework.data.jpa.repository.JpaRepository
-import java.util.UUID
-
-interface MembershipJpaRepository : JpaRepository<MembershipEntity, UUID>

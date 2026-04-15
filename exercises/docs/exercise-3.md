@@ -9,19 +9,18 @@
 
 ## Hintergrund
 
-**Strategie-Meeting. Freitagnachmittag. Jemand hat Red Bull mitgebracht.**
+**Strategie-Meeting. Freitagnachmittag. Jemand hat exklusiven Matcha Latte mitgebracht.**
 
 Miravelo startet den **Miravelo Inner Circle** – eine limitierte, exklusive Membership
-für echte Fans der Marke. Gravel Bike im Keller, Siebträger auf der Arbeitsplatte,
-Halbmarathon im Kalender – du weißt, wen wir meinen.
+für echte Fans der Marke. Gravel Bike im Keller, Rennrad an der Wand – du weißt, wen wir meinen.
 
-Zehn Plätze. Zählt bis zehn. Das ist die Kapazität.
+Tausend Plätze. Zählt bis tausend. Das ist die Kapazität.
 
-Warum zehn? Weil Knappheit Wert erzeugt. Weil FOMO ein Business-Modell ist. Weil irgendjemand
+Warum tausend? Weil Knappheit Wert erzeugt. Weil FOMO ein Business-Modell ist. Weil irgendjemand
 ein Buch über Luxusmarken gelesen hat und jetzt „Premium Positioning" in jeden Satz einbaut.
 
-> *„Wir sind nicht exklusiv weil wir gut sind. Wir sind exklusiv weil wir nur zehn Plätze
-> haben und der Counter in der Datenbank auf 10 steht."*
+> *„Wir sind nicht exklusiv weil wir gut sind. Wir sind exklusiv weil wir nur tausend Plätze
+> haben und der Counter in der Datenbank auf 1000 steht."*
 > — Ehrlichster Kommentar im Sprint Planning
 
 Das Gute daran: Aus Prozesssicht brauchen wir ein **Gateway**. Der gnadenlose Türsteher im
@@ -30,6 +29,11 @@ Ablehnungsmail. Kein Einspruch. Das Gateway entscheidet.
 
 Mit 27 eine Absage vom Fahrradladen des Vertrauens zu bekommen trifft anders. Aber das ist
 jetzt das Problem der Bewerber, nicht deins.
+
+> **Hinweis:** In dieser Aufgabe findet ein Domain-Refactoring statt. Bisher war die Domäne
+> eine einfache Newsletter-Subscription. Ab jetzt wird daraus eine **Membership** im
+> Miravelo Inner Circle. Benenne die bestehenden Klassen entsprechend um
+> (z.B. `Subscription` → `Membership`, `SubscriptionId` → `MembershipId`, etc.).
 
 ### Neuer Prozessablauf
 
@@ -68,17 +72,13 @@ Neue Elemente:
 
 ### 2. Domain erweitern: `MembershipCapacity`
 
-**Neue Datei:** `domain/MembershipCapacity.kt`
+**Neue Datei:** `domain/MembershipCapacity.java`
 
-```kotlin
-data class MembershipCapacity(
-    val maxSpots: Int = 100,
-    val claimedSpots: Int = 0,
-) {
-    val hasEmptySpots: Boolean get() = claimedSpots < maxSpots
-    fun claim() = copy(claimedSpots = claimedSpots + 1)
-}
-```
+Erstelle eine Klasse `MembershipCapacity` mit folgenden Eigenschaften:
+- `maxSpots` (int, Default: 1000) – maximale Anzahl verfügbarer Plätze
+- `claimedSpots` (int, Default: 0) – aktuell belegte Plätze
+- `hasEmptySpots` – gibt `true` zurück, wenn `claimedSpots < maxSpots`
+- `claim()` – erhöht `claimedSpots` um 1
 
 ### 3. Use Cases und Services erstellen
 
@@ -92,18 +92,10 @@ Erstelle nach dem bewährten Muster (analog zu Aufgabe 2):
 
 ### 4. Delegates erstellen
 
-- `ClaimMembershipDelegate`: Prüft Kapazität, setzt Variable `hasEmptySpots`
+- `ClaimMembershipDelegate`: Prüft Kapazität, setzt Variable `hasEmptySpots` auf der `DelegateExecution`
 - `SendRejectionMailDelegate`: Liest `membershipId`, ruft Use Case auf
 
-**Variable in Delegate setzen:**
-```kotlin
-val hasEmptySpots = membershipCapacityService.hasEmptySpots()
-execution.setVariable("hasEmptySpots", hasEmptySpots)
-```
-
-### 5. `MembershipProcessApi` aktualisieren
-
-Neue Konstanten für die neuen Elemente und die neue Variable `hasEmptySpots`.
+**Hinweis:** Die Element-IDs und Variablennamen (z.B. `hasEmptySpots`) kannst du direkt aus dem BPMN-Modell entnehmen.
 
 ## Testen
 

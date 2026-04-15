@@ -20,7 +20,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>io.miragon.training.TrainingApplicationKt</mainClass>
+                    <mainClass>io.miragon.training.TrainingApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>

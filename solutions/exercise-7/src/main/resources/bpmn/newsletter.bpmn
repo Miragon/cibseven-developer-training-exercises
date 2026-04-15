@@ -41,12 +41,30 @@
                        sourceRef="userTask_fillOutForm"
                        targetRef="serviceTask_claimMembership"/>
 
+    <!-- claimMembership is paired with a Compensation Boundary Event -->
     <bpmn:serviceTask id="serviceTask_claimMembership"
                       name="Claim membership"
                       camunda:delegateExpression="#{claimMembershipDelegate}">
       <bpmn:incoming>Flow_form_to_claim</bpmn:incoming>
       <bpmn:outgoing>Flow_claim_to_gateway</bpmn:outgoing>
     </bpmn:serviceTask>
+
+    <!-- Compensation Boundary Event: fires when compensation is triggered on claimMembership -->
+    <bpmn:boundaryEvent id="boundary_compensateClaim"
+                        attachedToRef="serviceTask_claimMembership">
+      <bpmn:compensateEventDefinition id="CompensateEventDefinition_claim"/>
+    </bpmn:boundaryEvent>
+
+    <!-- Compensation Handler: revokeClaimDelegate is called automatically on compensation -->
+    <bpmn:serviceTask id="serviceTask_revokeClaim"
+                      name="Revoke claim"
+                      isForCompensation="true"
+                      camunda:delegateExpression="#{revokeClaimDelegate}"/>
+
+    <bpmn:association id="Association_revoke"
+                      associationDirection="One"
+                      sourceRef="boundary_compensateClaim"
+                      targetRef="serviceTask_revokeClaim"/>
 
     <bpmn:sequenceFlow id="Flow_claim_to_gateway"
                        sourceRef="serviceTask_claimMembership"
@@ -109,6 +127,7 @@
       </bpmn:endEvent>
     </bpmn:subProcess>
 
+    <!-- Non-interrupting timer: re-send confirmation mail every day -->
     <bpmn:boundaryEvent id="boundary_timerDaily"
                         name="Every day"
                         attachedToRef="subProcess_confirmMembership"
@@ -139,6 +158,7 @@
                        sourceRef="serviceTask_reSendConfirmationMail"
                        targetRef="endEvent_reSendLoop"/>
 
+    <!-- Interrupting timer: no explicit revoke — compensation handles it -->
     <bpmn:boundaryEvent id="boundary_timerExpiry"
                         name="After 3.5 days"
                         attachedToRef="subProcess_confirmMembership"
@@ -147,25 +167,15 @@
         <bpmn:timeDuration xsi:type="bpmn:tFormalExpression"
                            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">PT84H</bpmn:timeDuration>
       </bpmn:timerEventDefinition>
-      <bpmn:outgoing>Flow_timerExpiry_to_revoke</bpmn:outgoing>
+      <bpmn:outgoing>Flow_timerExpiry_to_declined</bpmn:outgoing>
     </bpmn:boundaryEvent>
 
-    <bpmn:sequenceFlow id="Flow_timerExpiry_to_revoke"
+    <!-- Timer expiry goes directly to Compensating End Event (no explicit revoke) -->
+    <bpmn:sequenceFlow id="Flow_timerExpiry_to_declined"
                        sourceRef="boundary_timerExpiry"
-                       targetRef="serviceTask_revokeClaim"/>
-
-    <bpmn:serviceTask id="serviceTask_revokeClaim"
-                      name="Revoke claim"
-                      camunda:delegateExpression="#{revokeClaimDelegate}">
-      <bpmn:incoming>Flow_timerExpiry_to_revoke</bpmn:incoming>
-      <bpmn:outgoing>Flow_revoke_to_declined</bpmn:outgoing>
-    </bpmn:serviceTask>
-
-    <bpmn:sequenceFlow id="Flow_revoke_to_declined"
-                       sourceRef="serviceTask_revokeClaim"
                        targetRef="endEvent_membershipDeclined"/>
 
-    <!-- Message boundary leads to Call Activity (handleRejection) -->
+    <!-- Message boundary: confirmation rejected → call activity → Compensating End Event -->
     <bpmn:boundaryEvent id="boundary_messageRejected"
                         name="Confirmation rejected"
                         attachedToRef="subProcess_confirmMembership"
@@ -184,6 +194,7 @@
                        calledElement="handleRejection">
       <bpmn:extensionElements>
         <camunda:in source="membershipId" target="membershipId"/>
+        <camunda:in source="age" target="age"/>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_messageRejected_to_callActivity</bpmn:incoming>
       <bpmn:outgoing>Flow_callActivity_to_declined</bpmn:outgoing>
@@ -193,9 +204,11 @@
                        sourceRef="callActivity_handleRejection"
                        targetRef="endEvent_membershipDeclined"/>
 
+    <!-- Compensating End Event: triggers BPMN compensation on claimMembership -->
     <bpmn:endEvent id="endEvent_membershipDeclined" name="Membership declined">
-      <bpmn:incoming>Flow_revoke_to_declined</bpmn:incoming>
+      <bpmn:incoming>Flow_timerExpiry_to_declined</bpmn:incoming>
       <bpmn:incoming>Flow_callActivity_to_declined</bpmn:incoming>
+      <bpmn:compensateEventDefinition id="CompensateEventDefinition_end"/>
     </bpmn:endEvent>
 
     <bpmn:sequenceFlow id="Flow_subprocess_to_welcome"
@@ -275,6 +288,13 @@
       <bpmndi:BPMNShape id="serviceTask_claimMembership_di" bpmnElement="serviceTask_claimMembership">
         <dc:Bounds x="410" y="80" width="100" height="80"/>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="serviceTask_revokeClaim_di" bpmnElement="serviceTask_revokeClaim">
+        <dc:Bounds x="410" y="210" width="100" height="80"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="boundary_compensateClaim_di" bpmnElement="boundary_compensateClaim">
+        <dc:Bounds x="442" y="142" width="36" height="36"/>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="gateway_hasEmptySpots_di" bpmnElement="gateway_hasEmptySpots" isMarkerVisible="true">
         <dc:Bounds x="575" y="95" width="50" height="50"/>
       </bpmndi:BPMNShape>
@@ -320,17 +340,16 @@
       <bpmndi:BPMNShape id="boundary_timerExpiry_di" bpmnElement="boundary_timerExpiry">
         <dc:Bounds x="1032" y="162" width="36" height="36"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="serviceTask_revokeClaim_di" bpmnElement="serviceTask_revokeClaim">
-        <dc:Bounds x="1080" y="450" width="100" height="80"/>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="boundary_messageRejected_di" bpmnElement="boundary_messageRejected">
         <dc:Bounds x="1082" y="162" width="36" height="36"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="callActivity_handleRejection_di" bpmnElement="callActivity_handleRejection">
-        <dc:Bounds x="1160" y="550" width="100" height="80"/>
+        <dc:Bounds x="1160" y="450" width="100" height="80"/>
       </bpmndi:BPMNShape>
+      <!-- Compensating End Event -->
       <bpmndi:BPMNShape id="endEvent_membershipDeclined_di" bpmnElement="endEvent_membershipDeclined">
-        <dc:Bounds x="1322" y="572" width="36" height="36"/>
+        <dc:Bounds x="1322" y="472" width="36" height="36"/>
+        <bpmndi:BPMNLabel><dc:Bounds x="1298" y="515" width="84" height="14"/></bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="serviceTask_sendRejectionMail_di" bpmnElement="serviceTask_sendRejectionMail">
         <dc:Bounds x="690" y="250" width="100" height="80"/>
@@ -343,6 +362,9 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_form_to_claim_di" bpmnElement="Flow_form_to_claim">
         <di:waypoint x="350" y="120"/><di:waypoint x="410" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_revoke_di" bpmnElement="Association_revoke">
+        <di:waypoint x="460" y="178"/><di:waypoint x="460" y="210"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_claim_to_gateway_di" bpmnElement="Flow_claim_to_gateway">
         <di:waypoint x="510" y="120"/><di:waypoint x="575" y="120"/>
@@ -380,17 +402,15 @@
       <bpmndi:BPMNEdge id="Flow_reSend_to_end_loop_di" bpmnElement="Flow_reSend_to_end_loop">
         <di:waypoint x="1010" y="350"/><di:waypoint x="1062" y="350"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_timerExpiry_to_revoke_di" bpmnElement="Flow_timerExpiry_to_revoke">
-        <di:waypoint x="1050" y="198"/><di:waypoint x="1100" y="450"/>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_revoke_to_declined_di" bpmnElement="Flow_revoke_to_declined">
-        <di:waypoint x="1130" y="530"/><di:waypoint x="1130" y="572"/><di:waypoint x="1160" y="590"/>
+      <!-- Timer expiry → directly to Compensating End Event -->
+      <bpmndi:BPMNEdge id="Flow_timerExpiry_to_declined_di" bpmnElement="Flow_timerExpiry_to_declined">
+        <di:waypoint x="1050" y="198"/><di:waypoint x="1050" y="490"/><di:waypoint x="1322" y="490"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_messageRejected_to_callActivity_di" bpmnElement="Flow_messageRejected_to_callActivity">
-        <di:waypoint x="1100" y="198"/><di:waypoint x="1100" y="590"/><di:waypoint x="1160" y="590"/>
+        <di:waypoint x="1100" y="198"/><di:waypoint x="1100" y="490"/><di:waypoint x="1160" y="490"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_callActivity_to_declined_di" bpmnElement="Flow_callActivity_to_declined">
-        <di:waypoint x="1260" y="590"/><di:waypoint x="1322" y="590"/>
+        <di:waypoint x="1260" y="490"/><di:waypoint x="1322" y="490"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_rejection_to_end_di" bpmnElement="Flow_rejection_to_end">
         <di:waypoint x="790" y="290"/><di:waypoint x="852" y="290"/>

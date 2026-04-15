@@ -10,8 +10,8 @@
 ## Hintergrund
 
 **Miravelo** ist ein Lifestyle-Online-Shop für Menschen in der Quarterlife-Crisis:
-Siebträger für den perfekten Morgenkaffee, Laufschuhe für den ersten Marathon,
-Gravel Bikes und Rennräder für die Wochenenden, die zählen.
+Gravel Bikes für die Wochenenden, die zählen, und Rennräder für alle, die den
+Asphalt unter den Reifen spüren wollen.
 
 Die Kundenbasis wächst. Neue Produkte kommen raus. Das Team beschließt:
 Wir bauen einen **Newsletter**. Damit Kunden über neue Drops, Produkt-Launches

@@ -9,7 +9,7 @@
 
 ## Hintergrund
 
-Der Newsletter ist live. Seit dem Launch des neuen Apex Gravel 29er kommen die Sign-ups rein –
+Der Newsletter ist live. Seit dem Launch des neuen Gravel Bikes kommen die Sign-ups rein –
 und irgendwer muss jetzt jede Anmeldung manuell im Cockpit durchklicken.
 
 Das ist natürlich **keine** Lösung. Wir sind Entwickler. Wir automatisieren Dinge, selbst
@@ -24,17 +24,17 @@ echten Code ausführen.
 Das Projekt folgt der hexagonalen Architektur:
 
 ```
-POST /api/memberships
+POST /api/subscriptions
        ↓
-MembershipController          (adapter/inbound/rest)
+SubscriptionController          (adapter/inbound/rest)
        ↓
-RegisterMembershipUseCase     (application/port/inbound)
+RegisterSubscriptionUseCase     (application/port/inbound)
        ↓
-RegisterMembershipService     (application/service)        ← TODO
+RegisterSubscriptionService     (application/service)        ← TODO
        ↓
-MembershipProcess.startProcess()  (application/port/outbound)
+SubscriptionProcess.startProcess()  (application/port/outbound)
        ↓
-MembershipProcessAdapter          (adapter/outbound/cibseven) ← TODO
+SubscriptionProcessAdapter          (adapter/outbound/cibseven) ← TODO
        ↓
 RuntimeService.startProcessInstanceByKey(...)
 ```
@@ -51,52 +51,37 @@ SendWelcomeMailService            (application/service)       ← TODO
 
 ## Aufgaben
 
-### 1. `RegisterMembershipService` implementieren
+### 1. `RegisterSubscriptionService` implementieren
 
-**Datei:** `application/service/RegisterMembershipService.kt`
+**Datei:** `application/service/RegisterSubscriptionService.java`
 
 Ersetze das `TODO` mit folgender Logik:
-1. Erstelle ein `Membership`-Objekt: `Membership(email = Email(command.email), name = Name(command.name), age = Age(command.age))`
-2. Speichere es: `repository.save(membership)`
-3. Starte den Prozess: `process.startProcess(membership)`
-4. Gib `membership.id` zurück
+1. Erstelle ein `Subscription`-Objekt mit E-Mail, Name und Alter aus dem Command
+2. Speichere es über das Repository
+3. Starte den Prozess über den Process-Port
+4. Gib die `subscription.id` zurück
 
 ### 2. `SendWelcomeMailService` implementieren
 
-**Datei:** `application/service/SendWelcomeMailService.kt`
+**Datei:** `application/service/SendWelcomeMailService.java`
 
-Ersetze das `TODO` mit einem Log-Statement:
-```kotlin
-log.info { "Sending welcome mail to ${membership.email.value}" }
-```
+Ersetze das `TODO` mit einem Log-Statement, das die E-Mail-Adresse der Subscription ausgibt.
 
 ### 3. `SendWelcomeMailDelegate` implementieren
 
-**Datei:** `adapter/inbound/cibseven/SendWelcomeMailDelegate.kt`
+**Datei:** `adapter/inbound/cibseven/SendWelcomeMailDelegate.java`
 
 Ersetze das `TODO` in `executeTask(execution)`:
-```kotlin
-val membershipId = execution.getVariable("membershipId") as String
-log.debug { "Received task to send welcome mail for membership: $membershipId" }
-useCase.sendWelcomeMail(MembershipId(UUID.fromString(membershipId)))
-```
+- Lies die Prozessvariable `subscriptionId` aus der `DelegateExecution`
+- Rufe den UseCase `sendWelcomeMail(...)` mit der gelesenen ID auf
 
-### 4. `MembershipProcessAdapter` implementieren
+### 4. `SubscriptionProcessAdapter` implementieren
 
-**Datei:** `adapter/outbound/cibseven/MembershipProcessAdapter.kt`
+**Datei:** `adapter/outbound/cibseven/SubscriptionProcessAdapter.java`
 
-Ersetze das `TODO` in `startProcess(membership)`:
-```kotlin
-runtimeService.startProcessInstanceByKey(
-    MembershipProcessApi.PROCESS_KEY,
-    mapOf(
-        MembershipProcessApi.Variables.MEMBERSHIP_ID to membership.id.value.toString(),
-        MembershipProcessApi.Variables.EMAIL to membership.email.value,
-        MembershipProcessApi.Variables.NAME to membership.name.value,
-        MembershipProcessApi.Variables.AGE to membership.age.value,
-    )
-)
-```
+Ersetze das `TODO` in `startProcess(subscription)`:
+- Verwende `runtimeService.startProcessInstanceByKey(...)` mit dem Prozess-Key `subscribeNewsletter`
+- Übergib die Prozessvariablen (`subscriptionId`, `email`, `name`, `age`) als Map – die Schlüssel entsprechen den Variablennamen im BPMN-Modell
 
 ## Testen
 
@@ -104,8 +89,8 @@ runtimeService.startProcessInstanceByKey(
 # Anwendung starten
 ../mvnw spring-boot:run
 
-# Membership registrieren
-curl -X POST http://localhost:8080/api/memberships \
+# Subscription registrieren
+curl -X POST http://localhost:8080/api/subscriptions \
   -H "Content-Type: application/json" \
   -d '{"email": "alice@miravelo.com", "name": "Alice", "age": 28}'
 ```
@@ -117,7 +102,7 @@ Danach im **Cockpit** unter http://localhost:8080/camunda:
 
 ## Bonus: Prozesstest
 
-Implementiere den Test in `src/test/kotlin/io/miragon/training/process/MembershipProcessTest.kt`.
+Implementiere den Test in `src/test/java/io/miragon/training/process/SubscriptionProcessTest.java`.
 
 ## Referenzlösung
 

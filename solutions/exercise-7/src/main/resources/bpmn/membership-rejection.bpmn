@@ -13,37 +13,30 @@
              modeler:executionPlatform="Camunda Platform"
              modeler:executionPlatformVersion="7.24.0">
 
+  <!--
+    Compensation note: revokeClaim is intentionally absent here.
+    It is triggered automatically by the BPMN compensation mechanism
+    in the parent process (subscribeNewsletter) via the Compensating End Event.
+  -->
   <bpmn:process id="handleRejection"
                 name="Handle Rejection"
                 isExecutable="true"
                 camunda:historyTimeToLive="180">
 
     <bpmn:startEvent id="startEvent_rejectionStarted" name="Rejection started">
-      <bpmn:outgoing>Flow_start_to_revoke</bpmn:outgoing>
+      <bpmn:outgoing>Flow_start_to_categorize</bpmn:outgoing>
     </bpmn:startEvent>
 
-    <bpmn:sequenceFlow id="Flow_start_to_revoke"
+    <bpmn:sequenceFlow id="Flow_start_to_categorize"
                        sourceRef="startEvent_rejectionStarted"
-                       targetRef="serviceTask_revokeClaim"/>
-
-    <bpmn:serviceTask id="serviceTask_revokeClaim"
-                      name="Revoke claim"
-                      camunda:delegateExpression="#{revokeClaimDelegate}">
-      <bpmn:incoming>Flow_start_to_revoke</bpmn:incoming>
-      <bpmn:outgoing>Flow_revoke_to_categorize</bpmn:outgoing>
-    </bpmn:serviceTask>
-
-    <bpmn:sequenceFlow id="Flow_revoke_to_categorize"
-                       sourceRef="serviceTask_revokeClaim"
                        targetRef="businessRuleTask_categorizeApplicant"/>
 
-    <!-- DMN Business Rule Task -->
     <bpmn:businessRuleTask id="businessRuleTask_categorizeApplicant"
                            name="Categorize applicant"
                            camunda:decisionRef="categorizeApplicant"
                            camunda:mapDecisionResult="singleEntry"
                            camunda:resultVariable="isHighValue">
-      <bpmn:incoming>Flow_revoke_to_categorize</bpmn:incoming>
+      <bpmn:incoming>Flow_start_to_categorize</bpmn:incoming>
       <bpmn:outgoing>Flow_categorize_to_gateway</bpmn:outgoing>
     </bpmn:businessRuleTask>
 
@@ -71,7 +64,6 @@
       <bpmn:conditionExpression>${isHighValue == false}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
 
-    <!-- UserTask for high-value customers -->
     <bpmn:userTask id="userTask_contactPersonally" name="Contact applicant personally">
       <bpmn:extensionElements>
         <camunda:formData>
@@ -108,50 +100,39 @@
     <bpmndi:BPMNPlane id="BPMNPlane_rejection" bpmnElement="handleRejection">
       <bpmndi:BPMNShape id="startEvent_rejectionStarted_di" bpmnElement="startEvent_rejectionStarted">
         <dc:Bounds x="152" y="102" width="36" height="36"/>
-        <bpmndi:BPMNLabel><dc:Bounds x="128" y="145" width="84" height="14"/></bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="serviceTask_revokeClaim_di" bpmnElement="serviceTask_revokeClaim">
-        <dc:Bounds x="250" y="80" width="100" height="80"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="businessRuleTask_categorizeApplicant_di" bpmnElement="businessRuleTask_categorizeApplicant">
-        <dc:Bounds x="410" y="80" width="100" height="80"/>
+        <dc:Bounds x="250" y="80" width="100" height="80"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="gateway_isHighValue_di" bpmnElement="gateway_isHighValue" isMarkerVisible="true">
-        <dc:Bounds x="575" y="95" width="50" height="50"/>
-        <bpmndi:BPMNLabel><dc:Bounds x="557" y="152" width="86" height="14"/></bpmndi:BPMNLabel>
+        <dc:Bounds x="415" y="95" width="50" height="50"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="userTask_contactPersonally_di" bpmnElement="userTask_contactPersonally">
-        <dc:Bounds x="690" y="80" width="100" height="80"/>
+        <dc:Bounds x="530" y="80" width="100" height="80"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="serviceTask_sendRejectionMail_di" bpmnElement="serviceTask_sendRejectionMail">
-        <dc:Bounds x="690" y="220" width="100" height="80"/>
+        <dc:Bounds x="530" y="220" width="100" height="80"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="endEvent_rejectionHandled_di" bpmnElement="endEvent_rejectionHandled">
-        <dc:Bounds x="852" y="142" width="36" height="36"/>
-        <bpmndi:BPMNLabel><dc:Bounds x="828" y="185" width="84" height="14"/></bpmndi:BPMNLabel>
+        <dc:Bounds x="692" y="142" width="36" height="36"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_start_to_revoke_di" bpmnElement="Flow_start_to_revoke">
+      <bpmndi:BPMNEdge id="Flow_start_to_categorize_di" bpmnElement="Flow_start_to_categorize">
         <di:waypoint x="188" y="120"/><di:waypoint x="250" y="120"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_revoke_to_categorize_di" bpmnElement="Flow_revoke_to_categorize">
-        <di:waypoint x="350" y="120"/><di:waypoint x="410" y="120"/>
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_categorize_to_gateway_di" bpmnElement="Flow_categorize_to_gateway">
-        <di:waypoint x="510" y="120"/><di:waypoint x="575" y="120"/>
+        <di:waypoint x="350" y="120"/><di:waypoint x="415" y="120"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_gateway_highvalue_di" bpmnElement="Flow_gateway_highvalue">
-        <di:waypoint x="625" y="120"/><di:waypoint x="690" y="120"/>
-        <bpmndi:BPMNLabel><dc:Bounds x="651" y="102" width="12" height="14"/></bpmndi:BPMNLabel>
+        <di:waypoint x="465" y="120"/><di:waypoint x="530" y="120"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_gateway_normal_di" bpmnElement="Flow_gateway_normal">
-        <di:waypoint x="600" y="145"/><di:waypoint x="600" y="260"/><di:waypoint x="690" y="260"/>
-        <bpmndi:BPMNLabel><dc:Bounds x="608" y="195" width="26" height="14"/></bpmndi:BPMNLabel>
+        <di:waypoint x="440" y="145"/><di:waypoint x="440" y="260"/><di:waypoint x="530" y="260"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_contact_to_end_di" bpmnElement="Flow_contact_to_end">
-        <di:waypoint x="790" y="120"/><di:waypoint x="870" y="120"/><di:waypoint x="870" y="160"/>
+        <di:waypoint x="630" y="120"/><di:waypoint x="710" y="120"/><di:waypoint x="710" y="160"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_rejection_to_end_di" bpmnElement="Flow_rejection_to_end">
-        <di:waypoint x="790" y="260"/><di:waypoint x="870" y="260"/><di:waypoint x="870" y="178"/>
+        <di:waypoint x="630" y="260"/><di:waypoint x="710" y="260"/><di:waypoint x="710" y="178"/>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

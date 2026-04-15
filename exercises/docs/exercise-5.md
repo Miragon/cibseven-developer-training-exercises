@@ -8,12 +8,12 @@
 
 ## Hintergrund
 
-Wenn eine Membership erfolgreich bestätigt wird, soll ein **Signal** geworfen werden.
-Dieses Signal wird im gleichen Prozessmodell durch ein Signal Start Event
-(in einem separaten Event-Subprozess) empfangen und verarbeitet.
+Wenn jemand seine Membership erfolgreich aktiviert, dann ist das ein echtes Highlight! 🎉
+Wir haben jemanden auf seiner Reise durch die Quarterlife Crisis für Miravelo gewonnen – das verdient Aufmerksamkeit!
 
-Ziel: Externe Systeme über die erfolgreiche Membership benachrichtigen
-(z.B. Forum-Post, Slack-Nachricht, Webhook).
+Das Team will diese Erfolgsmomente feiern: Eine Nachricht im Community-Forum posten, eine Benachrichtigung an Slack senden, vielleicht sogar einen Webhook triggern. Denn jede aktivierte Membership ist ein Beweis, dass unser Konzept funktioniert.
+
+Technisch lösen wir das mit einem **Signal Event**: Sobald die Membership aktiviert wird, feuert ein Signal End Event. Dieses Signal wird im selben Prozessmodell durch einen separaten Prozess mit Signal Start Event aufgefangen – und dort starten wir die Benachrichtigungen.
 
 ### Erweiterter Prozessablauf
 
@@ -55,40 +55,21 @@ Erweitere den Prozess nach `../models/task-5-signal.bpmn`.
 
 ### 2. Outbound Port erstellen
 
-**Neue Datei:** `application/port/outbound/MembershipEventPublisher.kt`
+**Neue Datei:** `application/port/outbound/MembershipEventPublisher.java`
 
-```kotlin
-interface MembershipEventPublisher {
-    fun publishMembershipActivated(membershipId: MembershipId)
-}
-```
+Erstelle ein Interface mit einer Methode `publishMembershipActivated(MembershipId membershipId)`.
 
 ### 3. Use Case und Service
 
 **`NotifyAboutSignedMembershipUseCase`** / **`NotifyAboutSignedMembershipService`**:
-```kotlin
-override fun notify(membershipId: MembershipId) {
-    val membership = repository.find(membershipId)
-    log.info { "Publishing membership activation for ${membership.email.value}" }
-    publisher.publishMembershipActivated(membershipId)
-}
-```
+
+Lade die Membership aus dem Repository und publiziere das Event über den `MembershipEventPublisher`.
 
 ### 4. Publisher-Adapter implementieren
 
-**Neue Datei:** `adapter/outbound/MembershipEventPublisherAdapter.kt`
+**Neue Datei:** `adapter/outbound/MembershipEventPublisherAdapter.java`
 
-Einfache Implementierung (Logging reicht für jetzt):
-```kotlin
-@Component
-class MembershipEventPublisherAdapter : MembershipEventPublisher {
-    private val log = KotlinLogging.logger {}
-    override fun publishMembershipActivated(membershipId: MembershipId) {
-        log.info { "EVENT: MembershipActivated(id=${membershipId.value})" }
-        // TODO Aufgabe 5 Bonus: HTTP-Webhook oder Kafka-Event senden
-    }
-}
-```
+Implementiere das `MembershipEventPublisher`-Interface. Für den Moment reicht ein einfaches Logging – z.B. `"EVENT: MembershipActivated(id=...)"`. Später könnte hier ein HTTP-Webhook oder Kafka-Event angebunden werden.
 
 ### 5. `NotifyAboutSignedMembershipDelegate` erstellen
 

@@ -8,8 +8,8 @@
 
 ## Hintergrund
 
-Miravelo hat das neue **Apex Gravel 29er** gelauncht. Social Media dreht durch.
-Über Nacht: 500 Newsletter-Anmeldungen.
+Rose hat das neue **Backroad AL** auf den Markt gebracht – und Miravelo launcht es exklusiv im Store.
+Social Media dreht durch. Über Nacht: 500 Newsletter-Anmeldungen.
 
 Das Team starrt auf die Datenbank und beginnt, Fragen zu stellen:
 
@@ -24,7 +24,7 @@ Und während wir dabei sind – wenn schon so viele Menschen Miravelo-Produkte w
 vielleicht wollen sie auch mehr als nur einen Newsletter. Vielleicht wollen sie dazugehören.
 
 > *„500 Sign-ups. Das ist entweder viral oder ein Bot-Angriff."*
-> — CTO, beim zweiten Kaffee (Siebträger, natürlich)
+> — CTO, beim zweiten Kaffee
 
 ### Neuer Prozessablauf
 
@@ -55,58 +55,30 @@ vielleicht wollen sie auch mehr als nur einen Newsletter. Vielleicht wollen sie 
 
 Referenz-Modell: `../models/task-2-with-confirmation.bpmn`
 
-### 2. `MembershipProcessApi` aktualisieren
+### 2. `SendConfirmationMailUseCase` erstellen
 
-**Datei:** `adapter/process/MembershipProcessApi.kt`
+**Neue Datei:** `application/port/inbound/SendConfirmationMailUseCase.java`
 
-Neue Elemente hinzufügen:
-```kotlin
-object Elements {
-    // ... bestehende Konstanten ...
-    const val SERVICE_TASK_SEND_CONFIRMATION_MAIL: String = "serviceTask_sendConfirmationMail"
-    const val USER_TASK_CONFIRM_SUBSCRIPTION: String = "userTask_confirmSubscription"
-}
-```
+Erstelle ein Interface mit einer Methode `sendConfirmationMail(SubscriptionId)`.
 
-### 3. `SendConfirmationMailUseCase` erstellen
+### 3. `SendConfirmationMailService` implementieren
 
-**Neue Datei:** `application/port/inbound/SendConfirmationMailUseCase.kt`
+**Neue Datei:** `application/service/SendConfirmationMailService.java`
 
-```kotlin
-interface SendConfirmationMailUseCase {
-    fun sendConfirmationMail(membershipId: MembershipId)
-}
-```
+Lade die Subscription über das Repository und logge die E-Mail-Adresse, an die die Bestätigungsmail gesendet wird.
 
-### 4. `SendConfirmationMailService` implementieren
+### 4. `SendConfirmationMailDelegate` erstellen
 
-**Neue Datei:** `application/service/SendConfirmationMailService.kt`
-
-```kotlin
-@Service
-@Transactional(readOnly = true)
-class SendConfirmationMailService(
-    private val repository: MembershipRepository,
-) : SendConfirmationMailUseCase {
-    override fun sendConfirmationMail(membershipId: MembershipId) {
-        val membership = repository.find(membershipId)
-        log.info { "Sending confirmation mail to ${membership.email.value}" }
-    }
-}
-```
-
-### 5. `SendConfirmationMailDelegate` erstellen
-
-**Neue Datei:** `adapter/inbound/cibseven/SendConfirmationMailDelegate.kt`
+**Neue Datei:** `adapter/inbound/cibseven/SendConfirmationMailDelegate.java`
 
 Orientiere dich an `SendWelcomeMailDelegate`. Der Delegate soll:
-- `membershipId` aus der `DelegateExecution` lesen
+- `subscriptionId` aus der `DelegateExecution` lesen
 - `useCase.sendConfirmationMail(...)` aufrufen
 
 ## Testen
 
 ```bash
-curl -X POST http://localhost:8080/api/memberships \
+curl -X POST http://localhost:8080/api/subscriptions \
   -H "Content-Type: application/json" \
   -d '{"email": "bob@miravelo.com", "name": "Bob", "age": 25}'
 ```

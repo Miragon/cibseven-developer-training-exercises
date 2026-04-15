@@ -1,6 +1,6 @@
 # CIB Seven Developer Training Exercises
 
-Practical exercises for the CIB Seven developer training. The project implements a newsletter subscription workflow using CIB Seven as the process engine, the Process Engine API as an engine-neutral abstraction layer, and a hexagonal architecture to keep business logic decoupled from infrastructure.
+Practical exercises for the CIB Seven developer training. The project implements a newsletter subscription / membership workflow using CIB Seven as the process engine and a hexagonal architecture to keep business logic decoupled from infrastructure.
 
 ---
 
@@ -8,33 +8,27 @@ Practical exercises for the CIB Seven developer training. The project implements
 
 ```
 cibseven-developer-training-exercises/
-├── src/
-│   ├── main/
-│   │   ├── kotlin/io/miragon/training/
-│   │   │   ├── adapter/
-│   │   │   │   ├── inbound/
-│   │   │   │   │   ├── cib7/       # Service task workers (Process Engine Worker)
-│   │   │   │   │   └── rest/       # REST controllers
-│   │   │   │   ├── outbound/
-│   │   │   │   │   ├── cib7/       # Process engine adapter (start/correlate)
-│   │   │   │   │   └── db/         # JPA persistence adapter
-│   │   │   │   └── process/        # Generated BPMN process API constants
-│   │   │   ├── application/
-│   │   │   │   ├── port/
-│   │   │   │   │   ├── inbound/    # Use case interfaces
-│   │   │   │   │   └── outbound/   # Repository and process port interfaces
-│   │   │   │   └── service/        # Use case implementations
-│   │   │   └── domain/             # Domain model (pure Kotlin, no framework deps)
-│   │   └── resources/
-│   │       ├── application.yaml
-│   │       └── bpmn/
-│   │           └── newsletter.bpmn
-│   └── test/
-│       └── kotlin/io/miragon/training/
-│           ├── KonsistArchitectureTest.kt
-│           └── konsist/            # Architecture rule helpers (Konsist)
+├── exercises/                        # Starter template with TODOs
+│   ├── docs/                         # Exercise descriptions (exercise-0.md … exercise-7.md)
+│   └── src/main/java/io/miragon/training/
+│       ├── adapter/
+│       │   ├── inbound/
+│       │   │   ├── cibseven/         # JavaDelegate implementations
+│       │   │   └── rest/             # REST controllers
+│       │   └── outbound/
+│       │       ├── cibseven/         # Process engine adapter (start/correlate)
+│       │       └── db/               # JPA persistence adapter
+│       ├── application/
+│       │   ├── port/
+│       │   │   ├── inbound/          # Use case interfaces
+│       │   │   └── outbound/         # Repository and process port interfaces
+│       │   └── service/              # Use case implementations
+│       └── domain/                   # Domain model (pure Java, no framework deps)
+├── solutions/                        # Cumulative solutions per exercise
+│   └── exercise-{0-7}/
+├── models/                           # Reference BPMN/DMN models
 ├── stack/
-│   ├── docker-compose.yml          # PostgreSQL for local development
+│   ├── docker-compose.yml            # PostgreSQL + MailHog
 │   └── init-schemas.sql
 └── pom.xml
 ```
@@ -45,13 +39,12 @@ cibseven-developer-training-exercises/
 
 | Component | Technology |
 |---|---|
-| Language | Kotlin 2.3 |
+| Language | Java 21 |
 | Framework | Spring Boot 3.5 |
 | Process Engine | CIB Seven 2.1 |
-| Process Engine API | bpm-crafters process-engine-api 1.4 |
 | Database | PostgreSQL (JPA / Hibernate) |
 | Build | Maven |
-| Architecture tests | Konsist |
+| Architecture tests | ArchUnit |
 
 ---
 
@@ -59,32 +52,27 @@ cibseven-developer-training-exercises/
 
 [CIB Seven](https://cibseven.org) is a community-maintained distribution of Camunda Platform 7. It provides full compatibility with the Camunda 7 API while being independently maintained and open-source.
 
-In this project CIB Seven runs embedded inside Spring Boot, exposes the Camunda web application at `http://localhost:8080/camunda`, and handles BPMN process execution for the newsletter subscription workflow.
+In this project CIB Seven runs embedded inside Spring Boot, exposes the Camunda web application at `http://localhost:8080/camunda`, and handles BPMN process execution.
 
----
+Service tasks are implemented using the `JavaDelegate` pattern via `DelegateExpression`:
 
-## Process Engine API
+```java
+@Component
+public class SendWelcomeMailDelegate extends BaseDelegate {
 
-[Process Engine API](https://github.com/bpm-crafters/process-engine-api) is an engine-neutral abstraction layer for BPMN process engines — similar in spirit to how JPA abstracts databases or Spring Cloud Stream abstracts messaging systems.
+    private final SendWelcomeMailUseCase useCase;
 
-Key benefits:
-- **Engine neutrality** — write your integration code once; swap between CIB Seven, Camunda 7, Camunda 8, or Operaton by changing configuration and dependencies, not business logic
-- **Adapter pattern** — each supported engine has its own adapter; this project uses the CIB Seven embedded adapter
-- **No engine lock-in** — the domain and application layers have zero knowledge of which engine is running underneath
+    public SendWelcomeMailDelegate(SendWelcomeMailUseCase useCase) {
+        this.useCase = useCase;
+    }
 
-### Process Engine Worker
-
-Service tasks are handled using the [Process Engine Worker](https://github.com/bpm-crafters/process-engine-worker) library. It provides a `@ProcessEngineWorker` annotation that registers a method as a task handler for a given topic — no `JavaDelegate` coupling, no engine-specific interfaces in your business code.
-
-```kotlin
-@ProcessEngineWorker(topic = TaskTypes.SEND_WELCOME_MAIL)
-fun sendWelcomeMail(@Variable subscriptionId: String): Map<String, Any> {
-    useCase.sendWelcomeMail(SubscriptionId(UUID.fromString(subscriptionId)))
-    return emptyMap()
+    @Override
+    protected void executeTask(DelegateExecution execution) {
+        var subscriptionId = (String) execution.getVariable("subscriptionId");
+        useCase.sendWelcomeMail(new SubscriptionId(UUID.fromString(subscriptionId)));
+    }
 }
 ```
-
-Workers are delivered via embedded scheduled polling (configurable interval, default 5 seconds).
 
 ---
 
@@ -93,14 +81,14 @@ Workers are delivered via embedded scheduled polling (configurable interval, def
 The project follows a **hexagonal architecture** (ports & adapters):
 
 ```
-REST / CIB7 Workers          Application              CIB7 / Database
+REST / JavaDelegates           Application              CIB7 / Database
   (inbound adapters)   →   ports + services   →     (outbound adapters)
                                ↑
                             Domain
                         (engine-neutral)
 ```
 
-Architecture rules are enforced at build time via [Konsist](https://github.com/LemonAppDev/konsist) tests (see `KonsistArchitectureTest`).
+Architecture rules are enforced at build time via [ArchUnit](https://www.archunit.org/) tests.
 
 ---
 
@@ -108,107 +96,37 @@ Architecture rules are enforced at build time via [Konsist](https://github.com/L
 
 ### Background: Miravelo
 
-**Miravelo** is a company that sells bikes — gravel bikes, road bikes, and more. As the business grows, Miravelo increasingly relies on automated processes to handle their operations efficiently.
+**Miravelo** ist ein Lifestyle-Online-Shop für Menschen in der Quarterlife-Crisis — Gravel Bikes, Rennräder und alles, was dazugehört. Das Unternehmen wächst und setzt zunehmend auf automatisierte Prozesse.
 
-Their process landscape currently covers various areas such as:
-- Order Fulfillment
-- Customer Onboarding
-- Customer Support
-- Newsletter Registration
+Die Übungen finden im Kontext des **Newsletter-Anmeldeprozesses** statt. Ab Aufgabe 3 wird daraus der exklusive **Miravelo Inner Circle** mit limitierter Membership.
 
-This training takes place in the context of the **Newsletter Registration** process. Miravelo wants to automate how customers sign up for their newsletter — including sending a confirmation email, waiting for the customer to confirm, and eventually welcoming them or cleaning up if they never respond.
+Detaillierte Aufgabenbeschreibungen befinden sich in `exercises/docs/`.
 
-![Process Model](docs/newsletter-subscription.png)
-
-### Exercise Tasks
-
----
-
-#### Exercise 1 — Model and Configure the Newsletter Registration Process
-
-The BPMN process contains several service tasks and other BPMN elements which need to be configured. To make CIB Seven execute them automatically, each service task must be configured as an **External** task and given a **topic** that matches the corresponding `@ProcessEngineWorker` annotation in the code.
-
-Open `src/main/resources/bpmn/newsletter.bpmn` in one of the following tools:
-- [Camunda Desktop Modeler](https://camunda.com/download/modeler/)
-- VS Code with the [Camunda Modeler extension](https://marketplace.visualstudio.com/items?itemName=miragon-gmbh.vs-code-bpmn-modeler&ssr=false#overview)
-
-For each service task listed below, select the task in the modeler, set the **Task Type** to `External`, and enter the corresponding **Topic**:
-
-| Service Task | Topic |
-|---|---|
-| Send confirmation mail | `sendConfirmationMail` |
-| Send Welcome-Mail | `sendWelcomeMail` |
-| Abort registration | `abortRegistration` |
-
-The topic values must match exactly what is declared in the worker classes under `adapter/inbound/cib7/`.
-
-
-Beyond service tasks, the following elements also require technical configuration in the modeler:
-
-- **Message events and receive tasks** — each one references a named message. Make sure the message name is defined and referenced consistently across all elements that share the same message.
-- **Timer boundary events** — set the timer type (e.g. duration) and specify a value. Keep the durations short while testing so you don't have to wait long for them to trigger.
-- **Error boundary event** — define an error with a code and reference it on the boundary event so CIB Seven knows which error to catch.
-
-Save the file after making all changes.
+| Aufgabe | Thema | Beschreibung |
+|---|---|---|
+| 0 | BPMN Modellierung | Camunda Modeler kennenlernen, einfachen Prozess modellieren |
+| 1 | Prozess-Automatisierung | JavaDelegate, RuntimeService, REST-Endpoint |
+| 2 | Bestätigungs-Mail | Double-Opt-In, weitere Service Tasks |
+| 3 | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung, Domain-Refactoring |
+| 4 | Boundary Events & Subprozesse | Timer, Message Events, Subprocess |
+| 5 | Signal Events | Signal End/Start Events, Event-Publishing |
+| 6 | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
+| 7 | Kompensation (SAGA) | Compensation Boundary Events, automatisches Rollback |
 
 ---
 
-#### Exercise 2 — Connect Workers and the Process Adapter to the Application
-
-The infrastructure adapters are in place but intentionally left incomplete. Your task is to wire them to the application layer.
-
-**Workers** (`adapter/inbound/cib7/`):
-
-Each worker is already registered as a `@ProcessEngineWorker` and receives the `subscriptionId` as a process variable. The use case is already injected via the constructor. What is missing is the actual call to the use case inside each worker method.
-
-Look for the `//TODO: Link Worker to Business Logic` comment in:
-- `SendConfirmationMailWorker`
-- `SendWelcomeMailWorker`
-- `AbortRegistrationWorker`
-
-For each one, call the injected use case with a `SubscriptionId` built from the incoming `subscriptionId` string variable.
-
-**Process adapter** (`adapter/outbound/cib7/`):
-
-The `NewsletterSubscriptionProcessAdapter` is responsible for talking to the process engine. The `submitForm` method already shows how to start a process instance via a message. The `confirmSubscription` method is still empty — look for the `//TODO: Implement message correlation` comment.
-
-Use the `correlationApi` to correlate a message to an existing process instance. The `submitForm` implementation and the `messageEventRestrictions` helper already in the class are a good reference for what is needed.
-
----
-
-#### Exercise 3 — Run a Process Instance End to End
-
-Start the PostgreSQL database and the application:
+## Quick Start
 
 ```bash
+# Start PostgreSQL
 cd stack && docker-compose up -d
-./mvnw spring-boot:run
+
+# Build everything
+./mvnw clean install
+
+# Run exercises starter
+cd exercises && ../mvnw spring-boot:run
+
+# CIB Seven Cockpit
+open http://localhost:8080/camunda    # admin / admin
 ```
-
-Once the application is up, open the CIB Seven Cockpit at `http://localhost:8080/camunda` (credentials: `admin` / `admin`) and keep it open — you can watch the process instance move through the flow in real time.
-
-**Subscribe**
-
-Send a subscription request via the REST API. The response will contain the `subscriptionId` — note it down, you will need it in the next step.
-
-```bash
-curl -X POST http://localhost:8080/api/subscriptions/subscribe \
-  -H "Content-Type: application/json" \
-  -d '{"email":"jane.doe@miravelo.com","name":"Jane Doe","newsletterId":"00000000-0000-0000-0000-000000000001"}'
-```
-
-Check the Cockpit — a new process instance should have appeared and progressed to the confirmation step. The confirmation mail worker will have fired and the process is now waiting for the customer to confirm.
-
-**Confirm**
-
-Replace `<subscriptionId>` with the ID returned above:
-
-```bash
-curl -X POST http://localhost:8080/api/subscriptions/confirm/<subscriptionId>
-```
-
-Watch the process instance complete in the Cockpit. The welcome mail worker should have fired and the instance should have reached its end event.
-
-**Let it time out**
-
-Start a second subscription but do not confirm it. Observe what happens after the timer boundary events fire — the process should send the confirmation mail again, and eventually abort the registration once the outer timer expires.

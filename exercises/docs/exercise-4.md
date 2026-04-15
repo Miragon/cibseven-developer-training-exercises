@@ -83,15 +83,7 @@ Füge einen REST-Endpoint hinzu:
 POST /api/memberships/{membershipId}/reject
 ```
 
-Implementierung in `MembershipProcessAdapter`:
-```kotlin
-fun rejectMembership(id: MembershipId) {
-    runtimeService
-        .createMessageCorrelation("Message_ConfirmationRejected")
-        .processInstanceVariableEquals("membershipId", id.value.toString())
-        .correlate()
-}
-```
+Implementiere die Korrelation in `MembershipProcessAdapter`: Verwende `runtimeService.createMessageCorrelation(...)` mit dem Message-Namen aus dem BPMN-Modell und filtere auf die Prozessvariable `membershipId`.
 
 ## Testen
 
