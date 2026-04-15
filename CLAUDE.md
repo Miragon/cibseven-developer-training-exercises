@@ -11,8 +11,11 @@ cd stack && docker-compose up -d
 # Build
 ./mvnw clean install
 
-# Run application (http://localhost:8080)
-./mvnw spring-boot:run
+# Run exercises starter (http://localhost:8080)
+cd exercises && ../mvnw spring-boot:run
+
+# Run a specific solution
+cd solutions/exercise-1 && ../../mvnw spring-boot:run
 
 # Run all tests
 ./mvnw test
@@ -25,39 +28,47 @@ CIB Seven Cockpit: `http://localhost:8080/camunda` (admin/admin)
 
 ## Architecture
 
-Hexagonal architecture (ports & adapters) enforced at build time via Konsist tests:
+Hexagonal architecture (ports & adapters) enforced at build time via ArchUnit tests:
 
 ```
-REST / CIB7 Workers          Application              CIB7 / Database
+REST / JavaDelegates           Application              CIB7 / Database
   (inbound adapters)   →   ports + services   →     (outbound adapters)
                                ↑
                             Domain
                         (engine-neutral)
 ```
 
-**Package layout** under `src/main/kotlin/io/miragon/training/`:
+**Package layout** under `src/main/java/io/miragon/training/`:
 
 - `adapter/inbound/rest/` — Spring MVC REST controllers
-- `adapter/inbound/cib7/` — BPMN service task workers (`@ProcessEngineWorker`)
-- `adapter/outbound/cib7/` — Process engine adapter (start process instances, correlate messages)
+- `adapter/inbound/cibseven/` — JavaDelegate implementations (`DelegateExpression`)
+- `adapter/outbound/cibseven/` — Process engine adapter (start process instances, correlate messages)
 - `adapter/outbound/db/` — JPA persistence adapter
-- `adapter/process/` — Generated BPMN process API constants (message names, variable names, topic names)
 - `application/port/inbound/` — Use case interfaces
 - `application/port/outbound/` — Repository and process port interfaces
 - `application/service/` — Use case implementations
-- `domain/` — Pure Kotlin domain model, no framework dependencies
+- `domain/` — Pure Java domain model (records), no framework dependencies
 
 ## Key Technologies
 
 - **CIB Seven** — Community distribution of Camunda Platform 7, runs embedded in Spring Boot
-- **Process Engine API** (`bpm-crafters/process-engine-api`) — Engine-neutral abstraction layer; allows swapping process engines (CIB Seven, Camunda 8, Operaton) without changing business code
-- **Process Engine Worker** (`bpm-crafters/process-engine-worker`) — `@ProcessEngineWorker(topic = "...")` annotation registers a method as a BPMN service task handler; uses scheduled polling (5s interval)
-- **Konsist** — Architecture tests in `src/test/kotlin/io/miragon/training/konsist/` enforced by `KonsistArchitectureTest`
+- **JavaDelegate** — Service tasks use `DelegateExpression` (e.g. `#{sendWelcomeMailDelegate}`) to bind to Spring beans
+- **ArchUnit** — Architecture tests in `ArchitectureTest.java`
+
+## Project Structure
+
+Multi-module Maven project:
+- `exercises/` — Starter template with TODO placeholders for participants
+- `solutions/exercise-{0-7}/` — Cumulative solutions, each building on the previous
+- `models/` — Reference BPMN/DMN models
 
 ## Domain
 
-Newsletter subscription workflow: subscribe → send confirmation mail → wait for confirmation (with timer retry/abort) → send welcome mail. Domain aggregate is `NewsletterSubscription` with status `PENDING → CONFIRMED | ABORTED`.
+Exercises 0-2: Newsletter subscription (Subscription naming).
+Exercises 3-7: Miravelo Inner Circle membership (Membership naming).
 
-## Architecture Rules (Konsist)
+Workflow: subscribe → send confirmation mail → wait for confirmation (with timer retry/abort) → send welcome mail.
 
-Architecture constraints are verified at test time. Domain classes must have zero framework imports; adapters must only depend on application ports (not directly on other adapters or domain internals beyond what ports expose). Run `./mvnw test -Dtest=KonsistArchitectureTest` to verify.
+## Architecture Rules (ArchUnit)
+
+Architecture constraints are verified at test time. Domain classes must have zero framework imports; adapters must only depend on application ports. Run `./mvnw test -Dtest=ArchitectureTest` to verify.
