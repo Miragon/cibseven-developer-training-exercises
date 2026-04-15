@@ -1,6 +1,6 @@
 # CIB Seven Developer Training Exercises
 
-Practical exercises for the CIB Seven developer training. The project implements a newsletter subscription / membership workflow using CIB Seven as the process engine and a hexagonal architecture to keep business logic decoupled from infrastructure.
+Practical exercises for the CIB Seven developer training. The project implements a newsletter subscription workflow using CIB Seven as the process engine and a hexagonal architecture to keep business logic decoupled from infrastructure.
 
 ---
 
@@ -52,7 +52,7 @@ cibseven-developer-training-exercises/
 
 [CIB Seven](https://cibseven.org) is a community-maintained distribution of Camunda Platform 7. It provides full compatibility with the Camunda 7 API while being independently maintained and open-source.
 
-In this project CIB Seven runs embedded inside Spring Boot, exposes the Camunda web application at `http://localhost:8080/camunda`, and handles BPMN process execution.
+In this project CIB Seven runs embedded inside Spring Boot, exposes the Camunda web application at `http://localhost:8080/camunda`, and handles BPMN process execution for the newsletter subscription workflow.
 
 Service tasks are implemented using the `JavaDelegate` pattern via `DelegateExpression`:
 
@@ -96,22 +96,33 @@ Architecture rules are enforced at build time via [ArchUnit](https://www.archuni
 
 ### Background: Miravelo
 
-**Miravelo** ist ein Lifestyle-Online-Shop für Menschen in der Quarterlife-Crisis — Gravel Bikes, Rennräder und alles, was dazugehört. Das Unternehmen wächst und setzt zunehmend auf automatisierte Prozesse.
+**Miravelo** is a lifestyle online shop for people in their quarterlife crisis — gravel bikes for the weekends that count, road bikes for everyone who wants to feel the asphalt beneath their wheels.
 
-Die Übungen finden im Kontext des **Newsletter-Anmeldeprozesses** statt. Ab Aufgabe 3 wird daraus der exklusive **Miravelo Inner Circle** mit limitierter Membership.
+The customer base is growing. New products are launching. The team decides: we need a **newsletter**. So customers stay informed about new drops, product launches, and exclusive offers. Classic. Down to earth. No frills. Someone signs up, gets a welcome mail — done.
 
-Detaillierte Aufgabenbeschreibungen befinden sich in `exercises/docs/`.
+> *"That's built in an hour, tops."*
+> — Every developer who has ever underestimated a newsletter.
 
-| Aufgabe | Thema | Beschreibung |
+This training takes place in the context of the **Newsletter Registration** process. Starting from exercise 3, the simple newsletter evolves into the exclusive **Miravelo Inner Circle** — a limited membership for true fans of the brand. Gravel bike in the garage, half-marathon on the calendar — you know who we mean.
+
+What follows is a journey through progressively more complex BPMN patterns: gateways, boundary events, subprocesses, signals, call activities, DMN decision tables, and compensation — each exercise building on the last.
+
+![Process Model](docs/newsletter-subscription.png)
+
+### Exercise Overview
+
+Detailed exercise descriptions are in [`exercises/docs/`](exercises/docs/).
+
+| Exercise | Topic | Description |
 |---|---|---|
-| 0 | BPMN Modellierung | Camunda Modeler kennenlernen, einfachen Prozess modellieren |
-| 1 | Prozess-Automatisierung | JavaDelegate, RuntimeService, REST-Endpoint |
-| 2 | Bestätigungs-Mail | Double-Opt-In, weitere Service Tasks |
-| 3 | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung, Domain-Refactoring |
-| 4 | Boundary Events & Subprozesse | Timer, Message Events, Subprocess |
-| 5 | Signal Events | Signal End/Start Events, Event-Publishing |
-| 6 | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
-| 7 | Kompensation (SAGA) | Compensation Boundary Events, automatisches Rollback |
+| 0 | BPMN Modeling | Install Camunda Modeler, model a basic newsletter process |
+| 1 | Process Automation | JavaDelegate, RuntimeService, REST endpoint |
+| 2 | Confirmation Mail | Double-Opt-In pattern, additional service tasks |
+| 3 | Membership & Gateway | Exclusive gateway, capacity check, domain refactoring |
+| 4 | Boundary Events & Subprocesses | Timer, message boundary events, embedded subprocess |
+| 5 | Signal Events | Signal end/start events, event publishing |
+| 6 | Call Activity & DMN | Call activity, DMN decision table, business rule task |
+| 7 | Compensation (SAGA) | Compensation boundary events, automatic rollback |
 
 ---
 
@@ -124,7 +135,7 @@ cd stack && docker-compose up -d
 # Build everything
 ./mvnw clean install
 
-# Run exercises starter
+# Run the exercises starter
 cd exercises && ../mvnw spring-boot:run
 
 # CIB Seven Cockpit
