@@ -1,32 +1,32 @@
 # CIB Seven Developer Training Exercises
 
-Practical exercises for the CIB Seven developer training. The project implements a newsletter subscription workflow using CIB Seven as the process engine and a hexagonal architecture to keep business logic decoupled from infrastructure.
+Praxisübungen für das CIB Seven Developer Training. Das Projekt implementiert einen Newsletter-Anmeldeprozess mit CIB Seven als Process Engine und einer hexagonalen Architektur, die Business-Logik von Infrastruktur entkoppelt.
 
 ---
 
-## Repository Structure
+## Repository-Struktur
 
 ```
 cibseven-developer-training-exercises/
-├── exercises/                        # Starter template with TODOs
-│   ├── docs/                         # Exercise descriptions (exercise-0.md … exercise-7.md)
+├── exercises/                        # Starter-Template mit TODOs
+│   ├── docs/                         # Aufgabenbeschreibungen (exercise-0.md … exercise-7.md)
 │   └── src/main/java/io/miragon/training/
 │       ├── adapter/
 │       │   ├── inbound/
-│       │   │   ├── cibseven/         # JavaDelegate implementations
-│       │   │   └── rest/             # REST controllers
+│       │   │   ├── cibseven/         # JavaDelegate-Implementierungen
+│       │   │   └── rest/             # REST-Controller
 │       │   └── outbound/
-│       │       ├── cibseven/         # Process engine adapter (start/correlate)
-│       │       └── db/               # JPA persistence adapter
+│       │       ├── cibseven/         # Process-Engine-Adapter (Start/Korrelation)
+│       │       └── db/               # JPA-Persistence-Adapter
 │       ├── application/
 │       │   ├── port/
-│       │   │   ├── inbound/          # Use case interfaces
-│       │   │   └── outbound/         # Repository and process port interfaces
-│       │   └── service/              # Use case implementations
-│       └── domain/                   # Domain model (pure Java, no framework deps)
-├── solutions/                        # Cumulative solutions per exercise
+│       │   │   ├── inbound/          # Use-Case-Interfaces
+│       │   │   └── outbound/         # Repository- und Prozess-Port-Interfaces
+│       │   └── service/              # Use-Case-Implementierungen
+│       └── domain/                   # Domain-Modell (reines Java, keine Framework-Abhängigkeiten)
+├── solutions/                        # Kumulative Lösungen pro Aufgabe
 │   └── exercise-{0-7}/
-├── models/                           # Reference BPMN/DMN models
+├── models/                           # Referenz-BPMN-/DMN-Modelle
 ├── stack/
 │   ├── docker-compose.yml            # PostgreSQL + MailHog
 │   └── init-schemas.sql
@@ -35,26 +35,26 @@ cibseven-developer-training-exercises/
 
 ---
 
-## Technical Stack
+## Technologie-Stack
 
-| Component | Technology |
+| Komponente | Technologie |
 |---|---|
-| Language | Java 21 |
+| Sprache | Java 21 |
 | Framework | Spring Boot 3.5 |
 | Process Engine | CIB Seven 2.1 |
-| Database | PostgreSQL (JPA / Hibernate) |
+| Datenbank | PostgreSQL (JPA / Hibernate) |
 | Build | Maven |
-| Architecture tests | ArchUnit |
+| Architektur-Tests | ArchUnit |
 
 ---
 
 ## CIB Seven
 
-[CIB Seven](https://cibseven.org) is a community-maintained distribution of Camunda Platform 7. It provides full compatibility with the Camunda 7 API while being independently maintained and open-source.
+[CIB Seven](https://cibseven.org) ist eine community-gepflegte Distribution von Camunda Platform 7. Sie bietet volle Kompatibilität mit der Camunda-7-API und wird unabhängig als Open Source weiterentwickelt.
 
-In this project CIB Seven runs embedded inside Spring Boot, exposes the Camunda web application at `http://localhost:8080/camunda`, and handles BPMN process execution for the newsletter subscription workflow.
+In diesem Projekt läuft CIB Seven eingebettet in Spring Boot, stellt die Camunda-Webanwendung unter `http://localhost:8080/camunda` bereit und übernimmt die BPMN-Prozessausführung für den Newsletter-Anmeldeprozess.
 
-Service tasks are implemented using the `JavaDelegate` pattern via `DelegateExpression`:
+Service Tasks werden über das `JavaDelegate`-Pattern mit `DelegateExpression` angebunden:
 
 ```java
 @Component
@@ -76,66 +76,77 @@ public class SendWelcomeMailDelegate extends BaseDelegate {
 
 ---
 
-## Architecture
+## Architektur
 
-The project follows a **hexagonal architecture** (ports & adapters):
+Das Projekt folgt einer **hexagonalen Architektur** (Ports & Adapters):
 
 ```
 REST / JavaDelegates           Application              CIB7 / Database
-  (inbound adapters)   →   ports + services   →     (outbound adapters)
+  (Inbound-Adapter)    →   Ports + Services   →     (Outbound-Adapter)
                                ↑
                             Domain
                         (engine-neutral)
 ```
 
-Architecture rules are enforced at build time via [ArchUnit](https://www.archunit.org/) tests.
+Architekturregeln werden zur Build-Zeit über [ArchUnit](https://www.archunit.org/)-Tests sichergestellt.
 
 ---
 
-## Exercises
+## Übungen
 
-### Background: Miravelo
+### Hintergrund: Miravelo
 
-**Miravelo** is a lifestyle online shop for people in their quarterlife crisis — gravel bikes for the weekends that count, road bikes for everyone who wants to feel the asphalt beneath their wheels.
+**Miravelo** ist ein Lifestyle-Online-Shop für Menschen in der Quarterlife-Crisis —
+Gravel Bikes für die Wochenenden, die zählen, und Rennräder für alle, die den
+Asphalt unter den Reifen spüren wollen.
 
-The customer base is growing. New products are launching. The team decides: we need a **newsletter**. So customers stay informed about new drops, product launches, and exclusive offers. Classic. Down to earth. No frills. Someone signs up, gets a welcome mail — done.
+Die Kundenbasis wächst. Neue Produkte kommen raus. Das Team beschließt:
+Wir bauen einen **Newsletter**. Damit Kunden über neue Drops, Produkt-Launches
+und exklusive Angebote informiert bleiben.
+Klassisch. Bodenständig. Kein Schnickschnack.
+Jemand trägt sich ein, kriegt eine Welcome Mail – fertig.
 
-> *"That's built in an hour, tops."*
-> — Every developer who has ever underestimated a newsletter.
+> *„Das ist doch in einer Stunde gebaut."*
+> — Jeder Entwickler, der einen Newsletter unterschätzt hat.
 
-This training takes place in the context of the **Newsletter Registration** process. Starting from exercise 3, the simple newsletter evolves into the exclusive **Miravelo Inner Circle** — a limited membership for true fans of the brand. Gravel bike in the garage, half-marathon on the calendar — you know who we mean.
+Das Training findet im Kontext des **Newsletter-Anmeldeprozesses** statt.
+Ab Aufgabe 3 wird aus dem einfachen Newsletter der exklusive **Miravelo Inner Circle** —
+eine limitierte Membership für echte Fans der Marke. Gravel Bike in der Garage,
+Halbmarathon im Kalender – du weißt, wen wir meinen.
 
-What follows is a journey through progressively more complex BPMN patterns: gateways, boundary events, subprocesses, signals, call activities, DMN decision tables, and compensation — each exercise building on the last.
+Was folgt, ist eine Reise durch immer komplexere BPMN-Muster: Gateways, Boundary Events,
+Subprozesse, Signals, Call Activities, DMN-Entscheidungstabellen und Kompensation —
+jede Aufgabe baut auf der vorherigen auf.
 
-![Process Model](docs/newsletter-subscription.png)
+![Prozessmodell](docs/newsletter-subscription.png)
 
-### Exercise Overview
+### Aufgabenübersicht
 
-Detailed exercise descriptions are in [`exercises/docs/`](exercises/docs/).
+Detaillierte Aufgabenbeschreibungen befinden sich in [`exercises/docs/`](exercises/docs/).
 
-| Exercise | Topic | Description |
+| Aufgabe | Thema | Beschreibung |
 |---|---|---|
-| 0 | BPMN Modeling | Install Camunda Modeler, model a basic newsletter process |
-| 1 | Process Automation | JavaDelegate, RuntimeService, REST endpoint |
-| 2 | Confirmation Mail | Double-Opt-In pattern, additional service tasks |
-| 3 | Membership & Gateway | Exclusive gateway, capacity check, domain refactoring |
-| 4 | Boundary Events & Subprocesses | Timer, message boundary events, embedded subprocess |
-| 5 | Signal Events | Signal end/start events, event publishing |
-| 6 | Call Activity & DMN | Call activity, DMN decision table, business rule task |
-| 7 | Compensation (SAGA) | Compensation boundary events, automatic rollback |
+| 0 | BPMN-Modellierung | Camunda Modeler kennenlernen, einfachen Prozess modellieren |
+| 1 | Prozess-Automatisierung | JavaDelegate, RuntimeService, REST-Endpoint |
+| 2 | Bestätigungs-Mail | Double-Opt-In-Pattern, weitere Service Tasks |
+| 3 | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung, Domain-Refactoring |
+| 4 | Boundary Events & Subprozesse | Timer, Message Boundary Events, Subprocess |
+| 5 | Signal Events | Signal End/Start Events, Event-Publishing |
+| 6 | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
+| 7 | Kompensation (SAGA) | Compensation Boundary Events, automatisches Rollback |
 
 ---
 
 ## Quick Start
 
 ```bash
-# Start PostgreSQL
+# PostgreSQL starten
 cd stack && docker-compose up -d
 
-# Build everything
+# Alles bauen
 ./mvnw clean install
 
-# Run the exercises starter
+# Exercises-Starter starten
 cd exercises && ../mvnw spring-boot:run
 
 # CIB Seven Cockpit
