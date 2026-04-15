@@ -4,10 +4,10 @@
     <bpmn:startEvent id="startEvent_confirmationRejected" name="Confirmation rejected">
       <bpmn:outgoing>Flow_0vqwqsj</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:serviceTask id="serviceTask_categorizeApplicant" name="Categorize applicant" camunda:type="external" camunda:topic="membership.categorizeApplicant">
+    <bpmn:businessRuleTask id="serviceTask_categorizeApplicant" name="Categorize applicant" camunda:decisionRef="categorizeApplicant" camunda:mapDecisionResult="singleEntry" camunda:resultVariable="isHighValue">
       <bpmn:incoming>Flow_0vqwqsj</bpmn:incoming>
       <bpmn:outgoing>Flow_0gvf8zj</bpmn:outgoing>
-    </bpmn:serviceTask>
+    </bpmn:businessRuleTask>
     <bpmn:sequenceFlow id="Flow_0vqwqsj" sourceRef="startEvent_confirmationRejected" targetRef="serviceTask_categorizeApplicant" />
     <bpmn:exclusiveGateway id="gateway_highValue" name="High value?" default="Flow_1imjd1v">
       <bpmn:incoming>Flow_0gvf8zj</bpmn:incoming>
