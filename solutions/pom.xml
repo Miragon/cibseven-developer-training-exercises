@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.miragon</groupId>
+        <artifactId>cibseven-developer-training-exercises</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>solutions</artifactId>
+    <packaging>pom</packaging>
+    <name>solutions</name>
+
+    <modules>
+        <module>exercise-0</module>
+        <module>exercise-1</module>
+        <module>exercise-2</module>
+        <module>exercise-3</module>
+        <module>exercise-4</module>
+        <module>exercise-5</module>
+        <module>exercise-6</module>
+        <module>exercise-7</module>
+    </modules>
+
+</project>

@@ -15,8 +15,13 @@
     <groupId>io.miragon</groupId>
     <artifactId>cibseven-developer-training-exercises</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
     <name>cibseven-developer-training-exercises</name>
+
+    <modules>
+        <module>exercises</module>
+        <module>solutions</module>
+    </modules>
 
     <properties>
         <!-- Override Spring Boot's managed Kotlin version with 2.3.0 -->
@@ -52,8 +57,8 @@
             <artifactId>kotlin-reflect</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.github.microutils</groupId>
-            <artifactId>kotlin-logging</artifactId>
+            <groupId>io.github.oshai</groupId>
+            <artifactId>kotlin-logging-jvm</artifactId>
             <version>${kotlin-logging.version}</version>
         </dependency>
 
@@ -78,7 +83,7 @@
             <artifactId>postgresql</artifactId>
         </dependency>
 
-        <!-- CIB Seven -->
+        <!-- CIB Seven (direct – no process-engine-api abstraction) -->
         <dependency>
             <groupId>org.cibseven.bpm.springboot</groupId>
             <artifactId>cibseven-bpm-spring-boot-starter-webapp</artifactId>
@@ -88,22 +93,6 @@
             <groupId>org.cibseven.bpm.springboot</groupId>
             <artifactId>cibseven-bpm-spring-boot-starter-rest</artifactId>
             <version>${cib7.version}</version>
-        </dependency>
-
-        <!-- Process Engine API (bpm-crafters) -->
-        <dependency>
-            <groupId>dev.bpm-crafters.process-engine-api</groupId>
-            <artifactId>process-engine-api</artifactId>
-            <version>${process-engine-api.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>dev.bpm-crafters.process-engine-adapters</groupId>
-            <artifactId>process-engine-adapter-cib-seven-embedded-spring-boot-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>dev.bpm-crafters.process-engine-worker</groupId>
-            <artifactId>process-engine-worker-spring-boot-starter</artifactId>
-            <version>${process-engine-worker.version}</version>
         </dependency>
 
         <!-- Test -->
@@ -147,6 +136,23 @@
     <build>
         <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
         <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
+        <pluginManagement>
+            <plugins>
+                <!-- Spring Boot fat-jar packaging – declared here so child modules can reference it without version -->
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <excludes>
+                            <exclude>
+                                <groupId>org.springframework.boot</groupId>
+                                <artifactId>spring-boot-devtools</artifactId>
+                            </exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
@@ -186,22 +192,6 @@
                         <phase>test-compile</phase>
                     </execution>
                 </executions>
-            </plugin>
-
-            <!-- Spring Boot fat-jar packaging -->
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <!-- Kotlin top-level main() compiles to <FileName>Kt class -->
-                    <mainClass>io.miragon.training.NewsletterSubscriptionApplicationKt</mainClass>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.springframework.boot</groupId>
-                            <artifactId>spring-boot-devtools</artifactId>
-                        </exclude>
-                    </excludes>
-                </configuration>
             </plugin>
         </plugins>
     </build>
