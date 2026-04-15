@@ -9,21 +9,27 @@
 
 ## Hintergrund
 
-**Miravelo** ist ein aufstrebendes Startup, das eine exklusive Membership für Gleichgesinnte aufbaut.
-Zur Einführung möchte das Team zunächst einen einfachen Newsletter-Anmeldeprozess modellieren,
-bevor er in Aufgabe 1 automatisiert wird.
+**Miravelo** – das neue Lifestyle-Startup aus Berlin – hat gerade seinen ersten
+Meetup-Abend hinter sich. 47 Leute in einem zu kleinen Raum, schlechtes WLAN,
+aber irgendwie war die Energie großartig. Alle wollen auf dem Laufenden bleiben.
 
-## Aufgabe
+Das Team beschließt: Wir bauen einen **Newsletter**. Klassisch. Bodenständig. Kein Schnickschnack.
+Jemand trägt sich ein, kriegt eine Welcome Mail – fertig.
 
-Modelliere mit dem **Camunda Modeler** einen einfachen Newsletter-Anmeldeprozess und speichere ihn
-als `src/main/resources/bpmn/newsletter.bpmn`.
+> *„Das ist doch in einer Stunde gebaut."*
+> — Jeder Entwickler, der einen Newsletter unterschätzt hat.
 
-### Prozess-Schritte
+### Prozess
 
 ```
 [Newsletter wanted]  →  [Fill out form]  →  [Send Welcome Mail]  →  [User subscribed]
    (Start Event)          (User Task)         (Service Task)           (End Event)
 ```
+
+## Aufgabe
+
+Modelliere mit dem **Camunda Modeler** den Newsletter-Anmeldeprozess und speichere ihn
+als `src/main/resources/bpmn/newsletter.bpmn`.
 
 ### Anforderungen
 

@@ -9,8 +9,17 @@
 
 ## Hintergrund
 
-In Aufgabe 0 hast du den Prozess modelliert. Jetzt wird er technisch automatisiert:
-Der Service Task `Send Welcome Mail` soll echten Java-Code ausführen.
+Der Newsletter läuft. Miravelo hat den Prozess modelliert – und irgendwer muss jetzt
+jede Anmeldung manuell im Cockpit durchklicken.
+
+Das ist natürlich **keine** Lösung. Wir sind Entwickler. Wir automatisieren Dinge, selbst
+wenn es nur ein Newsletter ist, den niemand lesen wird.
+
+> *„Ich klick das doch nicht 500 Mal von Hand durch."*
+> — Das gesamte Team, nach dem zweiten Meetup
+
+Jetzt wird der Prozess technisch automatisiert: Der Service Task `Send Welcome Mail` soll
+echten Code ausführen.
 
 Das Projekt folgt der hexagonalen Architektur:
 

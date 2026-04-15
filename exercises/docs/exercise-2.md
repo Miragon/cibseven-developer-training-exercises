@@ -8,8 +8,24 @@
 
 ## Hintergrund
 
-Miravelo möchte sicherstellen, dass neue Mitglieder ihre E-Mail-Adresse bestätigen,
-bevor sie die Welcome Mail erhalten.
+Über Nacht haben sich 500 Leute angemeldet. Fünfhundert. Für einen Newsletter über einen
+Berliner Lifestyle-Meetup.
+
+Das Team starrt auf die Datenbank und beginnt, Fragen zu stellen:
+
+- Sind das echte E-Mail-Adressen?
+- Wer ist überhaupt diese `noreply@throwaway.xyz`?
+- Warten wir kurz – *sind wir noch ein Newsletter?*
+
+Zweites Problem, größeres Problem: Irgendwer hat `admin@miravelo.com` eingetragen. Als Witz.
+Wahrscheinlich.
+
+Das Team beschließt: Wir bauen einen **Bestätigungsschritt**. Erst Mail bestätigen,
+dann Welcome Mail. Klassisches Double-Opt-In. Und während wir dabei sind – vielleicht
+sind wir nicht mehr nur ein Newsletter. Vielleicht sind wir etwas... Exklusiveres.
+
+> *„500 Sign-ups. Das ist entweder viral oder ein Bot-Angriff."*
+> — CTO, beim zweiten Kaffee
 
 ### Neuer Prozessablauf
 

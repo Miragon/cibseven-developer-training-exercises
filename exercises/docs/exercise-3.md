@@ -9,8 +9,25 @@
 
 ## Hintergrund
 
-Miravelo möchte aus dem Newsletter eine **exklusive Membership** machen – mit limitierten Plätzen!
-Wenn keine Plätze mehr frei sind, soll der Bewerber eine Absage erhalten.
+**Pivot-Meeting. Freitagnachmittag. Jemand hat Red Bull mitgebracht.**
+
+Miravelo ist kein Newsletter mehr. Miravelo ist jetzt eine **Membership**. Eine limitierte,
+exklusive, nur-wenn-du-gut-genug-bist Membership. Zehn Plätze. Zählt bis zehn. Das ist die
+Kapazität.
+
+Warum zehn? Weil Knappheit Wert erzeugt. Weil FOMO ein Business-Modell ist. Weil irgendjemand
+ein Buch über Luxusmarken gelesen hat und jetzt „Premium Positioning" in jeden Satz einbaut.
+
+> *„Wir sind nicht exklusiv weil wir gut sind. Wir sind exklusiv weil wir nur zehn Plätze
+> haben und der Counter in der Datenbank liegt."*
+> — Ehrlichster Kommentar im Sprint Planning
+
+Das Gute daran: Aus Prozesssicht brauchen wir ein **Gateway**. Der gnadenlose Türsteher im
+Prozessfluss. Hat die Person einen Platz bekommen? Herzlichen Glückwunsch, weiter. Kein Platz?
+Ablehnungsmail. Kein Einspruch. Das Gateway entscheidet.
+
+Mit 27 eine Absage von einem Newsletter-Nachfolger zu bekommen trifft anders. Aber das ist
+jetzt Miravelons Problem, nicht deins.
 
 ### Neuer Prozessablauf
 
