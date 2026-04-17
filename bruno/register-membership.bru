@@ -1,0 +1,19 @@
+meta {
+  name: Register Membership
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/memberships
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "test@example.com",
+    "name": "John Doe",
+    "age": 30
+  }
+}
