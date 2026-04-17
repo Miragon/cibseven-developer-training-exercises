@@ -6,6 +6,13 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      # CIB Seven 2.x is built against Spring Framework 6 / Spring Boot 3.x.
+      # Spring Boot 4.x (Spring Framework 7) breaks CIB Seven at startup.
+      # Re-enable once CIB Seven ships a Spring Boot 4-compatible release.
+      - dependency-name: "org.springframework.boot:*"
+        update-types:
+          - "version-update:semver-major"
     groups:
       maven-dependencies:
         patterns:
