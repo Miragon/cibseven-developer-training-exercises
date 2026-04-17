@@ -1,12 +1,16 @@
 # Default ignored files
 /shelf/
-/.idea/workspace.xml
 # Editor-based HTTP Client requests
 /httpRequests/
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
-/.idea
+# IntelliJ IDEA – ignore user-specific files but track shared configs (run configurations, misc.xml)
+/.idea/workspace.xml
+/.idea/tasks.xml
+/.idea/dictionaries
+/.idea/shelf
+/.idea/*.iml
 .DS_Store
 .vscode
 .claude
