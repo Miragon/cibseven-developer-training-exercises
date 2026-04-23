@@ -76,3 +76,7 @@ als `src/main/resources/bpmn/newsletter.bpmn`.
 ## Referenzlösung
 
 `../models/task-1-basic-newsletter.bpmn`
+
+---
+
+➡️ [Weiter zu Aufgabe 1](exercise-1.md)

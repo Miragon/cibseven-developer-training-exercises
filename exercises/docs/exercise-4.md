@@ -103,3 +103,7 @@ curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
 ## Referenzlösung
 
 `../solutions/exercise-4/`
+
+---
+
+➡️ [Weiter zu Aufgabe 5](exercise-5.md)

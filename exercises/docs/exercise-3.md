@@ -116,3 +116,7 @@ curl -X POST http://localhost:8080/api/memberships \
 ## Referenzlösung
 
 `../solutions/exercise-3/`
+
+---
+
+➡️ [Weiter zu Aufgabe 4](exercise-4.md)

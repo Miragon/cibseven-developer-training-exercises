@@ -107,3 +107,7 @@ Implementiere den Test in `src/test/java/io/miragon/training/process/Subscriptio
 ## Referenzlösung
 
 `../solutions/exercise-1/`
+
+---
+
+➡️ [Weiter zu Aufgabe 2](exercise-2.md)
