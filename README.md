@@ -2,96 +2,6 @@
 
 Praxisübungen für das CIB Seven Developer Training. Das Projekt implementiert einen Newsletter-Anmeldeprozess mit CIB Seven als Process Engine und einer hexagonalen Architektur, die Business-Logik von Infrastruktur entkoppelt.
 
----
-
-## Repository-Struktur
-
-```
-cibseven-developer-training-exercises/
-├── exercises/                        # Starter-Template mit TODOs
-│   ├── docs/                         # Aufgabenbeschreibungen (exercise-0.md … exercise-7.md)
-│   └── src/main/java/io/miragon/training/
-│       ├── adapter/
-│       │   ├── inbound/
-│       │   │   ├── cibseven/         # JavaDelegate-Implementierungen
-│       │   │   └── rest/             # REST-Controller
-│       │   └── outbound/
-│       │       ├── cibseven/         # Process-Engine-Adapter (Start/Korrelation)
-│       │       └── db/               # JPA-Persistence-Adapter
-│       ├── application/
-│       │   ├── port/
-│       │   │   ├── inbound/          # Use-Case-Interfaces
-│       │   │   └── outbound/         # Repository- und Prozess-Port-Interfaces
-│       │   └── service/              # Use-Case-Implementierungen
-│       └── domain/                   # Domain-Modell (reines Java, keine Framework-Abhängigkeiten)
-├── solutions/                        # Kumulative Lösungen pro Aufgabe
-│   └── exercise-{0-7}/
-├── models/                           # Referenz-BPMN-/DMN-Modelle
-├── stack/
-│   ├── docker-compose.yml            # PostgreSQL + MailHog
-│   └── init-schemas.sql
-└── pom.xml
-```
-
----
-
-## Technologie-Stack
-
-| Komponente | Technologie |
-|---|---|
-| Sprache | Java 21 |
-| Framework | Spring Boot 3.5 |
-| Process Engine | CIB Seven 2.1 |
-| Datenbank | PostgreSQL (JPA / Hibernate) |
-| Build | Maven |
-| Architektur-Tests | ArchUnit |
-
----
-
-## CIB Seven
-
-[CIB Seven](https://cibseven.org) ist eine community-gepflegte Distribution von Camunda Platform 7. Sie bietet volle Kompatibilität mit der Camunda-7-API und wird unabhängig als Open Source weiterentwickelt.
-
-In diesem Projekt läuft CIB Seven eingebettet in Spring Boot, stellt die Camunda-Webanwendung unter `http://localhost:8080/camunda` bereit und übernimmt die BPMN-Prozessausführung für den Newsletter-Anmeldeprozess.
-
-Service Tasks werden über das `JavaDelegate`-Pattern mit `DelegateExpression` angebunden:
-
-```java
-@Component
-public class SendWelcomeMailDelegate extends BaseDelegate {
-
-    private final SendWelcomeMailUseCase useCase;
-
-    public SendWelcomeMailDelegate(SendWelcomeMailUseCase useCase) {
-        this.useCase = useCase;
-    }
-
-    @Override
-    protected void executeTask(DelegateExecution execution) {
-        var subscriptionId = (String) execution.getVariable("subscriptionId");
-        useCase.sendWelcomeMail(new SubscriptionId(UUID.fromString(subscriptionId)));
-    }
-}
-```
-
----
-
-## Architektur
-
-Das Projekt folgt einer **hexagonalen Architektur** (Ports & Adapters):
-
-```
-REST / JavaDelegates           Application              CIB7 / Database
-  (Inbound-Adapter)    →   Ports + Services   →     (Outbound-Adapter)
-                               ↑
-                            Domain
-                        (engine-neutral)
-```
-
-Architekturregeln werden zur Build-Zeit über [ArchUnit](https://www.archunit.org/)-Tests sichergestellt.
-
----
-
 ## Übungen
 
 ### Hintergrund: Miravelo
@@ -135,8 +45,6 @@ Detaillierte Aufgabenbeschreibungen befinden sich in [`exercises/docs/`](exercis
 | 6 | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
 | 7 | Kompensation (SAGA) | Compensation Boundary Events, automatisches Rollback |
 
----
-
 ## Quick Start
 
 ```bash
@@ -152,3 +60,83 @@ cd exercises && ../mvnw spring-boot:run
 # CIB Seven Cockpit
 open http://localhost:8080/camunda    # admin / admin
 ```
+
+## Repository-Struktur
+
+```
+cibseven-developer-training-exercises/
+├── exercises/                        # Starter-Template mit TODOs
+│   ├── docs/                         # Aufgabenbeschreibungen (exercise-0.md … exercise-7.md)
+│   └── src/main/java/io/miragon/training/
+│       ├── adapter/
+│       │   ├── inbound/
+│       │   │   ├── cibseven/         # JavaDelegate-Implementierungen
+│       │   │   └── rest/             # REST-Controller
+│       │   └── outbound/
+│       │       ├── cibseven/         # Process-Engine-Adapter (Start/Korrelation)
+│       │       └── db/               # JPA-Persistence-Adapter
+│       ├── application/
+│       │   ├── port/
+│       │   │   ├── inbound/          # Use-Case-Interfaces
+│       │   │   └── outbound/         # Repository- und Prozess-Port-Interfaces
+│       │   └── service/              # Use-Case-Implementierungen
+│       └── domain/                   # Domain-Modell (reines Java, keine Framework-Abhängigkeiten)
+├── solutions/                        # Kumulative Lösungen pro Aufgabe
+│   └── exercise-{0-7}/
+├── models/                           # Referenz-BPMN-/DMN-Modelle
+├── stack/
+│   ├── docker-compose.yml            # PostgreSQL + MailHog
+│   └── init-schemas.sql
+└── pom.xml
+```
+
+## Technologie-Stack
+
+| Komponente | Technologie |
+|---|---|
+| Sprache | Java 21 |
+| Framework | Spring Boot 3.5 |
+| Process Engine | CIB Seven 2.1 |
+| Datenbank | PostgreSQL (JPA / Hibernate) |
+| Build | Maven |
+| Architektur-Tests | ArchUnit |
+
+## CIB Seven
+
+[CIB Seven](https://cibseven.org) ist eine community-gepflegte Distribution von Camunda Platform 7. Sie bietet volle Kompatibilität mit der Camunda-7-API und wird unabhängig als Open Source weiterentwickelt.
+
+In diesem Projekt läuft CIB Seven eingebettet in Spring Boot, stellt die Camunda-Webanwendung unter `http://localhost:8080/camunda` bereit und übernimmt die BPMN-Prozessausführung für den Newsletter-Anmeldeprozess.
+
+Service Tasks werden über das `JavaDelegate`-Pattern mit `DelegateExpression` angebunden:
+
+```java
+@Component
+public class SendWelcomeMailDelegate extends BaseDelegate {
+
+    private final SendWelcomeMailUseCase useCase;
+
+    public SendWelcomeMailDelegate(SendWelcomeMailUseCase useCase) {
+        this.useCase = useCase;
+    }
+
+    @Override
+    protected void executeTask(DelegateExecution execution) {
+        var subscriptionId = (String) execution.getVariable("subscriptionId");
+        useCase.sendWelcomeMail(new SubscriptionId(UUID.fromString(subscriptionId)));
+    }
+}
+```
+
+## Architektur
+
+Das Projekt folgt einer **hexagonalen Architektur** (Ports & Adapters):
+
+```
+REST / JavaDelegates           Application              CIB7 / Database
+  (Inbound-Adapter)    →   Ports + Services   →     (Outbound-Adapter)
+                               ↑
+                            Domain
+                        (engine-neutral)
+```
+
+Architekturregeln werden zur Build-Zeit über [ArchUnit](https://www.archunit.org/)-Tests sichergestellt.
