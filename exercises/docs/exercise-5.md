@@ -91,3 +91,7 @@ Im Cockpit:
 ## Referenzlösung
 
 `../solutions/exercise-5/`
+
+---
+
+➡️ [Weiter zu Aufgabe 6](exercise-6.md)

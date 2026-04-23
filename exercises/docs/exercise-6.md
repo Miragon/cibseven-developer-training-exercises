@@ -139,3 +139,7 @@ Im Cockpit:
 ## Referenzlösung
 
 `../solutions/exercise-6/`
+
+---
+
+➡️ [Weiter zu Aufgabe 7](exercise-7.md)
