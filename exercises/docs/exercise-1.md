@@ -1,5 +1,11 @@
 # Aufgabe 1 – Automatisierung des Prozesses
 
+## Ziel-Modell
+
+Das BPMN bleibt identisch zu Aufgabe 0 – diesmal verbinden wir es mit Java-Code:
+
+![BPMN Modell der Aufgabe](assets/exercise-1.svg)
+
 ## Lernziele
 
 - Hexagonale Architektur (Ports & Adapters) verstehen

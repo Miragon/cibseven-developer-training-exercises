@@ -6,11 +6,11 @@
     </bpmn:startEvent>
     <bpmn:sequenceFlow id="Flow_0p7ko1g" sourceRef="startEvent_newsletterWanted" targetRef="userTask_fillOutForm" />
     <bpmn:sequenceFlow id="Flow_0ya530i" sourceRef="userTask_fillOutForm" targetRef="serviceTask_sendWelcomeMail" />
-    <bpmn:userTask id="userTask_fillOutForm" name="Fill out form">
+    <bpmn:userTask id="userTask_fillOutForm" name="Fill out form" camunda:asyncAfter="true">
       <bpmn:incoming>Flow_0p7ko1g</bpmn:incoming>
       <bpmn:outgoing>Flow_0ya530i</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:serviceTask id="serviceTask_sendWelcomeMail" name="Send Welcome Mail" camunda:type="external" camunda:topic="membership.sendWelcomeMail">
+    <bpmn:serviceTask id="serviceTask_sendWelcomeMail" name="Send Welcome Mail" camunda:delegateExpression="#{sendWelcomeMailDelegate}">
       <bpmn:incoming>Flow_0ya530i</bpmn:incoming>
       <bpmn:outgoing>Flow_1s74azu</bpmn:outgoing>
     </bpmn:serviceTask>

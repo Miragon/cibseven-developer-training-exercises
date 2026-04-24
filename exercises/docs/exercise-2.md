@@ -1,5 +1,9 @@
 # Aufgabe 2 – Bestätigungs-Mail
 
+## Ziel-Modell
+
+![BPMN Modell der Aufgabe](assets/exercise-2.svg)
+
 ## Lernziele
 
 - Einen bestehenden Prozess in Camunda Modeler erweitern
@@ -54,6 +58,16 @@ vielleicht wollen sie auch mehr als nur einen Newsletter. Vielleicht wollen sie 
 **Achtung:** Der Service Task `sendConfirmationMail` muss **vor** dem User Task stehen.
 
 Referenz-Modell: `../models/task-2-with-confirmation.bpmn`
+
+## Best Practice: Async Continuations
+
+Setze in deinem Modell mindestens:
+- `asyncAfter` an jedem **User Task** (also an `userTask_confirmSubscription`)
+- `asyncAfter` an jedem **Message Event** (folgt ab Aufgabe 3)
+
+Hintergrund: Damit wird nach jedem Wait-State eine neue Engine-Transaktion gestartet. Fehler in nachgelagerten Service Tasks führen sonst dazu, dass die User-Task-Completion zurückgerollt wird und der Task im Tasklist wieder erscheint.
+
+Im Camunda Modeler: Element selektieren → Properties Panel → "Asynchronous After".
 
 ### 2. `SendConfirmationMailUseCase` erstellen
 

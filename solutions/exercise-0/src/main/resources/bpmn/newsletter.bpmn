@@ -25,7 +25,7 @@
                        sourceRef="startEvent_newsletterWanted"
                        targetRef="userTask_fillOutForm"/>
 
-    <bpmn:userTask id="userTask_fillOutForm" name="Fill out form">
+    <bpmn:userTask id="userTask_fillOutForm" name="Fill out form" camunda:asyncAfter="true">
       <bpmn:extensionElements>
         <camunda:formData>
           <camunda:formField id="email" label="E-Mail" type="string"/>

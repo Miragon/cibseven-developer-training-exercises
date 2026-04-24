@@ -1,5 +1,9 @@
 # Aufgabe 0 – BPMN Modellierung
 
+## Ziel-Modell
+
+![BPMN Modell der Aufgabe](assets/exercise-0.svg)
+
 ## Lernziele
 
 - Camunda Modeler installieren und kennenlernen
