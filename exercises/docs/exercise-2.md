@@ -62,12 +62,12 @@ Referenz-Modell: `../models/task-2-with-confirmation.bpmn`
 ## Best Practice: Async Continuations
 
 Setze in deinem Modell mindestens:
+- `asyncBefore` am **Message-Start-Event** `startEvent_submitRegistration`
 - `asyncAfter` an jedem **User Task** (also an `userTask_confirmSubscription`)
-- `asyncAfter` an jedem **Message Event** (folgt ab Aufgabe 3)
 
-Hintergrund: Damit wird nach jedem Wait-State eine neue Engine-Transaktion gestartet. Fehler in nachgelagerten Service Tasks führen sonst dazu, dass die User-Task-Completion zurückgerollt wird und der Task im Tasklist wieder erscheint.
+Hintergrund: Damit wird nach jedem Wait-State eine neue Engine-Transaktion gestartet. Fehler in nachgelagerten Service Tasks führen sonst dazu, dass die User-Task-Completion zurückgerollt wird und der Task im Tasklist wieder erscheint. `asyncBefore` am Message-Start gibt der Engine eine saubere TX-Grenze nach der Message-Korrelation.
 
-Im Camunda Modeler: Element selektieren → Properties Panel → "Asynchronous After".
+Im Camunda Modeler: Element selektieren → Properties Panel → "Asynchronous Before/After".
 
 ### 2. `SendConfirmationMailUseCase` erstellen
 
