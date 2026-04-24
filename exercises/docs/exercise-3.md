@@ -99,17 +99,7 @@ Erstelle nach dem bewährten Muster (analog zu Aufgabe 2):
 - `ClaimMembershipDelegate`: Prüft Kapazität, setzt Variable `hasEmptySpots` auf der `DelegateExecution`
 - `SendRejectionMailDelegate`: Liest `membershipId`, ruft Use Case auf
 
-**Hinweis:** Die Element-IDs und Variablennamen (z.B. `hasEmptySpots`) kannst du direkt aus dem BPMN-Modell entnehmen.
-
-## Best Practice: Async Continuations
-
-Setze in deinem Modell mindestens:
-- `asyncBefore` am **Message-Start-Event** `startEvent_submitRegistration`
-- `asyncAfter` an jedem **User Task** (also an `userTask_confirmMembership`)
-
-Hintergrund: Damit wird nach jedem Wait-State eine neue Engine-Transaktion gestartet. Fehler in nachgelagerten Service Tasks führen sonst dazu, dass die User-Task-Completion zurückgerollt wird und der Task im Tasklist wieder erscheint. `asyncBefore` am Message-Start gibt der Engine eine saubere TX-Grenze nach der Message-Korrelation.
-
-Im Camunda Modeler: Element selektieren → Properties Panel → "Asynchronous Before/After".
+**Hinweis:** Die Element-IDs und Variablennamen (z.B. `hasEmptySpots`) kannst du direkt aus dem BPMN-Modell entnehmen. Async-Continuations (siehe Aufgabe 2) gelten ab hier als bekannt – `asyncBefore` am Message-Start, `asyncAfter` am User Task.
 
 ## Testen
 

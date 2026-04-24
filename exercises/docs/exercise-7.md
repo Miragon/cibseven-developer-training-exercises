@@ -55,16 +55,6 @@ Subprozess (membership-rejection.bpmn):
                                           [End: tried to reaquire]
 ```
 
-## Best Practice: Async Continuations
-
-Setze in deinem Modell mindestens:
-- `asyncAfter` an jedem **User Task** und **Message Event** (Boundary, Catch, Receive)
-- `asyncBefore` am Message-/Signal-Start-Event
-
-Hintergrund: Damit wird nach jedem Wait-State eine neue Engine-Transaktion gestartet. Fehler in nachgelagerten Service Tasks führen sonst dazu, dass die User-Task-Completion zurückgerollt wird und der Task im Tasklist wieder erscheint.
-
-Im Camunda Modeler: Element selektieren → Properties Panel → "Asynchronous After".
-
 ## Aufgaben
 
 ### 1. Subprozess `membership-rejection.bpmn` erstellen

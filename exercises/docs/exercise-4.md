@@ -89,16 +89,7 @@ POST /api/memberships/{membershipId}/reject
 
 Implementiere die Korrelation in `MembershipProcessAdapter`: Verwende `runtimeService.createMessageCorrelation(...)` mit dem Message-Namen aus dem BPMN-Modell und filtere auf die Prozessvariable `membershipId`.
 
-## Best Practice: Async Continuations
-
-Setze in deinem Modell mindestens:
-- `asyncBefore` am **Message-Start-Event** `startEvent_submitRegistration`
-- `asyncAfter` an `userTask_confirmMembership`
-- `asyncAfter` an **allen Boundary Events**: `timer_resendEveryDay`, `timer_abortAfter3HalfDays`, `event_confirmationRejected`
-
-Hintergrund: Damit wird nach jedem Wait-State eine neue Engine-Transaktion gestartet. Fehler in nachgelagerten Service Tasks führen sonst dazu, dass das Boundary-Event-Handling oder die User-Task-Completion zurückgerollt wird – mit unschönen Seiteneffekten in der Tasklist und Process History.
-
-Im Camunda Modeler: Element selektieren → Properties Panel → "Asynchronous Before/After".
+> Async-Continuations (siehe Aufgabe 2): Setze `asyncAfter` zusätzlich an allen Boundary Events (`timer_resendEveryDay`, `timer_abortAfter3HalfDays`, `event_confirmationRejected`).
 
 ## Testen
 

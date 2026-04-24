@@ -79,16 +79,7 @@ Implementiere das `MembershipEventPublisher`-Interface. Für den Moment reicht e
 
 Analog zu bisherigen Delegates, ruft `NotifyAboutSignedMembershipUseCase` auf.
 
-## Best Practice: Async Continuations
-
-Setze in deinem Modell mindestens:
-- `asyncBefore` am **Signal-Start-Event** `startEvent_membershipActivated` (saubere TX-Grenze nach Signal-Korrelation)
-- `asyncBefore` am **Message-Start-Event** `startEvent_submitRegistration` (bleibt aus Aufgabe 4)
-- `asyncAfter` an `userTask_confirmMembership` und allen Boundary Events
-
-Hintergrund: Signal-Korrelation läuft sonst im Caller-Tx – fällt der nachgelagerte `serviceTask_publishSignal` aus, würde die ursprüngliche Welcome-Mail-Transaktion zurückgerollt.
-
-Im Camunda Modeler: Element selektieren → Properties Panel → "Asynchronous Before/After".
+> Async-Continuations (siehe Aufgabe 2): Setze `asyncBefore` auch am neuen Signal-Start-Event `startEvent_membershipActivated` – Signal-Korrelation soll nicht im Caller-TX laufen.
 
 ## Testen
 

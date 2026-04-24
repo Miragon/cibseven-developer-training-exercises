@@ -22,16 +22,6 @@ serviceTask_claimMembership ──── [Kompensations-Boundary] ──── s
 endEvent_membershipDeclined  →  [Compensating End Event]  →  Engine ruft revokeClaim auf
 ```
 
-## Best Practice: Async Continuations
-
-Setze in deinem Modell mindestens:
-- `asyncAfter` an jedem **User Task** und **Message Event** (Boundary, Catch, Receive)
-- `asyncBefore` am Message-/Signal-Start-Event
-
-Hintergrund: Damit wird nach jedem Wait-State eine neue Engine-Transaktion gestartet. Fehler in nachgelagerten Service Tasks führen sonst dazu, dass die User-Task-Completion zurückgerollt wird und der Task im Tasklist wieder erscheint.
-
-Im Camunda Modeler: Element selektieren → Properties Panel → "Asynchronous After".
-
 ## BPMN-Änderungen
 
 ### Hauptprozess (`newsletter.bpmn`)
@@ -65,7 +55,6 @@ Referenz-Modell: `../models/task-6-compensation.bpmn`
 - [ ] `serviceTask_revokeClaim` mit `isForCompensation=true` markieren und per Association mit dem Boundary verknüpfen
 - [ ] Decline-Pfade direkt mit `endEvent_membershipDeclined` verbinden (kein `revokeClaim` im Pfad)
 - [ ] `endEvent_membershipDeclined` in Compensating End Event umwandeln
-- [ ] `asyncAfter` an `userTask_confirmMembership` und allen Message-/Boundary-Events setzen (siehe Best-Practice-Kasten)
 
 ### 2. Code anpassen
 
