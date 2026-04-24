@@ -9,6 +9,16 @@ und die Prozesse müssen mithalten.
 In diesem Modul arbeitest du dich Schritt für Schritt durch 8 Aufgaben, die ein vollständiges
 Newsletter- und Membership-System auf Basis von CIB Seven (Camunda Platform 7) aufbauen.
 
+## Der vollständige Zielprozess
+
+So sieht der Prozess am Ende von Aufgabe 7 aus – mit allen Konzepten, die du Schritt für Schritt aufbaust:
+
+![Vollständiger Membership-Prozess](docs/assets/exercise-7-main.svg)
+
+Der ausgelagerte Sub-Prozess für die Ablehnung (Call Activity + DMN):
+
+![Membership-Rejection Sub-Prozess](docs/assets/exercise-7-sub.svg)
+
 ## Voraussetzungen
 
 ```bash
@@ -32,8 +42,8 @@ http://localhost:8080/camunda  (admin / admin)
 | [3](docs/exercise-3.md) | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung |
 | [4](docs/exercise-4.md) | Boundary Events | Timer- und Message-Boundary-Events, Subprozesse |
 | [5](docs/exercise-5.md) | Signal Events | Signal-Events für Systemkommunikation |
-| [6](docs/exercise-6.md) | Call Activity | Prozess-Modularisierung |
-| [7](docs/exercise-7.md) | DMN | Regelbasierte Entscheidungen mit DMN |
+| [6](docs/exercise-6.md) | Compensation | Automatisches Rollback via BPMN-Kompensation |
+| [7](docs/exercise-7.md) | Call Activity & DMN | Prozess-Modularisierung mit Entscheidungstabellen |
 
 ## Architektur
 

@@ -18,7 +18,7 @@
     <bpmn:sequenceFlow id="Flow_07y997b" sourceRef="gateway_highValue" targetRef="userTask_writeRegretMail">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${isHighValue}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:userTask id="userTask_writeRegretMail" name="Write an&#10;email expressing regret">
+    <bpmn:userTask id="userTask_writeRegretMail" name="Write an&#10;email expressing regret" camunda:asyncAfter="true">
       <bpmn:incoming>Flow_07y997b</bpmn:incoming>
       <bpmn:outgoing>Flow_1ufk6o2</bpmn:outgoing>
     </bpmn:userTask>

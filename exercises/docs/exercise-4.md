@@ -1,5 +1,9 @@
 # Aufgabe 4 – Boundary Events & Subprozesse
 
+## Ziel-Modell
+
+![BPMN Modell der Aufgabe](assets/exercise-4.svg)
+
 ## Lernziele
 
 - Subprozesse (Subprocesses) modellieren
@@ -84,6 +88,8 @@ POST /api/memberships/{membershipId}/reject
 ```
 
 Implementiere die Korrelation in `MembershipProcessAdapter`: Verwende `runtimeService.createMessageCorrelation(...)` mit dem Message-Namen aus dem BPMN-Modell und filtere auf die Prozessvariable `membershipId`.
+
+> Async-Continuations (siehe Aufgabe 2): Setze `asyncAfter` zusätzlich an allen Boundary Events (`timer_resendEveryDay`, `timer_abortAfter3HalfDays`, `event_confirmationRejected`).
 
 ## Testen
 

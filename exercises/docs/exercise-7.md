@@ -1,93 +1,167 @@
-# Aufgabe 7 – Kompensation (SAGA-Muster)
+# Aufgabe 7 – Call Activity & DMN
 
-## Lernziel
+> **Voraussetzung:** Aufgabe 6 (Kompensation) ist abgeschlossen. Der Hauptprozess kennt bereits die Compensation-Boundary auf `serviceTask_claimMembership`.
 
-Du lernst das BPMN-Kompensationsmuster kennen: Wie man bereits abgeschlossene Aktionen bei einem Fehler oder Abbruch automatisch rückgängig macht, ohne explizite Rollback-Logik in den Sequenzfluss einzubauen.
+## Ziel-Modell
+
+Hauptprozess:
+
+![BPMN Hauptprozess](assets/exercise-7-main.svg)
+
+Sub-Prozess `handleRejection`:
+
+![BPMN Sub-Prozess](assets/exercise-7-sub.svg)
+
+## Lernziele
+
+- Call Activities modellieren und einsetzen
+- Subprozesse in eigenständige Prozesse auslagern
+- Datenaustausch zwischen Haupt- und Subprozess (Variable Mappings)
+- DMN-Entscheidungstabellen modellieren und einbinden
+- Business Rule Tasks in BPMN verwenden
+- User Tasks für manuelle Eingriffe basierend auf DMN-Ergebnissen
 
 ## Hintergrund
 
-Erinnerst du dich an `revokeClaim`? In Aufgabe 4 haben wir den Service Task eingeführt, um den Membership-Platz bei Ablehnung oder Timeout wieder freizugeben. In Aufgabe 6 haben wir dann die Rejection-Behandlung in eine Call Activity ausgelagert – und dabei den expliziten `revokeClaim`-Schritt im Hauptprozess entfernt. Klassischer Entwicklerfehler! 😅
+Nach Aufgabe 6 läuft die Kompensation sauber: Wird ein Membership abgelehnt, kümmert sich die Engine via `serviceTask_revokeClaim`. Aber das ist erst der Anfang.
 
-Jetzt brauchen wir die Claim-Freigabe zurück – aber diesmal machen wir es richtig. Statt den `revokeClaim` wieder als expliziten Service Task in den Sequenzfluss zu hängen, nutzen wir **BPMN-Kompensation**. Das ist eleganter und wartbarer: Der Prozess deklariert, *welche Aktion* (`revokeClaim`) *welche andere Aktion* (`claimMembership`) rückgängig macht. Die Engine kümmert sich um den Rest.
+Miravelo hat eine wichtige Erkenntnis gewonnen: Einige dieser „Crisis-Aspiranten" im Alter von 21–30 sind viel zu wertvoll, um sie einfach ziehen zu lassen. Die verdienen gut, sind mitten in ihrer Quarterlife Crisis und suchen genau das, was Miravelo bietet. Die müssen wir nochmal kontaktieren!
 
-**Warum ist das besser?** Bei mehreren abzusichernden Aktionen (z.B. claimMembership + sendConfirmationMail + Drittdienste) wächst der manuelle Kompensierungspfad schnell und wird schwer wartbar. Mit BPMN-Kompensation deklariert man die Zuordnung einmal – und die Engine übernimmt die Ausführung automatisch, sobald ein Compensating End Event erreicht wird.
+Um den Hauptprozess nicht aufzublähen, lagern wir die gesamte Rejection-Behandlung in einen eigenen Prozess aus und rufen ihn über eine **Call Activity** auf. Die Compensation-Logik aus Aufgabe 6 bleibt im Hauptprozess – die Call Activity steht zwischen den Decline-Boundary-Events und dem Compensating End Event.
+
+> In diesem Fall könnte man das auch in einem Embedded Subprocess lösen – aber wir wollen verschiedene BPMN-Elemente kennenlernen ;)
+
+Nachdem die Call Activity steht, kommt der nächste Schritt: Wir wollen automatisch erkennen, welche abgelehnten Bewerber besonders wertvoll sind. Die „Quarterlife-Crisis"-Zielgruppe (21–29 Jahre) soll per **DMN-Entscheidungstabelle** identifiziert werden. Wenn jemand als „high value" eingestuft wird, soll ein Mitarbeiter persönlich Kontakt aufnehmen – per **User Task**.
+
+### Prozessstruktur
 
 ```
-serviceTask_claimMembership ──── [Kompensations-Boundary] ──── serviceTask_revokeClaim
-                                                                (isForCompensation=true)
-endEvent_membershipDeclined  →  [Compensating End Event]  →  Engine ruft revokeClaim auf
+Hauptprozess (newsletter.bpmn):
+  ...
+  [boundary_timer | event_confirmationRejected]
+        ↓
+  [CallActivity: handleRejection]
+        ↓
+  [Compensating End Event: Membership declined]
+        ↓ (Engine löst Compensation aus)
+  [serviceTask_revokeClaim]
+
+Subprozess (membership-rejection.bpmn):
+  [Start] → [Categorize applicant (DMN)] → [Is high value?]
+                                                ↓ Yes              ↓ No
+                                          [Contact personally]  [End: accepted]
+                                           (User Task)
+                                                ↓
+                                          [End: tried to reaquire]
 ```
-
-## BPMN-Änderungen
-
-### Hauptprozess (`newsletter.bpmn`)
-
-1. **Kompensations-Boundary Event** an `serviceTask_claimMembership` anhängen
-   - Typ: Compensation Boundary Event
-   - Mit Association verbinden zu: `serviceTask_revokeClaim`
-
-2. **`serviceTask_revokeClaim` als Compensation Handler markieren**
-   - `isForCompensation="true"` setzen
-   - Task liegt **nicht** auf einem Sequenzfluss (kein Incoming/Outgoing)
-
-3. **Timer-Ablaufpfad vereinfachen**
-   - Vorher: `boundary_timerExpiry` → `serviceTask_revokeClaim` → `endEvent_membershipDeclined`
-   - **Nachher:** `boundary_timerExpiry` → `endEvent_membershipDeclined` (direkt)
-   - `revokeClaim` entfernen aus dem Timer-Pfad (die Kompensation übernimmt es)
-
-4. **`endEvent_membershipDeclined` in Compensating End Event umwandeln**
-   - Typ: Compensating End Event (der „Ring mit Pfeil"-Marker)
-   - Beide Pfade (Timer und Call Activity) münden in dieses Event
-
-### Sub-Prozess `handleRejection` (`membership-rejection.bpmn`)
-
-- **`serviceTask_revokeClaim` entfernen** – der Hauptprozess kompensiert via Boundary Event
-- Prozessfluss: Start → `businessRuleTask_categorizeApplicant` → Gateway → UserTask / `sendRejectionMail` → End
 
 ## Aufgaben
 
-### 1. BPMN modellieren
+### 1. Subprozess `membership-rejection.bpmn` erstellen
 
-Ändere `newsletter.bpmn` im Camunda Modeler:
+Neue Datei: `src/main/resources/bpmn/membership-rejection.bpmn`
 
-- [ ] Compensation Boundary Event an `serviceTask_claimMembership` anhängen
-- [ ] `serviceTask_revokeClaim` mit `isForCompensation=true` markieren und per Association verknüpfen
-- [ ] Timer-Ablaufpfad: `boundary_timerExpiry` direkt mit `endEvent_membershipDeclined` verbinden
-- [ ] `endEvent_membershipDeclined` in Compensating End Event umwandeln
-- [ ] `membership-rejection.bpmn`: `serviceTask_revokeClaim` entfernen
+Referenz: `../models/task-7-call-activity-sub.bpmn`
 
-### 2. Code anpassen
+Struktur:
+- Process ID: `handleRejection`
+- Start Event → Business Rule Task `Categorize applicant` → Exclusive Gateway → User Task `Contact personally` (Yes-Pfad) → End Event "Tried to reacquire"
+- Default-Pfad (No): direkt → End Event "Accept rejection"
 
-Der `RevokeClaimDelegate` bleibt unverändert – er wird jetzt nur anders aufgerufen (durch die BPMN-Engine statt via Sequenzfluss). Es muss kein Java-Code geändert werden.
+### 2. Hauptprozess anpassen
 
-**Kontrollfrage:** Warum funktioniert `RevokeClaimDelegate` ohne Änderungen weiter, obwohl er nicht mehr im Sequenzfluss liegt?
+Ersetze die direkten Decline-Pfade aus Aufgabe 6 durch eine **Call Activity**:
 
-### 3. Verhalten testen
+| Element | Typ | ID | Name | Konfiguration |
+|---|---|---|---|---|
+| Rejection-Handler | Call Activity | `callActivity_handleRejection` | Handle rejection | Called Element: `handleRejection` |
 
-**Szenario A – Timer-Ablauf:**
-1. `POST /api/memberships` → Prozess startet, Claim wird gesetzt
-2. Warte bis Timer-Boundary ausgelöst wird (z.B. Timer-Konfiguration auf 30s für den Test setzen)
-3. Überprüfe im Log: `revokeClaim` wurde aufgerufen (obwohl kein expliziter Service Task im Pfad)
-4. Cockpit: Prozessinstanz endet mit „Membership declined"
+- Eingehende Flows: `timer_abortAfter3HalfDays`, `event_confirmationRejected` Boundary
+- Ausgehender Flow: → `endEvent_membershipDeclined` (Compensating End Event aus Aufgabe 6)
 
-**Szenario B – Manuelle Ablehnung:**
-1. `POST /api/memberships` → warte auf UserTask `confirmSubscription`
-2. `POST /api/memberships/{id}/reject` → Message Boundary löst aus
-3. `handleRejection`-Prozess startet (Call Activity)
-4. Nach Abschluss: Compensating End Event feuert → `revokeClaim` automatisch ausgeführt
+Die Compensation aus Aufgabe 6 bleibt unangetastet. Nach Rückkehr aus der Call Activity feuert das Compensating End Event und die Engine ruft `serviceTask_revokeClaim` auf.
+
+Referenz: `../models/task-7-call-activity-main.bpmn`
+
+### 3. Variablen-Übergabe konfigurieren
+
+In der Call Activity müssen Variablen übergeben werden:
+
+**In-Mapping (Hauptprozess → Subprozess):**
+- `membershipId` → `membershipId`
+- `age` → `age` (wird für die DMN-Entscheidung benötigt)
+
+**Out-Mapping (Subprozess → Hauptprozess):** (optional, falls Ergebnis zurückgegeben werden soll)
+
+### 4. DMN-Entscheidungstabelle einbinden
+
+Kopiere die Referenz-DMN ins Projekt:
+
+```bash
+cp ../models/categorize-applicant.dmn src/main/resources/dmn/categorize-applicant.dmn
+```
+
+Inhalt der DMN-Tabelle:
+- **Decision ID:** `categorizeApplicant`
+- **Input:** `age` (Integer)
+- **Output:** `isHighValue` (Boolean)
+- **Regel:** Alter zwischen 21 und 29 → `true` (Quarter-Life-Crisis!), sonst `false`
+
+### 5. Business Rule Task im Subprozess konfigurieren
+
+| Element | Typ | ID | Name | Konfiguration |
+|---|---|---|---|---|
+| Kategorisierung | Business Rule Task | `businessRuleTask_categorizeApplicant` | Categorize applicant | Decision Ref: `categorizeApplicant`, Result Variable: `isHighValue`, Map Decision Result: `singleEntry` |
+| VIP-Check | Exclusive Gateway | `gateway_highValue` | High value? | Default-Flow: No-Pfad |
+| Persönlicher Kontakt | User Task | `userTask_writeRegretMail` | Write an email expressing regret | `asyncAfter=true` |
+
+Gateway-Bedingungen:
+- Yes-Pfad: `${isHighValue}`
+- No-Pfad: Default
+
+## Testen
+
+**Call Activity prüfen (einfache Ablehnung, Alter außerhalb 21–29):**
+```bash
+MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8080/api/memberships \
+  -d '{"email": "grace@miravelo.com", "name": "Grace", "age": 35}' | jq -r .id)
+
+# Confirmation-Rejected-Message triggern
+curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
+```
+
+Im Cockpit:
+1. Hauptprozess hat eine Call Activity-Aufrufstelle
+2. Separate Instanz von `handleRejection` läuft kurz durch
+3. DMN evaluiert → `isHighValue = false` → direkt zu „Accept rejection" End Event
+4. Rückkehr in Hauptprozess → Compensating End Event → Log: „Revoking claim for [membershipId]"
+
+**VIP-Bewerber (Alter 21–29):**
+```bash
+MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8080/api/memberships \
+  -d '{"email": "hanna@miravelo.com", "name": "Hanna", "age": 25}' | jq -r .id)
+
+curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
+```
+
+Im Cockpit:
+1. Im `handleRejection`-Subprozess → DMN → `isHighValue = true`
+2. **User Task „Write email expressing regret"** erscheint in der Task List
+3. Mitarbeiter füllt Notiz aus und schließt Task ab
+4. Sub-Prozess endet → Hauptprozess → Compensation triggert `revokeClaim`
 
 ## Kontrolle
 
-- [ ] Log zeigt `"Revoking membership claim"` beim Timer-Ablauf (ohne expliziten Task im Pfad)
-- [ ] Log zeigt `"Revoking membership claim"` nach Ablehnung via REST-Endpoint
-- [ ] Cockpit: Kompensations-Handler wird in der Prozesshistorie sichtbar
-- [ ] `handleRejection`-Sub-Prozess enthält **keinen** `revokeClaim`-Task mehr
+- [ ] Sub-Prozess `handleRejection` ist als eigene Datei modelliert und im Cockpit als separate Process Definition deployed
+- [ ] Call Activity übergibt `membershipId` und `age` per In-Mapping
+- [ ] DMN-Tabelle ist in `src/main/resources/dmn/` und wird beim Deployment registriert
+- [ ] Bei Alter 21–29: User Task erscheint; bei anderem Alter: direkt zum End Event
+- [ ] Nach Sub-Prozess-Rückkehr: Compensation aus Aufgabe 6 löst `revokeClaim` aus
 
 ## Referenzlösung
 
 `../solutions/exercise-7/`
 
-## Weiterführendes
+---
 
-- BPMN-Kompensation eignet sich besonders für **SAGA-Muster** in Microservices: Jeder Schritt hat einen zugehörigen Kompensationsschritt. Bei Fehlern kompensiert die Engine alle bisher erfolgreichen Schritte in umgekehrter Reihenfolge.
-- In CIB Seven kann Kompensation auch über Subprocess-Grenzen hinweg ausgelöst werden.
+🎉 **Glückwunsch!** Du hast alle Aufgaben durchgearbeitet und einen vollständigen, produktionsreifen Prozess mit Service Tasks, User Tasks, Gateways, Boundary Events, Sub-Prozessen, Signal Events, Kompensation, Call Activity und DMN aufgebaut.

@@ -1,5 +1,11 @@
 # Aufgabe 1 – Automatisierung des Prozesses
 
+## Ziel-Modell
+
+Das BPMN bleibt identisch zu Aufgabe 0 – diesmal verbinden wir es mit Java-Code:
+
+![BPMN Modell der Aufgabe](assets/exercise-1.svg)
+
 ## Lernziele
 
 - Hexagonale Architektur (Ports & Adapters) verstehen
@@ -99,6 +105,17 @@ Danach im **Cockpit** unter http://localhost:8080/camunda:
 - Unter **Processes** → eine Instanz von `Subscribe Newsletter` vorhanden
 - UserTask `Fill out form` erscheint in **Task List**
 - Nach Abschluss der UserTask → Service Task läuft durch → Log: "Sending welcome mail to alice@miravelo.com"
+
+## Best Practice: Async Continuations
+
+Setze in deinem Modell mindestens:
+- `asyncAfter` an jedem **User Task** (also an `userTask_fillOutForm`)
+
+Hintergrund: Damit wird nach jedem Wait-State eine neue Engine-Transaktion gestartet. Würde der nachgelagerte `serviceTask_sendWelcomeMail` eine Exception werfen, würde sonst die User-Task-Completion zurückgerollt – der Bearbeiter sieht den Task wieder in der Tasklist und alles, was er beim Completion eingegeben hat, ist weg.
+
+Wir kommen darauf in Aufgabe 2 nochmal zurück (dann auch für Message-Events). Ab dann gilt es als bekannt.
+
+Im Camunda Modeler: Element selektieren → Properties Panel → "Asynchronous After".
 
 ## Bonus: Prozesstest
 

@@ -19,17 +19,19 @@ public class MembershipProcessAdapter implements MembershipProcess {
 
     @Override
     public void startProcess(Membership membership) {
-        runtimeService.startProcessInstanceByKey("subscribeNewsletter", Map.of(
-                "membershipId", membership.id().value().toString(),
-                "email", membership.email().value(),
-                "name", membership.name().value(),
-                "age", membership.age().value()
-        ));
+        runtimeService.createMessageCorrelation("Message_SubscriptionRequested")
+                .setVariables(Map.of(
+                        "membershipId", membership.id().value().toString(),
+                        "email", membership.email().value(),
+                        "name", membership.name().value(),
+                        "age", membership.age().value()
+                ))
+                .correlateStartMessage();
     }
 
     @Override
     public void rejectMembership(MembershipId membershipId) {
-        runtimeService.createMessageCorrelation("Message_confirmationRejected")
+        runtimeService.createMessageCorrelation("Message_ConfirmationRejected")
                 .processInstanceVariableEquals("membershipId", membershipId.value().toString())
                 .correlate();
     }

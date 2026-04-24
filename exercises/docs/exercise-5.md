@@ -1,5 +1,9 @@
 # Aufgabe 5 – Signal Events
 
+## Ziel-Modell
+
+![BPMN Modell der Aufgabe](assets/exercise-5.svg)
+
 ## Lernziele
 
 - Signal End Events und Signal Start Events verstehen
@@ -74,6 +78,8 @@ Implementiere das `MembershipEventPublisher`-Interface. Für den Moment reicht e
 ### 5. `NotifyAboutSignedMembershipDelegate` erstellen
 
 Analog zu bisherigen Delegates, ruft `NotifyAboutSignedMembershipUseCase` auf.
+
+> Async-Continuations (siehe Aufgabe 2): Setze `asyncBefore` auch am neuen Signal-Start-Event `startEvent_membershipActivated` – Signal-Korrelation soll nicht im Caller-TX laufen.
 
 ## Testen
 

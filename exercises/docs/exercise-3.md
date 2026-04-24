@@ -1,5 +1,9 @@
 # Aufgabe 3 – Membership & Kapazitätsprüfung
 
+## Ziel-Modell
+
+![BPMN Modell der Aufgabe](assets/exercise-3.svg)
+
 ## Lernziele
 
 - Domain-Konzepte umbenennen (Refactoring)
@@ -95,7 +99,7 @@ Erstelle nach dem bewährten Muster (analog zu Aufgabe 2):
 - `ClaimMembershipDelegate`: Prüft Kapazität, setzt Variable `hasEmptySpots` auf der `DelegateExecution`
 - `SendRejectionMailDelegate`: Liest `membershipId`, ruft Use Case auf
 
-**Hinweis:** Die Element-IDs und Variablennamen (z.B. `hasEmptySpots`) kannst du direkt aus dem BPMN-Modell entnehmen.
+**Hinweis:** Die Element-IDs und Variablennamen (z.B. `hasEmptySpots`) kannst du direkt aus dem BPMN-Modell entnehmen. Async-Continuations (siehe Aufgabe 2) gelten ab hier als bekannt – `asyncBefore` am Message-Start, `asyncAfter` am User Task.
 
 ## Testen
 
