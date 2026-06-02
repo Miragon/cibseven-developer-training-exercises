@@ -44,6 +44,7 @@ http://localhost:8080/camunda  (admin / admin)
 | [5](docs/exercise-5.md) | Signal Events | Signal-Events für Systemkommunikation |
 | [6](docs/exercise-6.md) | Compensation | Automatisches Rollback via BPMN-Kompensation |
 | [7](docs/exercise-7.md) | Call Activity & DMN | Prozess-Modularisierung mit Entscheidungstabellen |
+| [Extra 1](docs/extra-task-1.md) | Process-Engine-API | Engine-Lock-in lösen: Worker statt Delegates, engine-neutraler Adapter-Layer |
 
 ## Architektur
 

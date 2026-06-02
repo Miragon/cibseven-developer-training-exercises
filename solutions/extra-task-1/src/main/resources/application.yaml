@@ -1,0 +1,52 @@
+server:
+  port: 8089
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cibseven-training?currentSchema=extratask1
+    username: admin
+    password: admin
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: extratask1
+
+# Process-Engine-API (bpm-crafters): engine-neutral orchestration on top of the embedded CIB7 engine
+dev:
+  bpm-crafters:
+    process-api:
+      worker:
+        deployment:
+          enabled: true
+          bpmnResourcePattern: "classpath*:/**/*.bpmn"
+          dmnResourcePattern: "classpath*:/**/*.dmn"
+      adapter:
+        cib-seven-embedded:
+          enabled: true
+          service-tasks:
+            delivery-strategy: embedded_scheduled
+            worker-id: extra-task-1-worker
+            schedule-delivery-fixed-rate-in-seconds: 5
+          user-tasks:
+            delivery-strategy: embedded_scheduled
+            schedule-delivery-fixed-rate-in-seconds: 5
+
+camunda:
+  bpm:
+    admin-user:
+      id: admin
+      password: admin
+    database:
+      type: postgres
+      schema-update: true
+
+cibseven:
+  webclient:
+    services:
+      basePath: services/v1
+    engineRest:
+      url: http://localhost:8089

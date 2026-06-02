@@ -44,6 +44,7 @@ Detaillierte Aufgabenbeschreibungen befinden sich in [`exercises/docs/`](exercis
 | 5 | Signal Events | Signal End/Start Events, Event-Publishing |
 | 6 | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
 | 7 | Kompensation (SAGA) | Compensation Boundary Events, automatisches Rollback |
+| Extra 1 | Process-Engine-API | Aufgabe 7 engine-neutral umbauen: Worker statt JavaDelegate, Adapter-Tausch statt Engine-Lock-in |
 
 ## Quick Start
 

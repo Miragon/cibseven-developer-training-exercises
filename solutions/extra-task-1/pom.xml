@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.miragon</groupId>
+        <artifactId>solutions</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>solution-extra-task-1</artifactId>
+    <name>solution-extra-task-1</name>
+
+    <properties>
+        <!-- bpm-crafters process-engine-api: engine-neutral abstraction layer -->
+        <process-engine-api.version>1.5</process-engine-api.version>
+        <process-engine-worker.version>0.8.3</process-engine-worker.version>
+        <process-engine-adapter-cib7.version>2026.02.1</process-engine-adapter-cib7.version>
+        <bpmn-to-code.version>2.1.2</bpmn-to-code.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Aligns the versions of the CIB Seven process-engine-adapter modules -->
+            <dependency>
+                <groupId>dev.bpm-crafters.process-engine-adapters</groupId>
+                <artifactId>process-engine-adapter-cib-seven-bom</artifactId>
+                <version>${process-engine-adapter-cib7.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- Engine-neutral process orchestration API (start, correlate, workers) -->
+        <dependency>
+            <groupId>dev.bpm-crafters.process-engine-api</groupId>
+            <artifactId>process-engine-api</artifactId>
+            <version>${process-engine-api.version}</version>
+        </dependency>
+        <!-- @ProcessEngineWorker support (replaces JavaDelegate) -->
+        <dependency>
+            <groupId>dev.bpm-crafters.process-engine-worker</groupId>
+            <artifactId>process-engine-worker-spring-boot-starter</artifactId>
+            <version>${process-engine-worker.version}</version>
+        </dependency>
+        <!-- CIB Seven adapter: plugs the process-engine-api onto the embedded CIB7 engine -->
+        <dependency>
+            <groupId>dev.bpm-crafters.process-engine-adapters</groupId>
+            <artifactId>process-engine-adapter-cib-seven-embedded-spring-boot-starter</artifactId>
+            <version>${process-engine-adapter-cib7.version}</version>
+        </dependency>
+        <!-- Runtime types referenced by the bpmn-to-code generated process API -->
+        <dependency>
+            <groupId>io.github.emaarco</groupId>
+            <artifactId>bpmn-to-code-runtime</artifactId>
+            <version>${bpmn-to-code.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- bpmn-to-code: generates the type-safe process API constants from the BPMN models -->
+            <plugin>
+                <groupId>io.github.emaarco</groupId>
+                <artifactId>bpmn-to-code-maven</artifactId>
+                <version>${bpmn-to-code.version}</version>
+                <executions>
+                    <execution>
+                        <id>generate-process-api</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate-bpmn-api</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <baseDir>${project.basedir}</baseDir>
+                    <filePattern>src/main/resources/bpmn/*.bpmn</filePattern>
+                    <outputFolderPath>${project.basedir}/src/main/java</outputFolderPath>
+                    <packagePath>io.miragon.training.adapter.process</packagePath>
+                    <outputLanguage>JAVA</outputLanguage>
+                    <processEngine>CAMUNDA_7</processEngine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>io.miragon.training.TrainingApplication</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
