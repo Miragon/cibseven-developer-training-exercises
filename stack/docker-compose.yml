@@ -2,7 +2,7 @@
 services:
 
   postgres:
-    image: postgres:${POSTGRES_VERSION}
+    image: postgres:17
     container_name: postgres
     ports:
       - "5432:5432"
@@ -13,7 +13,7 @@ services:
       POSTGRES_PASSWORD: admin
 
   mailhog:
-    image: mailhog/mailhog:latest
+    image: mailhog/mailhog:v1.0.1
     container_name: mailhog
     ports:
       - "1025:1025"   # SMTP
