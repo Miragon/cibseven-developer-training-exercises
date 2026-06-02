@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" id="categorizeApplicantDefinitions" name="Categorize Applicant" namespace="http://camunda.org/schema/1.0/dmn">
-  <decision id="categorizeApplicant" name="Categorize Applicant">
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:camunda="http://camunda.org/schema/1.0/dmn" id="categorizeApplicantDefinitions" name="Categorize Applicant" namespace="http://camunda.org/schema/1.0/dmn">
+  <decision id="categorizeApplicant" name="Categorize Applicant" camunda:historyTimeToLive="180">
     <decisionTable id="decisionTable_categorizeApplicant" hitPolicy="FIRST">
       <input id="input_age" label="Age">
         <inputExpression id="inputExpression_age" typeRef="integer">
@@ -11,7 +11,7 @@
       <rule id="rule_quarterlifeCrisis">
         <description>Quarter-life crisis: age between 21 and 29 (inclusive)</description>
         <inputEntry id="inputEntry_quarterlifeCrisis">
-          <text>&gt; 20 and &lt; 30</text>
+          <text>[21..29]</text>
         </inputEntry>
         <outputEntry id="outputEntry_highValue">
           <text>true</text>

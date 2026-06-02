@@ -72,6 +72,10 @@
     </bpmn:boundaryEvent>
     <bpmn:association id="association_compensateClaim" associationDirection="One" sourceRef="boundary_compensateClaim" targetRef="serviceTask_revokeClaim" />
     <bpmn:callActivity id="callActivity_handleRejection" name="Handle rejection" calledElement="handleRejection">
+      <bpmn:extensionElements>
+        <camunda:in source="membershipId" target="membershipId" />
+        <camunda:in source="age" target="age" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_0ho2dhw</bpmn:incoming>
       <bpmn:incoming>Flow_153mcrs</bpmn:incoming>
       <bpmn:outgoing>Flow_14y1unw</bpmn:outgoing>
