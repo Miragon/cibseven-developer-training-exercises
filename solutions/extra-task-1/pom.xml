@@ -11,8 +11,8 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>solution-extra-task</artifactId>
-    <name>solution-extra-task</name>
+    <artifactId>solution-extra-task-1</artifactId>
+    <name>solution-extra-task-1</name>
 
     <properties>
         <!-- bpm-crafters process-engine-api: engine-neutral abstraction layer -->

@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/cibseven-training?currentSchema=processapi
+    url: jdbc:postgresql://localhost:5432/cibseven-training?currentSchema=extratask1
     username: admin
     password: admin
     driver-class-name: org.postgresql.Driver
@@ -13,7 +13,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        default_schema: processapi
+        default_schema: extratask1
 
 # Process-Engine-API (bpm-crafters): engine-neutral orchestration on top of the embedded CIB7 engine
 dev:
@@ -29,7 +29,7 @@ dev:
           enabled: true
           service-tasks:
             delivery-strategy: embedded_scheduled
-            worker-id: extra-task-worker
+            worker-id: extra-task-1-worker
             schedule-delivery-fixed-rate-in-seconds: 5
           user-tasks:
             delivery-strategy: embedded_scheduled

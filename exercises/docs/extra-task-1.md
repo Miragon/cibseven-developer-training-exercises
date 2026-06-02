@@ -1,4 +1,4 @@
-# Extra-Aufgabe – Raus aus dem Engine-Lock-in: die Process-Engine-API
+# Extra-Aufgabe 1 – Raus aus dem Engine-Lock-in: die Process-Engine-API
 
 > **Voraussetzung:** Aufgabe 7 ist abgeschlossen. Der Prozess läuft vollständig – mit Service Tasks, User Tasks, Gateways, Boundary Events, Subprozess, Signal, Call Activity, DMN und Kompensation.
 
@@ -40,7 +40,7 @@ Das Beste daran: **Domain, Application-Services und Ports bleiben unangetastet.*
 
 ## Was sich ändert (und was nicht)
 
-| Schicht | Aufgabe 7 (nativ CIB7) | Extra-Aufgabe (Process-Engine-API) |
+| Schicht | Aufgabe 7 (nativ CIB7) | Extra-Aufgabe 1 (Process-Engine-API) |
 |---|---|---|
 | `domain/`, `application/` | unverändert | **unverändert** |
 | Inbound Service Tasks | `JavaDelegate` + `DelegateExecution` | `@ProcessEngineWorker`-Worker |
@@ -193,7 +193,7 @@ public void rejectMembership(MembershipId membershipId) {
             enabled: true
             service-tasks:
               delivery-strategy: embedded_scheduled
-              worker-id: extra-task-worker
+              worker-id: extra-task-1-worker
               schedule-delivery-fixed-rate-in-seconds: 5
   ```
 
@@ -244,7 +244,7 @@ curl -X POST http://localhost:8089/api/memberships/$MEMBERSHIP_ID/reject
 
 ## Referenzlösung
 
-`../solutions/extra-task/`
+`../solutions/extra-task-1/`
 
 ---
 
