@@ -13,6 +13,10 @@ updates:
       - dependency-name: "org.springframework.boot:*"
         update-types:
           - "version-update:semver-major"
+    labels:
+      - "dependencies"
+    assignees:
+      - "emaarco"
     groups:
       maven-dependencies:
         patterns:
