@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.16</version>
+        <version>4.0.7</version>
         <relativePath/>
     </parent>
 
@@ -58,14 +58,15 @@
         </dependency>
 
         <!-- CIB Seven (direct – no process-engine-api abstraction) -->
+        <!-- '-4' suffixed artifacts are the Spring Boot 4 compatible variants (since CIB seven 2.2.0) -->
         <dependency>
             <groupId>org.cibseven.bpm.springboot</groupId>
-            <artifactId>cibseven-bpm-spring-boot-starter-webapp</artifactId>
+            <artifactId>cibseven-bpm-spring-boot-starter-webapp-4</artifactId>
             <version>${cib7.version}</version>
         </dependency>
         <dependency>
             <groupId>org.cibseven.bpm.springboot</groupId>
-            <artifactId>cibseven-bpm-spring-boot-starter-rest</artifactId>
+            <artifactId>cibseven-bpm-spring-boot-starter-rest-4</artifactId>
             <version>${cib7.version}</version>
         </dependency>
 
