@@ -19,7 +19,7 @@
         <process-engine-api.version>1.7</process-engine-api.version>
         <process-engine-worker.version>0.8.5</process-engine-worker.version>
         <process-engine-adapter-cib7.version>2026.07.1</process-engine-adapter-cib7.version>
-        <bpmn-to-code.version>3.1.0</bpmn-to-code.version>
+        <bpmn-to-code.version>3.2.0</bpmn-to-code.version>
     </properties>
 
     <dependencyManagement>
