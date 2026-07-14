@@ -31,11 +31,11 @@ public class RegisterSubscriptionService implements RegisterSubscriptionUseCase 
     public SubscriptionId register(Command command) {
         log.info("Registering subscription for {}", command.email());
 
-        // TODO Aufgabe 1:
+        // TODO Aufgabe 2:
         //  1. Erstelle ein Subscription-Objekt aus dem Command (Email, Name, Age)
         //  2. Speichere es mit repository.save(...)
         //  3. Starte den Prozess mit process.startProcess(...)
         //  4. Gib die SubscriptionId zurück
-        throw new UnsupportedOperationException("Aufgabe 1: Implementiere die Subscription-Registrierung");
+        throw new UnsupportedOperationException("Aufgabe 2: Implementiere die Subscription-Registrierung");
     }
 }

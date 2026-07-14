@@ -1,129 +1,127 @@
-# Aufgabe 1 – Automatisierung des Prozesses
+# Aufgabe 1 – Engine & Tooling: das Modul zum Laufen bringen
 
 ## Ziel-Modell
-
-Das BPMN bleibt identisch zu Aufgabe 0 – diesmal verbinden wir es mit Java-Code:
 
 ![BPMN Modell der Aufgabe](assets/exercise-1.svg)
 
 ## Lernziele
 
-- Hexagonale Architektur (Ports & Adapters) verstehen
-- BPMN Service Task mit Java-Code verbinden (JavaDelegate-Pattern)
-- Prozess über RuntimeService starten
-- REST-Endpoint zum Starten des Prozesses implementieren
+- Ein CIB-Seven-Spring-Boot-Modul **von Null lauffähig machen**: Dependencies, Annotation, Konfiguration
+- Verstehen, was die Engine zum Starten braucht (DB, Auto-Configuration, Auto-Deployment)
+- Das **Cockpit** kennenlernen: Processes, Tasklist, History
+- Die von der Engine **automatisch angelegten Datenbank-Tabellen** (`act_*`) ansehen
+- Eine Prozessinstanz starten und einen User Task bearbeiten
 
 ## Hintergrund
 
-Der Newsletter ist live. Seit dem Launch des neuen Gravel Bikes kommen die Sign-ups rein –
-und irgendwer muss jetzt jede Anmeldung manuell im Cockpit durchklicken.
+In Aufgabe 0 hast du den Newsletter **fachlich** modelliert. Ein externer Consultant,
+mit dem Miravelo zusammenarbeitet, hat das Modell **technisch fertig modelliert** –
+inklusive einer kleinen Logik am Service Task „Send Welcome Mail": Er setzt per
+Inline-**Expression** einfach eine Prozessvariable `welcomeMailSentTo` (kein Java nötig,
+den echten Versand bauen wir später).
 
-Das ist natürlich **keine** Lösung. Wir sind Entwickler. Wir automatisieren Dinge, selbst
-wenn es nur ein Newsletter für Fahrrad-Enthusiasten ist.
+Was jetzt noch fehlt, ist die **Laufzeitumgebung**: Ein Spring-Boot-Modul, in dem die
+CIB-Seven-Engine läuft. Genau das richtest du in dieser Aufgabe ein – und lernst dabei
+Engine, Cockpit und Datenbank kennen.
 
-> *„Ich klick das doch nicht 500 Mal von Hand durch."*
-> — Das gesamte Team, zur Gravel-Bike-Saison
+### Ausgangslage
 
-Jetzt wird der Prozess technisch automatisiert: Der Service Task `Send Welcome Mail` soll
-echten Code ausführen.
+Du arbeitest im Modul **`exercise-1-starter/`**. Es kompiliert im Auslieferungszustand,
+startet aber **keine** Engine: Dependencies, Annotation und Konfiguration sind
+auskommentiert. Deine Aufgabe: alles scharf schalten. Die Versionen der Dependencies
+kommen zentral aus der Root-`pom.xml`, du fügst sie also **ohne** Versionsnummer hinzu.
 
-Das Projekt folgt der hexagonalen Architektur:
+## Aufgabe
 
-```
-POST /api/subscriptions
-       ↓
-SubscriptionController          (adapter/inbound/rest)
-       ↓
-RegisterSubscriptionUseCase     (application/port/inbound)
-       ↓
-RegisterSubscriptionService     (application/service)        ← TODO
-       ↓
-SubscriptionProcess.startProcess()  (application/port/outbound)
-       ↓
-SubscriptionProcessAdapter          (adapter/outbound/cibseven) ← TODO
-       ↓
-RuntimeService.startProcessInstanceByKey(...)
-```
+> Es geht ums **Einrichten & Kennenlernen** – kein Business-Code.
 
-```
-[BPMN: serviceTask_sendWelcomeMail]
-       ↓
-SendWelcomeMailDelegate           (adapter/inbound/cibseven) ← TODO
-       ↓
-SendWelcomeMailUseCase            (application/port/inbound)
-       ↓
-SendWelcomeMailService            (application/service)       ← TODO
-```
-
-## Aufgaben
-
-### 1. `RegisterSubscriptionService` implementieren
-
-**Datei:** `application/service/RegisterSubscriptionService.java`
-
-Ersetze das `TODO` mit folgender Logik:
-1. Erstelle ein `Subscription`-Objekt mit E-Mail, Name und Alter aus dem Command
-2. Speichere es über das Repository
-3. Starte den Prozess über den Process-Port
-4. Gib die `subscription.id` zurück
-
-### 2. `SendWelcomeMailService` implementieren
-
-**Datei:** `application/service/SendWelcomeMailService.java`
-
-Ersetze das `TODO` mit einem Log-Statement, das die E-Mail-Adresse der Subscription ausgibt.
-
-### 3. `SendWelcomeMailDelegate` implementieren
-
-**Datei:** `adapter/inbound/cibseven/SendWelcomeMailDelegate.java`
-
-Ersetze das `TODO` in `executeTask(execution)`:
-- Lies die Prozessvariable `subscriptionId` aus der `DelegateExecution`
-- Rufe den UseCase `sendWelcomeMail(...)` mit der gelesenen ID auf
-
-### 4. `SubscriptionProcessAdapter` implementieren
-
-**Datei:** `adapter/outbound/cibseven/SubscriptionProcessAdapter.java`
-
-Ersetze das `TODO` in `startProcess(subscription)`:
-- Verwende `runtimeService.startProcessInstanceByKey(...)` mit dem Prozess-Key `subscribeNewsletter`
-- Übergib die Prozessvariablen (`subscriptionId`, `email`, `name`, `age`) als Map – die Schlüssel entsprechen den Variablennamen im BPMN-Modell
-
-## Testen
+### 1. Datenbank & Stack starten
 
 ```bash
-# Anwendung starten
-../mvnw spring-boot:run
-
-# Subscription registrieren
-curl -X POST http://localhost:8080/api/subscriptions \
-  -H "Content-Type: application/json" \
-  -d '{"email": "alice@miravelo.com", "name": "Alice", "age": 28}'
+cd stack && docker-compose up -d
 ```
 
-Danach im **Cockpit** unter http://localhost:8080/camunda:
-- Unter **Processes** → eine Instanz von `Subscribe Newsletter` vorhanden
-- UserTask `Fill out form` erscheint in **Task List**
-- Nach Abschluss der UserTask → Service Task läuft durch → Log: "Sending welcome mail to alice@miravelo.com"
+Startet PostgreSQL (und MailHog). Die Engine legt sich beim ersten Start ihr eigenes
+Schema an.
 
-## Best Practice: Async Continuations
+### 2. Dependencies hinzufügen
 
-Setze in deinem Modell mindestens:
-- `asyncAfter` an jedem **User Task** (also an `userTask_fillOutForm`)
+Öffne `exercise-1-starter/pom.xml` und **kommentiere den `TODO Aufgabe 1`-Block ein**:
+die CIB-Seven-Starter (`webapp-4` + `rest-4`), `spring-boot-starter-data-jpa` und den
+`postgresql`-Treiber. Erst damit sind Engine, Cockpit-Webapp und REST-API überhaupt vorhanden.
 
-Hintergrund: Damit wird nach jedem Wait-State eine neue Engine-Transaktion gestartet. Würde der nachgelagerte `serviceTask_sendWelcomeMail` eine Exception werfen, würde sonst die User-Task-Completion zurückgerollt – der Bearbeiter sieht den Task wieder in der Tasklist und alles, was er beim Completion eingegeben hat, ist weg.
+### 3. Konfiguration setzen
 
-Wir kommen darauf in Aufgabe 2 nochmal zurück (dann auch für Message-Events). Ab dann gilt es als bekannt.
+Kommentiere in `exercise-1-starter/src/main/resources/application.yaml` die Konfiguration
+ein: Datenbank-Anbindung (PostgreSQL aus dem Stack), Cockpit-Admin-User und Webclient
+(inkl. `jwtSecret`). Ohne DB-Verbindung startet die Engine nicht.
 
-Im Camunda Modeler: Element selektieren → Properties Panel → "Asynchronous After".
+### 4. Deployment-Annotation setzen
 
-## Bonus: Prozesstest
+In `exercise-1-starter/src/main/java/io/miragon/training/TrainingApplication.java`:
+aktiviere Import und Annotation **`@SpringBootApplication`**. Erst dadurch greifen
+Auto-Configuration und das automatische BPMN-Deployment – alle `*.bpmn` unter
+`src/main/resources` werden beim Start deployt.
 
-Implementiere den Test in `src/test/java/io/miragon/training/process/SubscriptionProcessTest.java`.
+### 5. Los geht's – starten
+
+```bash
+cd exercise-1-starter && ../mvnw spring-boot:run
+```
+
+Im Log sollte `Auto-Deploying resources: [... newsletter.bpmn]` und
+`Started TrainingApplication` erscheinen.
+
+### 6. Die Datenbank-Tabellen ansehen
+
+Die Engine hat beim Start automatisch ihr Schema angelegt – Dutzende `act_*`-Tabellen:
+
+```bash
+docker exec -it postgres psql -U admin -d cibseven-training
+```
+
+| Tabelle | Präfix | Inhalt |
+|---|---|---|
+| `act_re_procdef` | `re` = Repository | Deployte **Prozessdefinitionen** (`subscribeNewsletter`) |
+| `act_ru_execution` | `ru` = Runtime | **Laufende** Prozessinstanzen |
+| `act_ru_task` | `ru` | Offene **User Tasks** |
+| `act_ru_variable` | `ru` | **Prozessvariablen** laufender Instanzen |
+| `act_hi_procinst` | `hi` = History | **Abgeschlossene** Prozessinstanzen |
+
+```sql
+SELECT key_, name_, version_ FROM exercise1.act_re_procdef;
+```
+
+### 7. Cockpit öffnen
+
+[http://localhost:8082/camunda](http://localhost:8082/camunda) (admin / admin).
+Unter **Processes** erscheint `Subscribe Newsletter`. Klick dich durch **Cockpit**,
+**Tasklist** und **Admin**.
+
+### 8. Prozess starten & durchspielen
+
+1. **Tasklist** → **Start process** → `Subscribe Newsletter`
+2. User Task **„Fill out form"** öffnen, `email` / `name` / `age` ausfüllen, abschließen
+3. Der Service Task setzt per Expression die Variable `welcomeMailSentTo` – sichtbar in
+   der History und in der DB:
+   ```sql
+   SELECT name_, text_ FROM exercise1.act_hi_varinst WHERE name_ = 'welcomeMailSentTo';
+   ```
+4. Die Instanz ist am End-Event „User subscribed" angekommen (History → COMPLETED)
+
+## Kontrolle
+
+- [ ] Postgres läuft (`docker-compose up -d`)
+- [ ] Dependencies, Konfiguration und `@SpringBootApplication` sind gesetzt
+- [ ] Die Anwendung startet, `newsletter.bpmn` wird deployt, das Cockpit ist erreichbar
+- [ ] `Subscribe Newsletter` erscheint unter **Processes**
+- [ ] Eine Instanz wurde gestartet, der User Task bearbeitet, der Prozess sauber beendet
+- [ ] Du hast `act_re_procdef`, `act_ru_*` und `act_hi_*` in der DB gesehen
 
 ## Referenzlösung
 
-`../solutions/exercise-1/`
+- Fertiges, lauffähiges Modul: `../solutions/exercise-1/`
+- Modell: `../models/task-1-basic-newsletter.bpmn`
 
 ---
 

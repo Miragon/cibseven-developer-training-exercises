@@ -11,13 +11,13 @@ Newsletter- und Membership-System auf Basis von CIB Seven (Camunda Platform 7) a
 
 ## Der vollständige Zielprozess
 
-So sieht der Prozess am Ende von Aufgabe 7 aus – mit allen Konzepten, die du Schritt für Schritt aufbaust:
+So sieht der Prozess am Ende von Aufgabe 8 aus – mit allen Konzepten, die du Schritt für Schritt aufbaust:
 
-![Vollständiger Membership-Prozess](docs/assets/exercise-7-main.svg)
+![Vollständiger Membership-Prozess](docs/assets/exercise-8-main.svg)
 
 Der ausgelagerte Sub-Prozess für die Ablehnung (Call Activity + DMN):
 
-![Membership-Rejection Sub-Prozess](docs/assets/exercise-7-sub.svg)
+![Membership-Rejection Sub-Prozess](docs/assets/exercise-8-sub.svg)
 
 ## Voraussetzungen
 
@@ -36,14 +36,15 @@ http://localhost:8080/camunda  (admin / admin)
 
 | Aufgabe | Thema | Beschreibung |
 |---|---|---|
-| [0](docs/exercise-0.md) | BPMN Modellierung | Ersten Prozess mit Camunda Modeler erstellen |
-| [1](docs/exercise-1.md) | Automatisierung | Prozess mit Java-Code verbinden (JavaDelegate) |
-| [2](docs/exercise-2.md) | Bestätigungs-Mail | Service Tasks erweitern, Confirmation-Flow |
-| [3](docs/exercise-3.md) | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung |
-| [4](docs/exercise-4.md) | Boundary Events | Timer- und Message-Boundary-Events, Subprozesse |
-| [5](docs/exercise-5.md) | Signal Events | Signal-Events für Systemkommunikation |
-| [6](docs/exercise-6.md) | Compensation | Automatisches Rollback via BPMN-Kompensation |
-| [7](docs/exercise-7.md) | Call Activity & DMN | Prozess-Modularisierung mit Entscheidungstabellen |
+| [0](docs/exercise-0.md) | Fachliche BPMN-Modellierung | Prozess rein fachlich mit Miragon BPMN Modeler erstellen |
+| [1](docs/exercise-1.md) | Engine & Tooling | Lauffähigen Newsletter deployen, Cockpit & DB-Tabellen kennenlernen |
+| [2](docs/exercise-2.md) | Technische Modellierung & Automatisierung | Technisch modellieren & mit Java-Code verbinden |
+| [3](docs/exercise-3.md) | Bestätigungs-Mail | Service Tasks erweitern, Confirmation-Flow |
+| [4](docs/exercise-4.md) | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung |
+| [5](docs/exercise-5.md) | Boundary Events | Timer- und Message-Boundary-Events, Subprozesse |
+| [6](docs/exercise-6.md) | Signal Events | Signal-Events für Systemkommunikation |
+| [7](docs/exercise-7.md) | Compensation | Automatisches Rollback via BPMN-Kompensation |
+| [8](docs/exercise-8.md) | Call Activity & DMN | Prozess-Modularisierung mit Entscheidungstabellen |
 | [Extra 1](docs/extra-task-1.md) | Process-Engine-API | Engine-Lock-in lösen: Worker statt Delegates, engine-neutraler Adapter-Layer |
 
 ## Architektur

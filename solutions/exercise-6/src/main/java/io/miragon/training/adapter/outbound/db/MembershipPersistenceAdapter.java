@@ -27,7 +27,8 @@ public class MembershipPersistenceAdapter implements MembershipRepository {
 
     @Override
     public Membership save(Membership membership) {
-        jpaRepository.save(mapper.toEntity(membership));
+        var entity = mapper.toEntity(membership);
+        jpaRepository.save(entity);
         return membership;
     }
 }

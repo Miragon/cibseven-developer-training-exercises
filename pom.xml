@@ -20,6 +20,7 @@
 
     <modules>
         <module>exercises</module>
+        <module>exercise-1-starter</module>
         <module>solutions</module>
     </modules>
 
@@ -30,59 +31,32 @@
         <archunit.version>1.4.2</archunit.version>
     </properties>
 
-    <dependencies>
-        <!-- Spring Boot Web & DevTools -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <!-- Database -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
-        <!-- CIB Seven (direct – no process-engine-api abstraction) -->
-        <!-- '-4' suffixed artifacts are the Spring Boot 4 compatible variants (since CIB seven 2.2.0) -->
-        <dependency>
-            <groupId>org.cibseven.bpm.springboot</groupId>
-            <artifactId>cibseven-bpm-spring-boot-starter-webapp-4</artifactId>
-            <version>${cib7.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.cibseven.bpm.springboot</groupId>
-            <artifactId>cibseven-bpm-spring-boot-starter-rest-4</artifactId>
-            <version>${cib7.version}</version>
-        </dependency>
-
-        <!-- Test -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.tngtech.archunit</groupId>
-            <artifactId>archunit-junit5</artifactId>
-            <version>${archunit.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+    <!--
+      Nur Versions-Verwaltung – erzwingt KEINE Dependencies. Jedes Modul wählt selbst,
+      welche Deps es zieht (ohne Version); Spring-Boot-Deps managt der Parent.
+    -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- CIB Seven (direct – no process-engine-api abstraction) -->
+            <!-- '-4' suffixed artifacts are the Spring Boot 4 compatible variants (since CIB seven 2.2.0) -->
+            <dependency>
+                <groupId>org.cibseven.bpm.springboot</groupId>
+                <artifactId>cibseven-bpm-spring-boot-starter-webapp-4</artifactId>
+                <version>${cib7.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.cibseven.bpm.springboot</groupId>
+                <artifactId>cibseven-bpm-spring-boot-starter-rest-4</artifactId>
+                <version>${cib7.version}</version>
+            </dependency>
+            <!-- Architecture tests -->
+            <dependency>
+                <groupId>com.tngtech.archunit</groupId>
+                <artifactId>archunit-junit5</artifactId>
+                <version>${archunit.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <pluginManagement>

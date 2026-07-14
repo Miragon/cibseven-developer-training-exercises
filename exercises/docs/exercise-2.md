@@ -1,106 +1,170 @@
-# Aufgabe 2 – Bestätigungs-Mail
+# Aufgabe 2 – Automatisierung des Prozesses
 
 ## Ziel-Modell
+
+In Aufgabe 0 hast du den Prozess **fachlich** modelliert, in Aufgabe 1 die technisch
+fertige Version des Consultants gesehen. Jetzt machst du die **technische Modellierung
+selbst** – und verbindest sie mit Java-Code:
 
 ![BPMN Modell der Aufgabe](assets/exercise-2.svg)
 
 ## Lernziele
 
-- Einen bestehenden Prozess in Camunda Modeler erweitern
-- Mehrere Service Tasks implementieren
-- Sequenzielle Flows mit User Tasks kombinieren
+- Ein fachliches BPMN **technisch** vervollständigen (IDs, Prozess-Key, Formularfelder,
+  Delegate Expression, `historyTimeToLive`)
+- Hexagonale Architektur (Ports & Adapters) verstehen
+- BPMN Service Task mit Java-Code verbinden (JavaDelegate-Pattern)
+- Prozess über RuntimeService starten
+- REST-Endpoint zum Starten des Prozesses implementieren
 
 ## Hintergrund
 
-Rose hat das neue **Backroad AL** auf den Markt gebracht – und Miravelo launcht es exklusiv im Store.
-Social Media dreht durch. Über Nacht: 500 Newsletter-Anmeldungen.
+Der Newsletter ist live. Seit dem Launch des neuen Gravel Bikes kommen die Sign-ups rein –
+und irgendwer muss jetzt jede Anmeldung manuell im Cockpit durchklicken.
 
-Das Team starrt auf die Datenbank und beginnt, Fragen zu stellen:
+Das ist natürlich **keine** Lösung. Wir sind Entwickler. Wir automatisieren Dinge, selbst
+wenn es nur ein Newsletter für Fahrrad-Enthusiasten ist.
 
-- Sind das echte E-Mail-Adressen?
-- Wer ist überhaupt diese `noreply@throwaway.xyz`?
-- Irgendwer hat `admin@miravelo.com` eingetragen. Als Witz. Wahrscheinlich.
+> *„Ich klick das doch nicht 500 Mal von Hand durch."*
+> — Das gesamte Team, zur Gravel-Bike-Saison
 
-Das Team beschließt: Wir bauen einen **Bestätigungsschritt**. Erst Mail bestätigen,
-dann Welcome Mail. Klassisches Double-Opt-In.
+Jetzt wird der Prozess technisch automatisiert: Der Service Task `Send Welcome Mail` soll
+echten Code ausführen.
 
-Und während wir dabei sind – wenn schon so viele Menschen Miravelo-Produkte wollen,
-vielleicht wollen sie auch mehr als nur einen Newsletter. Vielleicht wollen sie dazugehören.
-
-> *„500 Sign-ups. Das ist entweder viral oder ein Bot-Angriff."*
-> — CTO, beim zweiten Kaffee
-
-### Neuer Prozessablauf
+Das Projekt folgt der hexagonalen Architektur:
 
 ```
-[Newsletter wanted]
-        ↓
-[Send confirmation mail]   ← NEU (Service Task)
-        ↓
-[Confirm subscription]     ← NEU (User Task)
-        ↓
-[Send Welcome Mail]
-        ↓
-[User subscribed]
+POST /api/subscriptions
+       ↓
+SubscriptionController          (adapter/inbound/rest)
+       ↓
+RegisterSubscriptionUseCase     (application/port/inbound)
+       ↓
+RegisterSubscriptionService     (application/service)        ← TODO
+       ↓
+SubscriptionProcess.startProcess()  (application/port/outbound)
+       ↓
+SubscriptionProcessAdapter          (adapter/outbound/cibseven) ← TODO
+       ↓
+RuntimeService.startProcessInstanceByKey(...)
 ```
+
+```
+[BPMN: serviceTask_sendWelcomeMail]
+       ↓
+SendWelcomeMailDelegate           (adapter/inbound/cibseven) ← TODO
+       ↓
+SendWelcomeMailUseCase            (application/port/inbound)
+       ↓
+SendWelcomeMailService            (application/service)       ← TODO
+```
+
+## Technische Modellierung
+
+Das mitgelieferte `src/main/resources/bpmn/newsletter.bpmn` ist bislang nur **fachlich**
+modelliert. Damit die Engine es ausführen und der Java-Code andocken kann, vervollständige
+es im **Miragon BPMN Modeler** technisch:
+
+### Element-IDs & Namen
+
+| Element | Typ | ID | Name |
+|---|---|---|---|
+| Start-Event | None Start Event | `startEvent_newsletterWanted` | Newsletter wanted |
+| Formular | User Task | `userTask_fillOutForm` | Fill out form |
+| Welcome Mail | Service Task | `serviceTask_sendWelcomeMail` | Send Welcome Mail |
+| End-Event | None End Event | `endEvent_userSubscribed` | User subscribed |
+
+**Prozess-ID:** `subscribeNewsletter` · **`Executable`** aktivieren · **`History Time To Live`** = `180`
+
+**Formular-Felder** (am User Task konfigurieren):
+- `email` (String) – E-Mail-Adresse
+- `name` (String) – Vollständiger Name
+- `age` (Long) – Alter in Jahren
+
+**Service Task Konfiguration:**
+- Implementation: `Delegate Expression`
+- Delegate Expression: `#{sendWelcomeMailDelegate}`
+
+### Element-ID-Konventionen
+
+| Präfix | Für |
+|---|---|
+| `startEvent_` | Start-Events |
+| `endEvent_` | End-Events |
+| `userTask_` | User Tasks |
+| `serviceTask_` | Service Tasks |
+| `gateway_` | Gateways |
+| `subProcess_` | Subprozesse |
+| `boundaryEvent_` | Boundary Events |
+
+> Genau diese technischen Attribute hatte in Aufgabe 1 der Consultant gesetzt. Ab jetzt
+> machst du sie selbst – in den nächsten Aufgaben gehört das zum Handwerk.
 
 ## Aufgaben
 
-### 1. BPMN erweitern
+### 1. `RegisterSubscriptionService` implementieren
 
-Öffne `src/main/resources/bpmn/newsletter.bpmn` im Camunda Modeler und erweitere den Prozess:
+**Datei:** `application/service/RegisterSubscriptionService.java`
 
-| Element | Typ | ID | Name | Konfiguration |
-|---|---|---|---|---|
-| Bestätigungs-Mail | Service Task | `serviceTask_sendConfirmationMail` | Send confirmation mail | Delegate Expression: `#{sendConfirmationMailDelegate}` |
-| Bestätigung | User Task | `userTask_confirmSubscription` | Confirm subscription | – |
+Ersetze das `TODO` mit folgender Logik:
+1. Erstelle ein `Subscription`-Objekt mit E-Mail, Name und Alter aus dem Command
+2. Speichere es über das Repository
+3. Starte den Prozess über den Process-Port
+4. Gib die `subscription.id` zurück
 
-**Achtung:** Der Service Task `sendConfirmationMail` muss **vor** dem User Task stehen.
+### 2. `SendWelcomeMailService` implementieren
 
-Referenz-Modell: `../models/task-2-with-confirmation.bpmn`
+**Datei:** `application/service/SendWelcomeMailService.java`
 
-## Best Practice: Async Continuations
+Ersetze das `TODO` mit einem Log-Statement, das die E-Mail-Adresse der Subscription ausgibt.
 
-Setze in deinem Modell mindestens:
-- `asyncBefore` am **Message-Start-Event** `startEvent_submitRegistration`
-- `asyncAfter` an jedem **User Task** (also an `userTask_confirmSubscription`)
+### 3. `SendWelcomeMailDelegate` implementieren
 
-Hintergrund: Damit wird nach jedem Wait-State eine neue Engine-Transaktion gestartet. Fehler in nachgelagerten Service Tasks führen sonst dazu, dass die User-Task-Completion zurückgerollt wird und der Task im Tasklist wieder erscheint. `asyncBefore` am Message-Start gibt der Engine eine saubere TX-Grenze nach der Message-Korrelation.
+**Datei:** `adapter/inbound/cibseven/SendWelcomeMailDelegate.java`
 
-Im Camunda Modeler: Element selektieren → Properties Panel → "Asynchronous Before/After".
+Ersetze das `TODO` in `executeTask(execution)`:
+- Lies die Prozessvariable `subscriptionId` aus der `DelegateExecution`
+- Rufe den UseCase `sendWelcomeMail(...)` mit der gelesenen ID auf
 
-### 2. `SendConfirmationMailUseCase` erstellen
+### 4. `SubscriptionProcessAdapter` implementieren
 
-**Neue Datei:** `application/port/inbound/SendConfirmationMailUseCase.java`
+**Datei:** `adapter/outbound/cibseven/SubscriptionProcessAdapter.java`
 
-Erstelle ein Interface mit einer Methode `sendConfirmationMail(SubscriptionId)`.
-
-### 3. `SendConfirmationMailService` implementieren
-
-**Neue Datei:** `application/service/SendConfirmationMailService.java`
-
-Lade die Subscription über das Repository und logge die E-Mail-Adresse, an die die Bestätigungsmail gesendet wird.
-
-### 4. `SendConfirmationMailDelegate` erstellen
-
-**Neue Datei:** `adapter/inbound/cibseven/SendConfirmationMailDelegate.java`
-
-Orientiere dich an `SendWelcomeMailDelegate`. Der Delegate soll:
-- `subscriptionId` aus der `DelegateExecution` lesen
-- `useCase.sendConfirmationMail(...)` aufrufen
+Ersetze das `TODO` in `startProcess(subscription)`:
+- Verwende `runtimeService.startProcessInstanceByKey(...)` mit dem Prozess-Key `subscribeNewsletter`
+- Übergib die Prozessvariablen (`subscriptionId`, `email`, `name`, `age`) als Map – die Schlüssel entsprechen den Variablennamen im BPMN-Modell
 
 ## Testen
 
 ```bash
+# Anwendung starten
+../mvnw spring-boot:run
+
+# Subscription registrieren
 curl -X POST http://localhost:8080/api/subscriptions \
   -H "Content-Type: application/json" \
-  -d '{"email": "bob@miravelo.com", "name": "Bob", "age": 25}'
+  -d '{"email": "alice@miravelo.com", "name": "Alice", "age": 28}'
 ```
 
-Im Cockpit:
-1. Service Task `Send confirmation mail` läuft durch → Log: "Sending confirmation mail to bob@miravelo.com"
-2. UserTask `Confirm subscription` erscheint in der Task List
-3. Nach Abschluss → Service Task `Send Welcome Mail` läuft durch
+Danach im **Cockpit** unter http://localhost:8080/camunda:
+- Unter **Processes** → eine Instanz von `Subscribe Newsletter` vorhanden
+- UserTask `Fill out form` erscheint in **Task List**
+- Nach Abschluss der UserTask → Service Task läuft durch → Log: "Sending welcome mail to alice@miravelo.com"
+
+## Best Practice: Async Continuations
+
+Setze in deinem Modell mindestens:
+- `asyncAfter` an jedem **User Task** (also an `userTask_fillOutForm`)
+
+Hintergrund: Damit wird nach jedem Wait-State eine neue Engine-Transaktion gestartet. Würde der nachgelagerte `serviceTask_sendWelcomeMail` eine Exception werfen, würde sonst die User-Task-Completion zurückgerollt – der Bearbeiter sieht den Task wieder in der Tasklist und alles, was er beim Completion eingegeben hat, ist weg.
+
+Wir kommen darauf in Aufgabe 3 nochmal zurück (dann auch für Message-Events). Ab dann gilt es als bekannt.
+
+Im Miragon BPMN Modeler: Element selektieren → Properties Panel → "Asynchronous After".
+
+## Bonus: Prozesstest
+
+Implementiere den Test in `src/test/java/io/miragon/training/process/SubscriptionProcessTest.java`.
 
 ## Referenzlösung
 

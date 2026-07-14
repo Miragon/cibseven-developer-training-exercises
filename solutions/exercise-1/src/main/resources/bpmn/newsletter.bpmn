@@ -43,7 +43,7 @@
 
     <bpmn:serviceTask id="serviceTask_sendWelcomeMail"
                       name="Send Welcome Mail"
-                      camunda:delegateExpression="#{sendWelcomeMailDelegate}">
+                      camunda:expression="${execution.setVariable('welcomeMailSentTo', email)}">
       <bpmn:incoming>Flow_form_to_mail</bpmn:incoming>
       <bpmn:outgoing>Flow_mail_to_end</bpmn:outgoing>
     </bpmn:serviceTask>

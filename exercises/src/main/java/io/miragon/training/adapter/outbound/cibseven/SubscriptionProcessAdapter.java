@@ -18,7 +18,7 @@ public class SubscriptionProcessAdapter implements SubscriptionProcess {
 
     @Override
     public void startProcess(Subscription subscription) {
-        // TODO Aufgabe 1:
+        // TODO Aufgabe 2:
         //  Starte eine neue Prozessinstanz mit dem Key "subscribeNewsletter".
         //  Übergib folgende Prozess-Variablen als Map:
         //    - "subscriptionId" -> subscription.id().value().toString()
@@ -26,6 +26,6 @@ public class SubscriptionProcessAdapter implements SubscriptionProcess {
         //    - "name"           -> subscription.name().value()
         //    - "age"            -> subscription.age().value()
         //  Hinweis: runtimeService.startProcessInstanceByKey(key, variables)
-        throw new UnsupportedOperationException("Aufgabe 1: Starte den Prozess via RuntimeService");
+        throw new UnsupportedOperationException("Aufgabe 2: Starte den Prozess via RuntimeService");
     }
 }

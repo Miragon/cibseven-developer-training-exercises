@@ -18,13 +18,11 @@ public class SubscriptionProcessAdapter implements SubscriptionProcess {
 
     @Override
     public void startProcess(Subscription subscription) {
-        runtimeService.createMessageCorrelation("Message_SubscriptionRequested")
-                .setVariables(Map.of(
-                        "subscriptionId", subscription.id().value().toString(),
-                        "email", subscription.email().value(),
-                        "name", subscription.name().value(),
-                        "age", subscription.age().value()
-                ))
-                .correlateStartMessage();
+        runtimeService.startProcessInstanceByKey("subscribeNewsletter", Map.of(
+                "subscriptionId", subscription.id().value().toString(),
+                "email", subscription.email().value(),
+                "name", subscription.name().value(),
+                "age", subscription.age().value()
+        ));
     }
 }

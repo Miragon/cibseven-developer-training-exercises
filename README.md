@@ -20,7 +20,7 @@ Jemand trägt sich ein, kriegt eine Welcome Mail – fertig.
 > — Jeder Entwickler, der einen Newsletter unterschätzt hat.
 
 Das Training findet im Kontext des **Newsletter-Anmeldeprozesses** statt.
-Ab Aufgabe 3 wird aus dem einfachen Newsletter der exklusive **Miravelo Inner Circle** —
+Ab Aufgabe 4 wird aus dem einfachen Newsletter der exklusive **Miravelo Inner Circle** —
 eine limitierte Membership für echte Fans der Marke. Gravel Bike in der Garage,
 Halbmarathon im Kalender – du weißt, wen wir meinen.
 
@@ -36,15 +36,16 @@ Detaillierte Aufgabenbeschreibungen befinden sich in [`exercises/docs/`](exercis
 
 | Aufgabe | Thema | Beschreibung |
 |---|---|---|
-| 0 | BPMN-Modellierung | Camunda Modeler kennenlernen, einfachen Prozess modellieren |
-| 1 | Prozess-Automatisierung | JavaDelegate, RuntimeService, REST-Endpoint |
-| 2 | Bestätigungs-Mail | Double-Opt-In-Pattern, weitere Service Tasks |
-| 3 | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung, Domain-Refactoring |
-| 4 | Boundary Events & Subprozesse | Timer, Message Boundary Events, Subprocess |
-| 5 | Signal Events | Signal End/Start Events, Event-Publishing |
-| 6 | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
+| 0 | Fachliche BPMN-Modellierung | Miragon BPMN Modeler kennenlernen, Prozess rein fachlich modellieren |
+| 1 | Engine & Tooling | Lauffähigen Newsletter deployen, Cockpit & DB-Tabellen der Engine kennenlernen |
+| 2 | Technische Modellierung & Automatisierung | Technisch modellieren, JavaDelegate, RuntimeService, REST-Endpoint |
+| 3 | Bestätigungs-Mail | Double-Opt-In-Pattern, weitere Service Tasks |
+| 4 | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung, Domain-Refactoring |
+| 5 | Boundary Events & Subprozesse | Timer, Message Boundary Events, Subprocess |
+| 6 | Signal Events | Signal End/Start Events, Event-Publishing |
 | 7 | Kompensation (SAGA) | Compensation Boundary Events, automatisches Rollback |
-| Extra 1 | Process-Engine-API | Aufgabe 7 engine-neutral umbauen: Worker statt JavaDelegate, Adapter-Tausch statt Engine-Lock-in |
+| 8 | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
+| Extra 1 | Process-Engine-API | Aufgabe 8 engine-neutral umbauen: Worker statt JavaDelegate, Adapter-Tausch statt Engine-Lock-in |
 
 ## Quick Start
 
@@ -67,7 +68,7 @@ open http://localhost:8080/camunda    # admin / admin
 ```
 cibseven-developer-training-exercises/
 ├── exercises/                        # Starter-Template mit TODOs
-│   ├── docs/                         # Aufgabenbeschreibungen (exercise-0.md … exercise-7.md)
+│   ├── docs/                         # Aufgabenbeschreibungen (exercise-0.md … exercise-8.md)
 │   └── src/main/java/io/miragon/training/
 │       ├── adapter/
 │       │   ├── inbound/
@@ -83,7 +84,8 @@ cibseven-developer-training-exercises/
 │       │   └── service/              # Use-Case-Implementierungen
 │       └── domain/                   # Domain-Modell (reines Java, keine Framework-Abhängigkeiten)
 ├── solutions/                        # Kumulative Lösungen pro Aufgabe
-│   └── exercise-{0-7}/
+│   └── exercise-{1-8}/
+├── exercise-1-starter/               # Setup-Modul für Aufgabe 1 (liefert CIB7-Deps auskommentiert aus)
 ├── models/                           # Referenz-BPMN-/DMN-Modelle
 ├── stack/
 │   ├── docker-compose.yml            # PostgreSQL + MailHog
