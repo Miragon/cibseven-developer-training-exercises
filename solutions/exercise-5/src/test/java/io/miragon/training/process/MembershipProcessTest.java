@@ -1,5 +1,6 @@
 package io.miragon.training.process;
 
+import io.miragon.training.adapter.process.SubscribeNewsletterProcessApi.Elements;
 import io.miragon.training.application.port.inbound.ClaimMembershipUseCase;
 import io.miragon.training.application.port.inbound.SendConfirmationMailUseCase;
 import io.miragon.training.application.port.inbound.SendRejectionMailUseCase;
@@ -81,7 +82,7 @@ class MembershipProcessTest {
         ProcessInstance instance = findProcessInstance(runtimeService, id.value().toString());
         continueToNextWaitState(processEngine);
 
-        assertThat(instance).isWaitingAt("userTask_confirmMembership");
+        assertThat(instance).isWaitingAt(Elements.USER_TASK_CONFIRM_MEMBERSHIP.getValue());
 
         String taskId = taskService.createTaskQuery()
                 .processInstanceId(instance.getProcessInstanceId())
@@ -93,14 +94,16 @@ class MembershipProcessTest {
         assertThat(instance)
                 .isEnded()
                 .hasPassedInOrder(
-                        "startEvent_submitRegistration",
-                        "serviceTask_claimMembership",
-                        "gateway_hasEmptySpots",
-                        "serviceTask_sendConfirmationMail",
-                        "userTask_confirmMembership",
-                        "serviceTask_sendWelcomeMail",
-                        "endEvent_membershipConfirmed")
-                .hasNotPassed("serviceTask_sendRejectionMail", "endEvent_membershipRejected");
+                        Elements.START_EVENT_SUBMIT_REGISTRATION.getValue(),
+                        Elements.SERVICE_TASK_CLAIM_MEMBERSHIP.getValue(),
+                        Elements.GATEWAY_HAS_EMPTY_SPOTS.getValue(),
+                        Elements.SERVICE_TASK_SEND_CONFIRMATION_MAIL.getValue(),
+                        Elements.USER_TASK_CONFIRM_MEMBERSHIP.getValue(),
+                        Elements.SERVICE_TASK_SEND_WELCOME_MAIL.getValue(),
+                        Elements.END_EVENT_MEMBERSHIP_CONFIRMED.getValue())
+                .hasNotPassed(
+                        Elements.SERVICE_TASK_SEND_REJECTION_MAIL.getValue(),
+                        Elements.END_EVENT_MEMBERSHIP_REJECTED.getValue());
 
         verify(claimMembershipUseCase).claimMembership(id);
         verify(sendConfirmationMailUseCase).sendConfirmationMail(id);
@@ -122,15 +125,15 @@ class MembershipProcessTest {
         assertThat(instance)
                 .isEnded()
                 .hasPassedInOrder(
-                        "serviceTask_claimMembership",
-                        "gateway_hasEmptySpots",
-                        "serviceTask_sendRejectionMail",
-                        "endEvent_membershipRejected")
+                        Elements.SERVICE_TASK_CLAIM_MEMBERSHIP.getValue(),
+                        Elements.GATEWAY_HAS_EMPTY_SPOTS.getValue(),
+                        Elements.SERVICE_TASK_SEND_REJECTION_MAIL.getValue(),
+                        Elements.END_EVENT_MEMBERSHIP_REJECTED.getValue())
                 .hasNotPassed(
-                        "serviceTask_sendConfirmationMail",
-                        "userTask_confirmMembership",
-                        "serviceTask_sendWelcomeMail",
-                        "endEvent_membershipConfirmed");
+                        Elements.SERVICE_TASK_SEND_CONFIRMATION_MAIL.getValue(),
+                        Elements.USER_TASK_CONFIRM_MEMBERSHIP.getValue(),
+                        Elements.SERVICE_TASK_SEND_WELCOME_MAIL.getValue(),
+                        Elements.END_EVENT_MEMBERSHIP_CONFIRMED.getValue());
 
         verify(sendRejectionMailUseCase).sendRejectionMail(id);
         verify(sendWelcomeMailUseCase, never()).sendWelcomeMail(any());

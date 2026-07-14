@@ -1,5 +1,6 @@
 package io.miragon.training.adapter.outbound.cibseven;
 
+import io.miragon.training.adapter.process.SubscribeNewsletterProcessApi.Messages;
 import io.miragon.training.application.port.outbound.MembershipProcess;
 import io.miragon.training.domain.Membership;
 import org.cibseven.bpm.engine.RuntimeService;
@@ -18,7 +19,7 @@ public class MembershipProcessAdapter implements MembershipProcess {
 
     @Override
     public void startProcess(Membership membership) {
-        runtimeService.createMessageCorrelation("Message_SubscriptionRequested")
+        runtimeService.createMessageCorrelation(Messages.MESSAGE_SUBSCRIPTION_REQUESTED.getValue())
                 .setVariables(Map.of(
                         "membershipId", membership.id().value().toString(),
                         "email", membership.email().value(),

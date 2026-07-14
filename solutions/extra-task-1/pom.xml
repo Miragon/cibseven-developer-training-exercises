@@ -19,7 +19,6 @@
         <process-engine-api.version>1.7</process-engine-api.version>
         <process-engine-worker.version>0.8.5</process-engine-worker.version>
         <process-engine-adapter-cib7.version>2026.07.1</process-engine-adapter-cib7.version>
-        <bpmn-to-code.version>3.2.0</bpmn-to-code.version>
     </properties>
 
     <dependencyManagement>
@@ -100,7 +99,6 @@
         <dependency>
             <groupId>io.miragon</groupId>
             <artifactId>bpmn-to-code-runtime</artifactId>
-            <version>${bpmn-to-code.version}</version>
         </dependency>
     </dependencies>
 
@@ -110,7 +108,6 @@
             <plugin>
                 <groupId>io.miragon</groupId>
                 <artifactId>bpmn-to-code-maven</artifactId>
-                <version>${bpmn-to-code.version}</version>
                 <executions>
                     <execution>
                         <id>generate-process-api</id>

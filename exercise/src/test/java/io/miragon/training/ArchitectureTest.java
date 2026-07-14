@@ -24,10 +24,14 @@ public class ArchitectureTest {
             .layer("Application").definedBy("..application.service..")
             .layer("InAdapters").definedBy("..adapter.inbound..")
             .layer("OutAdapters").definedBy("..adapter.outbound..")
+            // bpmn-to-code generierte Process-API-Konstanten (ab Aufgabe 5). In Aufgabe 1-4 leer
+            // → dank withOptionalLayers(true) unkritisch.
+            .layer("ProcessApi").definedBy("..adapter.process..")
             .whereLayer("Domain").mayOnlyBeAccessedByLayers("InPorts", "OutPorts", "Application", "InAdapters", "OutAdapters")
             .whereLayer("InPorts").mayOnlyBeAccessedByLayers("Application", "InAdapters")
             .whereLayer("OutPorts").mayOnlyBeAccessedByLayers("Application", "OutAdapters")
-            .whereLayer("Application").mayOnlyBeAccessedByLayers("InAdapters");
+            .whereLayer("Application").mayOnlyBeAccessedByLayers("InAdapters")
+            .whereLayer("ProcessApi").mayOnlyBeAccessedByLayers("InAdapters", "OutAdapters");
 
     @ArchTest
     static final ArchRule domain_should_not_depend_on_cibseven = noClasses()

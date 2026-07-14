@@ -1,5 +1,7 @@
 package io.miragon.training.process;
 
+import io.miragon.training.adapter.process.SubscribeNewsletterProcessApi;
+import io.miragon.training.adapter.process.SubscribeNewsletterProcessApi.Elements;
 import io.miragon.training.application.port.inbound.ClaimMembershipUseCase;
 import io.miragon.training.application.port.inbound.NotifyAboutSignedMembershipUseCase;
 import io.miragon.training.application.port.inbound.ReSendConfirmationMailUseCase;
@@ -102,7 +104,7 @@ class MembershipProcessTest {
         membershipProcess.startProcess(new Membership(id, new Email(email), new Name(name), new Age(30)));
         ProcessInstance instance = findProcessInstance(runtimeService, id.value().toString());
         continueToNextWaitState(processEngine, instance.getProcessInstanceId());
-        assertThat(instance).isWaitingAt("userTask_confirmMembership");
+        assertThat(instance).isWaitingAt(Elements.USER_TASK_CONFIRM_MEMBERSHIP.getValue());
         return instance;
     }
 
@@ -117,7 +119,7 @@ class MembershipProcessTest {
 
     private long runningInstanceCount() {
         return runtimeService.createProcessInstanceQuery()
-                .processDefinitionKey("subscribeNewsletter")
+                .processDefinitionKey(SubscribeNewsletterProcessApi.PROCESS_ID.getValue())
                 .count();
     }
 
@@ -131,11 +133,11 @@ class MembershipProcessTest {
         assertThat(instance)
                 .isEnded()
                 .hasPassedInOrder(
-                        "serviceTask_sendConfirmationMail",
-                        "userTask_confirmMembership",
-                        "serviceTask_sendWelcomeMail",
-                        "endEvent_membershipActivated")
-                .hasNotPassed("serviceTask_revokeClaim", "endEvent_membershipDeclined");
+                        Elements.SERVICE_TASK_SEND_CONFIRMATION_MAIL.getValue(),
+                        Elements.USER_TASK_CONFIRM_MEMBERSHIP.getValue(),
+                        Elements.SERVICE_TASK_SEND_WELCOME_MAIL.getValue(),
+                        Elements.END_EVENT_MEMBERSHIP_ACTIVATED.getValue())
+                .hasNotPassed(Elements.SERVICE_TASK_REVOKE_CLAIM.getValue(), Elements.END_EVENT_MEMBERSHIP_DECLINED.getValue());
 
         verify(sendWelcomeMailUseCase, times(1)).sendWelcomeMail(id);
         // the signal thrown at activation started exactly one forum-notification instance
@@ -153,8 +155,8 @@ class MembershipProcessTest {
 
         assertThat(instance)
                 .isEnded()
-                .hasPassedInOrder("serviceTask_sendRejectionMail", "endEvent_membershipRejected")
-                .hasNotPassed("serviceTask_sendWelcomeMail", "endEvent_membershipActivated");
+                .hasPassedInOrder(Elements.SERVICE_TASK_SEND_REJECTION_MAIL.getValue(), Elements.END_EVENT_MEMBERSHIP_REJECTED.getValue())
+                .hasNotPassed(Elements.SERVICE_TASK_SEND_WELCOME_MAIL.getValue(), Elements.END_EVENT_MEMBERSHIP_ACTIVATED.getValue());
 
         verify(sendRejectionMailUseCase).sendRejectionMail(id);
         org.assertj.core.api.Assertions.assertThat(runningInstanceCount()).isEqualTo(0L);
@@ -165,13 +167,13 @@ class MembershipProcessTest {
         MembershipId id = new MembershipId();
         ProcessInstance instance = startWaitingAtConfirmation(id, "amy@example.com", "Amy");
 
-        fireTimer(processEngine, "timer_abortAfter3HalfDays");
+        fireTimer(processEngine, Elements.TIMER_ABORT_AFTER_3_HALF_DAYS.getValue());
         continueToNextWaitState(processEngine, instance.getProcessInstanceId());
 
         assertThat(instance)
                 .isEnded()
-                .hasPassed("serviceTask_revokeClaim", "endEvent_membershipDeclined")
-                .hasNotPassed("serviceTask_sendWelcomeMail", "endEvent_membershipActivated");
+                .hasPassed(Elements.SERVICE_TASK_REVOKE_CLAIM.getValue(), Elements.END_EVENT_MEMBERSHIP_DECLINED.getValue())
+                .hasNotPassed(Elements.SERVICE_TASK_SEND_WELCOME_MAIL.getValue(), Elements.END_EVENT_MEMBERSHIP_ACTIVATED.getValue());
 
         verify(revokeClaimUseCase, times(1)).revokeClaim(id);
         org.assertj.core.api.Assertions.assertThat(runningInstanceCount()).isEqualTo(0L);
@@ -187,8 +189,8 @@ class MembershipProcessTest {
 
         assertThat(instance)
                 .isEnded()
-                .hasPassed("serviceTask_revokeClaim", "endEvent_membershipDeclined")
-                .hasNotPassed("serviceTask_sendWelcomeMail", "endEvent_membershipActivated");
+                .hasPassed(Elements.SERVICE_TASK_REVOKE_CLAIM.getValue(), Elements.END_EVENT_MEMBERSHIP_DECLINED.getValue())
+                .hasNotPassed(Elements.SERVICE_TASK_SEND_WELCOME_MAIL.getValue(), Elements.END_EVENT_MEMBERSHIP_ACTIVATED.getValue());
 
         verify(revokeClaimUseCase, times(1)).revokeClaim(id);
     }
@@ -199,13 +201,13 @@ class MembershipProcessTest {
         ProcessInstance instance = startWaitingAtConfirmation(id, "cara@example.com", "Cara");
         verify(sendConfirmationMailUseCase, times(1)).sendConfirmationMail(id);
 
-        fireTimer(processEngine, "timer_resendEveryDay");
+        fireTimer(processEngine, Elements.TIMER_RESEND_EVERY_DAY.getValue());
         continueToNextWaitState(processEngine, instance.getProcessInstanceId());
 
-        assertThat(instance).isWaitingAt("userTask_confirmMembership");
+        assertThat(instance).isWaitingAt(Elements.USER_TASK_CONFIRM_MEMBERSHIP.getValue());
         verify(reSendConfirmationMailUseCase, times(1)).reSendConfirmationMail(id);
 
         completeConfirmationTask(instance);
-        assertThat(instance).isEnded().hasPassed("endEvent_membershipActivated");
+        assertThat(instance).isEnded().hasPassed(Elements.END_EVENT_MEMBERSHIP_ACTIVATED.getValue());
     }
 }
