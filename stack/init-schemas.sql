@@ -1,5 +1,5 @@
 -- One schema per runnable module (each app runs on its own port + schema)
-CREATE SCHEMA IF NOT EXISTS exercises;
+CREATE SCHEMA IF NOT EXISTS exercise;
 CREATE SCHEMA IF NOT EXISTS exercise1;
 CREATE SCHEMA IF NOT EXISTS exercise2;
 CREATE SCHEMA IF NOT EXISTS exercise3;

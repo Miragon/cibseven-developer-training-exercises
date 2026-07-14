@@ -32,7 +32,7 @@ jede Aufgabe baut auf der vorherigen auf.
 
 ### Aufgabenübersicht
 
-Detaillierte Aufgabenbeschreibungen befinden sich in [`exercises/docs/`](exercises/docs/).
+Detaillierte Aufgabenbeschreibungen befinden sich in [`exercise/docs/`](exercise/docs/).
 
 | Aufgabe | Thema | Beschreibung |
 |---|---|---|
@@ -56,18 +56,34 @@ cd stack && docker-compose up -d
 # Alles bauen
 ./mvnw clean install
 
-# Exercises-Starter starten
-cd exercises && ../mvnw spring-boot:run
+# Exercise-Modul starten (das eine Modul, in dem du alle Aufgaben bearbeitest)
+cd exercise && ../mvnw spring-boot:run
 
 # CIB Seven Cockpit
 open http://localhost:8080/camunda    # admin / admin
 ```
 
+### Lösung einer Aufgabe laden
+
+Das `exercise`-Modul startet im Zustand von **Aufgabe 1** (Engine noch auskommentiert). Wenn du
+eine Aufgabe nicht ganz fertig bekommst, kannst du die Referenzlösung in dein `exercise`-Modul
+kopieren und mit ihr weiterarbeiten:
+
+```bash
+# solutions/exercise-2 in das exercise-Modul kopieren (gültige Werte: 1–8)
+./mvnw -pl exercise antrun:run@load-solution -Dsolution=2
+```
+
+Der Task ersetzt nur `src/main/java` und die BPMN-/DMN-Modelle. Deine `application.yaml`
+(Schema/Port) und `src/test` bleiben unverändert. Die in **Aufgabe 1** aktivierten
+CIB-Seven-Abhängigkeiten (`pom.xml`) und die Engine-Konfiguration bleiben ebenfalls bestehen –
+lade eine Lösung ab `exercise-2` daher erst, nachdem Aufgabe 1 abgeschlossen ist.
+
 ## Repository-Struktur
 
 ```
 cibseven-developer-training-exercises/
-├── exercises/                        # Starter-Template mit TODOs
+├── exercise/                         # Das eine Arbeitsmodul (startet im Zustand von Aufgabe 1)
 │   ├── docs/                         # Aufgabenbeschreibungen (exercise-0.md … exercise-8.md)
 │   └── src/main/java/io/miragon/training/
 │       ├── adapter/
@@ -83,9 +99,8 @@ cibseven-developer-training-exercises/
 │       │   │   └── outbound/         # Repository- und Prozess-Port-Interfaces
 │       │   └── service/              # Use-Case-Implementierungen
 │       └── domain/                   # Domain-Modell (reines Java, keine Framework-Abhängigkeiten)
-├── solutions/                        # Kumulative Lösungen pro Aufgabe
+├── solutions/                        # Kumulative Lösungen pro Aufgabe (exercise-1 … exercise-8, extra-task-1)
 │   └── exercise-{1-8}/
-├── exercise-1-starter/               # Setup-Modul für Aufgabe 1 (liefert CIB7-Deps auskommentiert aus)
 ├── models/                           # Referenz-BPMN-/DMN-Modelle
 ├── stack/
 │   ├── docker-compose.yml            # PostgreSQL + MailHog
@@ -98,8 +113,8 @@ cibseven-developer-training-exercises/
 | Komponente | Technologie |
 |---|---|
 | Sprache | Java 21 |
-| Framework | Spring Boot 3.5 |
-| Process Engine | CIB Seven 2.1 |
+| Framework | Spring Boot 4 |
+| Process Engine | CIB Seven 2.2.0 |
 | Datenbank | PostgreSQL (JPA / Hibernate) |
 | Build | Maven |
 | Architektur-Tests | ArchUnit |

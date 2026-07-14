@@ -19,8 +19,7 @@
     <name>cibseven-developer-training-exercises</name>
 
     <modules>
-        <module>exercises</module>
-        <module>exercise-1-starter</module>
+        <module>exercise</module>
         <module>solutions</module>
     </modules>
 

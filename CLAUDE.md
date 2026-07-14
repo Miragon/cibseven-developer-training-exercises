@@ -11,11 +11,14 @@ cd stack && docker-compose up -d
 # Build
 ./mvnw clean install
 
-# Run exercises starter (http://localhost:8080)
-cd exercises && ../mvnw spring-boot:run
+# Run the exercise module (http://localhost:8080) — the single module participants work in
+cd exercise && ../mvnw spring-boot:run
 
 # Run a specific solution
 cd solutions/exercise-1 && ../../mvnw spring-boot:run
+
+# Load a reference solution into the exercise module (catch-up; valid: 1-8)
+./mvnw -pl exercise antrun:run@load-solution -Dsolution=2
 
 # Run all tests
 ./mvnw test
@@ -58,9 +61,14 @@ REST / JavaDelegates           Application              CIB7 / Database
 ## Project Structure
 
 Multi-module Maven project:
-- `exercises/` — Starter template with TODO placeholders for participants
-- `solutions/exercise-{0-7}/` — Cumulative solutions, each building on the previous
+- `exercise/` — The single module participants work in. Ships in the Aufgabe-1 (Hybrid) state:
+  full hexagonal skeleton present, but CIB deps/config/`@SpringBootApplication` (`TODO Aufgabe 1`)
+  and the business-layer beans (`TODO Aufgabe 2`) are commented out. Exercise 1 = switch the
+  engine on; Exercise 2 = uncomment the business layer + fill the TODOs.
+- `solutions/exercise-{1-8}/` + `solutions/extra-task-1/` — Cumulative solutions, each building on the previous
 - `models/` — Reference BPMN/DMN models
+- The `load-solution` antrun task copies a solution's `src/main/java` + BPMN/DMN into `exercise/`
+  (never touches `application.yaml` or `src/test`).
 
 ## Domain
 
