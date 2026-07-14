@@ -1,11 +1,3 @@
--- One schema per runnable module (each app runs on its own port + schema)
+-- Alle Module (exercise + solutions) laufen auf demselben Port (8080) und teilen sich
+-- dieses Schema. Es wird immer nur ein Modul zur Zeit gestartet.
 CREATE SCHEMA IF NOT EXISTS exercise;
-CREATE SCHEMA IF NOT EXISTS exercise1;
-CREATE SCHEMA IF NOT EXISTS exercise2;
-CREATE SCHEMA IF NOT EXISTS exercise3;
-CREATE SCHEMA IF NOT EXISTS exercise4;
-CREATE SCHEMA IF NOT EXISTS exercise5;
-CREATE SCHEMA IF NOT EXISTS exercise6;
-CREATE SCHEMA IF NOT EXISTS exercise7;
-CREATE SCHEMA IF NOT EXISTS exercise8;
-CREATE SCHEMA IF NOT EXISTS extratask1;

@@ -211,26 +211,26 @@ Wenn dieser Test grün ist, lebt die Engine nur noch in `pom.xml` und `applicati
 
 ## Testen
 
-Die REST-Schnittstelle und das Verhalten sind identisch zu Aufgabe 8 – nur der Port ist ein anderer (`8090`). Service Tasks werden jetzt per Polling (~5 s) abgearbeitet, es kann also einen Moment dauern.
+Die REST-Schnittstelle und das Verhalten sind identisch zu Aufgabe 8 (Port `8080`). Service Tasks werden jetzt per Polling (~5 s) abgearbeitet, es kann also einen Moment dauern.
 
 **Einfache Ablehnung (Alter außerhalb 21–29):**
 ```bash
-MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8090/api/memberships \
+MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8080/api/memberships \
   -d '{"email": "grace@miravelo.com", "name": "Grace", "age": 35}' | tr -d '"')
 
-curl -X POST http://localhost:8090/api/memberships/$MEMBERSHIP_ID/reject
+curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
 ```
 
-Im Cockpit (`http://localhost:8090/camunda`, admin/admin):
+Im Cockpit (`http://localhost:8080/camunda`, admin/admin):
 1. Worker `sendConfirmationMail` feuert, User Task „Confirm membership" erscheint
 2. Nach dem Reject läuft die Call Activity `handleRejection`, danach feuert über die Kompensation der Worker `revokeClaim` (Log: „Revoking claim …")
 
 **VIP-Bewerber (Alter 21–29):**
 ```bash
-MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8090/api/memberships \
+MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8080/api/memberships \
   -d '{"email": "hanna@miravelo.com", "name": "Hanna", "age": 25}' | tr -d '"')
 
-curl -X POST http://localhost:8090/api/memberships/$MEMBERSHIP_ID/reject
+curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
 ```
 
 ## Kontrolle

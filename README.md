@@ -74,10 +74,11 @@ kopieren und mit ihr weiterarbeiten:
 ./mvnw -pl exercise antrun:run@load-solution -Dsolution=2
 ```
 
-Der Task ersetzt nur `src/main/java` und die BPMN-/DMN-Modelle. Deine `application.yaml`
-(Schema/Port) und `src/test` bleiben unverändert. Die in **Aufgabe 1** aktivierten
-CIB-Seven-Abhängigkeiten (`pom.xml`) und die Engine-Konfiguration bleiben ebenfalls bestehen –
-lade eine Lösung ab `exercise-2` daher erst, nachdem Aufgabe 1 abgeschlossen ist.
+Der Task ersetzt `src/main` komplett (Java, `application.yaml`, BPMN/DMN); `src/test` bleibt
+unberührt. Alle Module – das `exercise`-Modul **und** alle Solutions – laufen auf demselben Port
+(`8080`) und demselben DB-Schema (`exercise`); es läuft also immer nur **ein** Modul zur Zeit.
+Die in **Aufgabe 1** aktivierten CIB-Seven-Abhängigkeiten (`pom.xml`) bleiben bestehen – lade
+eine Lösung ab `exercise-2` daher erst, nachdem Aufgabe 1 abgeschlossen ist.
 
 ## Repository-Struktur
 

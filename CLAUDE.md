@@ -67,8 +67,10 @@ Multi-module Maven project:
   engine on; Exercise 2 = uncomment the business layer + fill the TODOs.
 - `solutions/exercise-{1-8}/` + `solutions/extra-task-1/` — Cumulative solutions, each building on the previous
 - `models/` — Reference BPMN/DMN models
-- The `load-solution` antrun task copies a solution's `src/main/java` + BPMN/DMN into `exercise/`
-  (never touches `application.yaml` or `src/test`).
+- All modules (exercise + every solution) run on the same port (`8080`) and DB schema (`exercise`) —
+  one module at a time. `stack/init-schemas.sql` creates just that one schema.
+- The `load-solution` antrun task replaces `exercise/src/main` wholesale (Java, `application.yaml`,
+  BPMN/DMN) from a solution; `src/test` and `pom.xml` are left untouched.
 
 ## Domain
 

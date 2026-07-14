@@ -82,8 +82,10 @@
                 mvn -pl exercise antrun:run@load-solution -Dsolution=2
                 (aus dem exercise-Verzeichnis: ../mvnw antrun:run@load-solution -Dsolution=2)
 
-              Kopiert werden NUR src/main/java + bpmn/dmn. Die application.yaml (Schema/Port)
-              und src/test bleiben unverändert. Gültige Werte: 1–8.
+              Ersetzt komplett src/main (Java + Ressourcen inkl. application.yaml + BPMN/DMN).
+              Alle Module teilen sich denselben Port (8080) und dasselbe DB-Schema (exercise),
+              daher kann die application.yaml einfach mitkopiert werden. src/test bleibt
+              unberührt. Gültige Werte: 1–8.
             -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -108,22 +110,13 @@
                                         </not>
                                     </condition>
                                 </fail>
-                                <echo message="Lade Solution ${solution} in das exercise-Modul (application.yaml bleibt unverändert) ..."/>
-                                <!-- Java-Quellen ersetzen -->
-                                <delete dir="${project.basedir}/src/main/java"/>
-                                <copy todir="${project.basedir}/src/main/java">
-                                    <fileset dir="${solutionSrc}/main/java"/>
+                                <echo message="Lade Solution ${solution} in das exercise-Modul ..."/>
+                                <!-- src/main komplett ersetzen (Java + Ressourcen inkl. application.yaml + BPMN/DMN); src/test bleibt unberührt -->
+                                <delete dir="${project.basedir}/src/main"/>
+                                <copy todir="${project.basedir}/src/main">
+                                    <fileset dir="${solutionSrc}/main"/>
                                 </copy>
-                                <!-- BPMN- und DMN-Modelle ersetzen -->
-                                <delete dir="${project.basedir}/src/main/resources/bpmn"/>
-                                <delete dir="${project.basedir}/src/main/resources/dmn"/>
-                                <copy todir="${project.basedir}/src/main/resources/bpmn">
-                                    <fileset dir="${solutionSrc}/main/resources/bpmn"/>
-                                </copy>
-                                <copy todir="${project.basedir}/src/main/resources/dmn" failonerror="false">
-                                    <fileset dir="${solutionSrc}/main/resources/dmn" erroronmissingdir="false"/>
-                                </copy>
-                                <echo message="Fertig. Solution ${solution} wurde nach exercise/src kopiert."/>
+                                <echo message="Fertig. Solution ${solution} wurde nach exercise/src/main kopiert."/>
                             </target>
                         </configuration>
                     </execution>

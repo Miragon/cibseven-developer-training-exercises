@@ -131,7 +131,8 @@ Unter **Processes** erscheint `Subscribe Newsletter`. Klick dich durch **Cockpit
 - Modell: `../models/task-1-basic-newsletter.bpmn`
 - Du kannst die Lösung auch direkt in dein Modul laden:
   `./mvnw -pl exercise antrun:run@load-solution -Dsolution=1`
-  (ersetzt nur den Code – die in Schritt 2–3 aktivierten Deps/Config bleiben bestehen)
+  (ersetzt `src/main` inkl. `application.yaml`; nur die `pom.xml` – und damit die in Schritt 2
+  aktivierten CIB-Deps – bleibt bestehen)
 
 ---
 

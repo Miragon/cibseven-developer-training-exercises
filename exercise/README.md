@@ -93,6 +93,7 @@ dieses Modul kopieren und mit ihr weiterarbeiten (gültige Werte: 1–8):
 ../mvnw antrun:run@load-solution -Dsolution=2
 ```
 
-Der Task ersetzt nur `src/main/java` und die BPMN-/DMN-Modelle. `application.yaml`
-(Schema/Port) und `src/test` bleiben unverändert. Voraussetzung ist, dass du in **Aufgabe 1**
-die CIB-Seven-Abhängigkeiten und die Engine-Konfiguration aktiviert hast.
+Der Task ersetzt `src/main` komplett (Java, `application.yaml`, BPMN/DMN); `src/test` bleibt
+unberührt. Alle Module laufen auf demselben Port (`8080`) und DB-Schema (`exercise`), es läuft
+also immer nur ein Modul zur Zeit. Voraussetzung ist, dass du in **Aufgabe 1** die
+CIB-Seven-Abhängigkeiten aktiviert hast (die `pom.xml` wird nicht mitkopiert).
