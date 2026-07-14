@@ -54,6 +54,13 @@
                 <artifactId>archunit-junit5</artifactId>
                 <version>${archunit.version}</version>
             </dependency>
+            <!-- Process tests: CIB Seven port of camunda-bpm-assert (BpmnAwareTests) -->
+            <dependency>
+                <groupId>org.cibseven.bpm</groupId>
+                <artifactId>cibseven-bpm-assert</artifactId>
+                <version>${cib7.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -82,6 +89,11 @@
             <id>mvn-cibseven-enterprise-snapshots</id>
             <name>CIB seven EE Snapshots repository</name>
             <url>https://artifacts.cibseven.org/repository/enterprise-snapshots</url>
+        </repository>
+        <repository>
+            <id>mvn-cibseven-public</id>
+            <name>CIB seven public repository</name>
+            <url>https://artifacts.cibseven.org/repository/public</url>
         </repository>
     </repositories>
 

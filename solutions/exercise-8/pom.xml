@@ -46,6 +46,18 @@
             <groupId>org.cibseven.bpm.springboot</groupId>
             <artifactId>cibseven-bpm-spring-boot-starter-rest-4</artifactId>
         </dependency>
+
+        <!-- Process tests -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.cibseven.bpm</groupId>
+            <artifactId>cibseven-bpm-assert</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

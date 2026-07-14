@@ -17,7 +17,7 @@ cd exercise && ../mvnw spring-boot:run
 # Run a specific solution
 cd solutions/exercise-1 && ../../mvnw spring-boot:run
 
-# Load a reference solution into the exercise module (catch-up; valid: 1-8)
+# Load a reference solution into the exercise module (catch-up; valid: 1-9)
 ./mvnw -pl exercise antrun:run@load-solution -Dsolution=2
 
 # Run all tests
@@ -65,7 +65,7 @@ Multi-module Maven project:
   full hexagonal skeleton present, but CIB deps/config/`@SpringBootApplication` (`TODO Aufgabe 1`)
   and the business-layer beans (`TODO Aufgabe 2`) are commented out. Exercise 1 = switch the
   engine on; Exercise 2 = uncomment the business layer + fill the TODOs.
-- `solutions/exercise-{1-8}/` + `solutions/extra-task-1/` — Cumulative solutions, each building on the previous
+- `solutions/exercise-{1-9}/` + `solutions/extra-task-1/` — Cumulative solutions, each building on the previous
 - `models/` — Reference BPMN/DMN models
 - All modules (exercise + every solution) run on the same port (`8080`) and DB schema (`exercise`) —
   one module at a time. `stack/init-schemas.sql` creates just that one schema.
@@ -74,8 +74,8 @@ Multi-module Maven project:
 
 ## Domain
 
-Exercises 0-2: Newsletter subscription (Subscription naming).
-Exercises 3-7: Miravelo Inner Circle membership (Membership naming).
+Exercises 0-3: Newsletter subscription (Subscription naming).
+Exercises 4-9: Miravelo Inner Circle membership (Membership naming).
 
 Workflow: subscribe → send confirmation mail → wait for confirmation (with timer retry/abort) → send welcome mail.
 

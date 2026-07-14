@@ -1,10 +1,8 @@
 package io.miragon.training.application.port.inbound;
 
+import io.miragon.training.domain.MembershipId;
+
 public interface NotifyAboutSignedMembershipUseCase {
 
-    /**
-     * Published from a signal-triggered flow that runs in its own, fresh process
-     * instance – so it deliberately carries no membership-specific data.
-     */
-    void notifyAboutSignedMembership();
+    void notifyAboutSignedMembership(MembershipId membershipId);
 }

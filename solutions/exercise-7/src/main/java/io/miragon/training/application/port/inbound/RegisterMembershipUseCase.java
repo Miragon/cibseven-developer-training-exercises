@@ -6,6 +6,5 @@ public interface RegisterMembershipUseCase {
 
     MembershipId register(Command command);
 
-    record Command(String email, String name, int age) {
-    }
+    record Command(String email, String name, int age) {}
 }
