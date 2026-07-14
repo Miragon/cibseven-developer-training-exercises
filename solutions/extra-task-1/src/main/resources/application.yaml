@@ -1,9 +1,9 @@
 server:
-  port: 8090
+  port: 8080
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/cibseven-training?currentSchema=extratask1
+    url: jdbc:postgresql://localhost:5432/cibseven-training?currentSchema=exercise
     username: admin
     password: admin
     driver-class-name: org.postgresql.Driver
@@ -13,7 +13,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        default_schema: extratask1
+        default_schema: exercise
 
 # Process-Engine-API (bpm-crafters): engine-neutral orchestration on top of the embedded CIB7 engine
 dev:
@@ -49,4 +49,4 @@ cibseven:
     services:
       basePath: services/v1
     engineRest:
-      url: http://localhost:8090
+      url: http://localhost:8080

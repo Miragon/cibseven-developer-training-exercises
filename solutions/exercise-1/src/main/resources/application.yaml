@@ -1,9 +1,9 @@
 server:
-  port: 8082
+  port: 8080
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/cibseven-training?currentSchema=exercise1
+    url: jdbc:postgresql://localhost:5432/cibseven-training?currentSchema=exercise
     username: admin
     password: admin
     driver-class-name: org.postgresql.Driver
@@ -13,7 +13,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        default_schema: exercise1
+        default_schema: exercise
 
 camunda:
   bpm:
@@ -29,4 +29,4 @@ cibseven:
     services:
       basePath: services/v1
     engineRest:
-      url: http://localhost:8082
+      url: http://localhost:8080
