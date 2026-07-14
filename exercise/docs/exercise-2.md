@@ -180,7 +180,10 @@ Im Miragon BPMN Modeler: Element selektieren → Properties Panel → "Asynchron
 
 ## Bonus: Prozesstest
 
-Implementiere den Test in `src/test/java/io/miragon/training/process/SubscriptionProcessTest.java`.
+Prozess-Tests bekommen in **[Aufgabe 5](exercise-5.md)** ihren eigenen, ausführlichen Platz –
+dort schreibst du einen vollwertigen Prozess-Test gegen den Membership-Prozess (In-Memory-Engine,
+gemockte Use Cases, ohne PostgreSQL). Der Platzhalter dafür liegt schon bereit unter
+`src/test/java/io/miragon/training/process/MembershipProcessTest.java`.
 
 ## Referenzlösung
 

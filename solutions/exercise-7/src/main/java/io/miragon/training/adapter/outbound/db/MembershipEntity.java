@@ -34,19 +34,11 @@ public class MembershipEntity {
         this.age = age;
     }
 
-    public UUID getId() {
-        return id;
-    }
+    public UUID getId() { return id; }
 
-    public String getEmail() {
-        return email;
-    }
+    public String getEmail() { return email; }
 
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
 
-    public int getAge() {
-        return age;
-    }
+    public int getAge() { return age; }
 }
