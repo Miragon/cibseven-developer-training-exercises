@@ -16,10 +16,9 @@ public class ClaimMembershipService implements ClaimMembershipUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(ClaimMembershipService.class);
 
-    private static final int MAX_SPOTS = 1000;
-    private final AtomicInteger claimedSpots = new AtomicInteger(0);
-
     private final MembershipRepository repository;
+    private final AtomicInteger claimedSpots = new AtomicInteger(0);
+    private static final int MAX_SPOTS = 1000;
 
     public ClaimMembershipService(MembershipRepository repository) {
         this.repository = repository;

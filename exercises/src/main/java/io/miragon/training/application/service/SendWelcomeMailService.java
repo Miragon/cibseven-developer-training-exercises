@@ -24,9 +24,9 @@ public class SendWelcomeMailService implements SendWelcomeMailUseCase {
     public void sendWelcomeMail(SubscriptionId subscriptionId) {
         var subscription = repository.find(subscriptionId);
 
-        // TODO Aufgabe 1:
+        // TODO Aufgabe 2:
         //  Logge eine Nachricht im Format "Sending welcome mail to [email]"
         //  In späteren Aufgaben wird hier eine echte Mail gesendet.
-        throw new UnsupportedOperationException("Aufgabe 1: Logge 'Sending welcome mail to " + subscription.email().value() + "'");
+        throw new UnsupportedOperationException("Aufgabe 2: Logge 'Sending welcome mail to " + subscription.email().value() + "'");
     }
 }

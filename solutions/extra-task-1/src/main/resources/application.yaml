@@ -1,5 +1,5 @@
 server:
-  port: 8089
+  port: 8090
 
 spring:
   datasource:
@@ -49,4 +49,4 @@ cibseven:
     services:
       basePath: services/v1
     engineRest:
-      url: http://localhost:8089
+      url: http://localhost:8090

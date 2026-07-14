@@ -1,4 +1,4 @@
-# Aufgabe 3 – Membership & Kapazitätsprüfung
+# Aufgabe 3 – Bestätigungs-Mail
 
 ## Ziel-Modell
 
@@ -6,116 +6,101 @@
 
 ## Lernziele
 
-- Domain-Konzepte umbenennen (Refactoring)
-- Exclusive Gateway modellieren und implementieren
-- Neuen Service Task (Kapazitätsprüfung) hinzufügen
-- Alternativen Prozessausgang implementieren
+- Einen bestehenden Prozess in Miragon BPMN Modeler erweitern
+- Mehrere Service Tasks implementieren
+- Sequenzielle Flows mit User Tasks kombinieren
 
 ## Hintergrund
 
-**Strategie-Meeting. Freitagnachmittag. Jemand hat exklusiven Matcha Latte mitgebracht.**
+Rose hat das neue **Backroad AL** auf den Markt gebracht – und Miravelo launcht es exklusiv im Store.
+Social Media dreht durch. Über Nacht: 500 Newsletter-Anmeldungen.
 
-Miravelo startet den **Miravelo Inner Circle** – eine limitierte, exklusive Membership
-für echte Fans der Marke. Gravel Bike im Keller, Rennrad an der Wand – du weißt, wen wir meinen.
+Das Team starrt auf die Datenbank und beginnt, Fragen zu stellen:
 
-Tausend Plätze. Zählt bis tausend. Das ist die Kapazität.
+- Sind das echte E-Mail-Adressen?
+- Wer ist überhaupt diese `noreply@throwaway.xyz`?
+- Irgendwer hat `admin@miravelo.com` eingetragen. Als Witz. Wahrscheinlich.
 
-Warum tausend? Weil Knappheit Wert erzeugt. Weil FOMO ein Business-Modell ist. Weil irgendjemand
-ein Buch über Luxusmarken gelesen hat und jetzt „Premium Positioning" in jeden Satz einbaut.
+Das Team beschließt: Wir bauen einen **Bestätigungsschritt**. Erst Mail bestätigen,
+dann Welcome Mail. Klassisches Double-Opt-In.
 
-> *„Wir sind nicht exklusiv weil wir gut sind. Wir sind exklusiv weil wir nur tausend Plätze
-> haben und der Counter in der Datenbank auf 1000 steht."*
-> — Ehrlichster Kommentar im Sprint Planning
+Und während wir dabei sind – wenn schon so viele Menschen Miravelo-Produkte wollen,
+vielleicht wollen sie auch mehr als nur einen Newsletter. Vielleicht wollen sie dazugehören.
 
-Das Gute daran: Aus Prozesssicht brauchen wir ein **Gateway**. Der gnadenlose Türsteher im
-Prozessfluss. Hat die Person einen Platz bekommen? Herzlichen Glückwunsch, weiter. Kein Platz?
-Ablehnungsmail. Kein Einspruch. Das Gateway entscheidet.
-
-Mit 27 eine Absage vom Fahrradladen des Vertrauens zu bekommen trifft anders. Aber das ist
-jetzt das Problem der Bewerber, nicht deins.
-
-> **Hinweis:** In dieser Aufgabe findet ein Domain-Refactoring statt. Bisher war die Domäne
-> eine einfache Newsletter-Subscription. Ab jetzt wird daraus eine **Membership** im
-> Miravelo Inner Circle. Benenne die bestehenden Klassen entsprechend um
-> (z.B. `Subscription` → `Membership`, `SubscriptionId` → `MembershipId`, etc.).
+> *„500 Sign-ups. Das ist entweder viral oder ein Bot-Angriff."*
+> — CTO, beim zweiten Kaffee
 
 ### Neuer Prozessablauf
 
 ```
-[Submit registration form]
-         ↓
-[Claim membership]         ← NEU (Service Task)
-         ↓
-[Has empty spots?]         ← NEU (Exclusive Gateway)
-   ↓ Yes              ↓ No
-[Send confirmation]   [Send rejection mail]  ← NEU
-         ↓                    ↓
-[Confirm membership]  [Membership rejected]  ← NEU End Event
-         ↓
+[Newsletter wanted]
+        ↓
+[Send confirmation mail]   ← NEU (Service Task)
+        ↓
+[Confirm subscription]     ← NEU (User Task)
+        ↓
 [Send Welcome Mail]
-         ↓
-[Membership confirmed]
+        ↓
+[User subscribed]
 ```
 
 ## Aufgaben
 
-### 1. BPMN komplett neu modellieren
+### 1. BPMN erweitern
 
-Erstelle den Prozess nach dem Referenz-Modell `../models/task-3-gateway.bpmn`.
-
-Neue Elemente:
+Öffne `src/main/resources/bpmn/newsletter.bpmn` im Miragon BPMN Modeler und erweitere den Prozess:
 
 | Element | Typ | ID | Name | Konfiguration |
 |---|---|---|---|---|
-| Claim | Service Task | `serviceTask_claimMembership` | Claim membership | `#{claimMembershipDelegate}` |
-| Gateway | Exclusive Gateway | `gateway_hasEmptySpots` | Has empty spots? | Default-Flow: `Yes`-Pfad |
-| Rejection Mail | Service Task | `serviceTask_sendRejectionMail` | Send rejection mail | `#{sendRejectionMailDelegate}` |
-| Abgelehnt | End Event | `endEvent_membershipRejected` | Membership rejected | – |
+| Bestätigungs-Mail | Service Task | `serviceTask_sendConfirmationMail` | Send confirmation mail | Delegate Expression: `#{sendConfirmationMailDelegate}` |
+| Bestätigung | User Task | `userTask_confirmSubscription` | Confirm subscription | – |
 
-**Gateway-Bedingung (Nein-Pfad):** `${!hasEmptySpots}`
+**Achtung:** Der Service Task `sendConfirmationMail` muss **vor** dem User Task stehen.
 
-### 2. Domain erweitern: `MembershipCapacity`
+Referenz-Modell: `../models/task-3-with-confirmation.bpmn`
 
-**Neue Datei:** `domain/MembershipCapacity.java`
+## Best Practice: Async Continuations
 
-Erstelle eine Klasse `MembershipCapacity` mit folgenden Eigenschaften:
-- `maxSpots` (int, Default: 1000) – maximale Anzahl verfügbarer Plätze
-- `claimedSpots` (int, Default: 0) – aktuell belegte Plätze
-- `hasEmptySpots` – gibt `true` zurück, wenn `claimedSpots < maxSpots`
-- `claim()` – erhöht `claimedSpots` um 1
+Setze in deinem Modell mindestens:
+- `asyncBefore` am **Message-Start-Event** `startEvent_submitRegistration`
+- `asyncAfter` an jedem **User Task** (also an `userTask_confirmSubscription`)
 
-### 3. Use Cases und Services erstellen
+Hintergrund: Damit wird nach jedem Wait-State eine neue Engine-Transaktion gestartet. Fehler in nachgelagerten Service Tasks führen sonst dazu, dass die User-Task-Completion zurückgerollt wird und der Task im Tasklist wieder erscheint. `asyncBefore` am Message-Start gibt der Engine eine saubere TX-Grenze nach der Message-Korrelation.
 
-Erstelle nach dem bewährten Muster (analog zu Aufgabe 2):
+Im Miragon BPMN Modeler: Element selektieren → Properties Panel → "Asynchronous Before/After".
 
-- `ClaimMembershipUseCase` / `ClaimMembershipService`
-  - Prüft Kapazität (einfacher Counter in Memory reicht)
-  - Setzt Prozessvariable `hasEmptySpots` (via `DelegateExecution.setVariable(...)`)
-- `SendRejectionMailUseCase` / `SendRejectionMailService`
-  - Loggt "Sending rejection mail to [email]"
+### 2. `SendConfirmationMailUseCase` erstellen
 
-### 4. Delegates erstellen
+**Neue Datei:** `application/port/inbound/SendConfirmationMailUseCase.java`
 
-- `ClaimMembershipDelegate`: Prüft Kapazität, setzt Variable `hasEmptySpots` auf der `DelegateExecution`
-- `SendRejectionMailDelegate`: Liest `membershipId`, ruft Use Case auf
+Erstelle ein Interface mit einer Methode `sendConfirmationMail(SubscriptionId)`.
 
-**Hinweis:** Die Element-IDs und Variablennamen (z.B. `hasEmptySpots`) kannst du direkt aus dem BPMN-Modell entnehmen. Async-Continuations (siehe Aufgabe 2) gelten ab hier als bekannt – `asyncBefore` am Message-Start, `asyncAfter` am User Task.
+### 3. `SendConfirmationMailService` implementieren
+
+**Neue Datei:** `application/service/SendConfirmationMailService.java`
+
+Lade die Subscription über das Repository und logge die E-Mail-Adresse, an die die Bestätigungsmail gesendet wird.
+
+### 4. `SendConfirmationMailDelegate` erstellen
+
+**Neue Datei:** `adapter/inbound/cibseven/SendConfirmationMailDelegate.java`
+
+Orientiere dich an `SendWelcomeMailDelegate`. Der Delegate soll:
+- `subscriptionId` aus der `DelegateExecution` lesen
+- `useCase.sendConfirmationMail(...)` aufrufen
 
 ## Testen
 
-**Happy Path (Kapazität vorhanden):**
 ```bash
-curl -X POST http://localhost:8080/api/memberships \
-  -d '{"email": "carol@miravelo.com", "name": "Carol", "age": 27}'
+curl -X POST http://localhost:8080/api/subscriptions \
+  -H "Content-Type: application/json" \
+  -d '{"email": "bob@miravelo.com", "name": "Bob", "age": 25}'
 ```
 
-**Rejection Path (Kapazität auf 0 setzen → Anwendungs-Config anpassen):**
-```bash
-# Setze maxSpots = 0 in der Konfiguration
-curl -X POST http://localhost:8080/api/memberships \
-  -d '{"email": "dave@miravelo.com", "name": "Dave", "age": 30}'
-# Erwartetes Log: "Sending rejection mail to dave@miravelo.com"
-```
+Im Cockpit:
+1. Service Task `Send confirmation mail` läuft durch → Log: "Sending confirmation mail to bob@miravelo.com"
+2. UserTask `Confirm subscription` erscheint in der Task List
+3. Nach Abschluss → Service Task `Send Welcome Mail` läuft durch
 
 ## Referenzlösung
 

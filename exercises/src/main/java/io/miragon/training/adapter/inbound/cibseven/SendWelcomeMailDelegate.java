@@ -18,11 +18,11 @@ public class SendWelcomeMailDelegate extends BaseDelegate {
 
     @Override
     protected void executeTask(DelegateExecution execution) {
-        // TODO Aufgabe 1:
+        // TODO Aufgabe 2:
         //  1. Lese die Variable "subscriptionId" aus der DelegateExecution
         //     Hinweis: (String) execution.getVariable("subscriptionId")
         //  2. Erstelle eine SubscriptionId: new SubscriptionId(UUID.fromString(...))
         //  3. Rufe useCase.sendWelcomeMail(subscriptionId) auf
-        throw new UnsupportedOperationException("Aufgabe 1: Verbinde den Delegate mit dem Use Case");
+        throw new UnsupportedOperationException("Aufgabe 2: Verbinde den Delegate mit dem Use Case");
     }
 }

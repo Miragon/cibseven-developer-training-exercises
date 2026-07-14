@@ -1,7 +1,7 @@
 package io.miragon.training.adapter.inbound.cibseven;
 
 import io.miragon.training.application.port.inbound.SendWelcomeMailUseCase;
-import io.miragon.training.domain.MembershipId;
+import io.miragon.training.domain.SubscriptionId;
 import org.cibseven.bpm.engine.delegate.DelegateExecution;
 import org.springframework.stereotype.Component;
 
@@ -18,8 +18,8 @@ public class SendWelcomeMailDelegate extends BaseDelegate {
 
     @Override
     protected void executeTask(DelegateExecution execution) {
-        var membershipId = (String) execution.getVariable("membershipId");
-        log.debug("Received task to send welcome mail for membership: {}", membershipId);
-        useCase.sendWelcomeMail(new MembershipId(UUID.fromString(membershipId)));
+        var subscriptionId = (String) execution.getVariable("subscriptionId");
+        log.debug("Received task to send welcome mail for subscription: {}", subscriptionId);
+        useCase.sendWelcomeMail(new SubscriptionId(UUID.fromString(subscriptionId)));
     }
 }

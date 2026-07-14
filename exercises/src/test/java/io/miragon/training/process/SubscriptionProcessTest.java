@@ -8,9 +8,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 public class SubscriptionProcessTest {
 
-    // TODO Aufgabe 1: Implementiere einen Prozesstest für den Happy Path
+    // TODO Aufgabe 2: Implementiere einen Prozesstest für den Happy Path
     @Test
     void happyPath_subscriptionProcessCompletesSuccessfully() {
-        throw new UnsupportedOperationException("Aufgabe 1: Implementiere diesen Test");
+        throw new UnsupportedOperationException("Aufgabe 2: Implementiere diesen Test");
     }
 }

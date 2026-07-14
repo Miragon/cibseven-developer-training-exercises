@@ -1,4 +1,4 @@
-# Aufgabe 4 – Boundary Events & Subprozesse
+# Aufgabe 4 – Membership & Kapazitätsprüfung
 
 ## Ziel-Modell
 
@@ -6,104 +6,115 @@
 
 ## Lernziele
 
-- Subprozesse (Subprocesses) modellieren
-- Non-interrupting Timer Boundary Events (täglich wiederholen)
-- Interrupting Timer Boundary Events (Timeout → Abbruch)
-- Message Boundary Events (nutzerinitiierter Abbruch)
+- Domain-Konzepte umbenennen (Refactoring)
+- Exclusive Gateway modellieren und implementieren
+- Neuen Service Task (Kapazitätsprüfung) hinzufügen
+- Alternativen Prozessausgang implementieren
 
 ## Hintergrund
 
-Miravelo stellt fest: Viele Bewerber bestätigen ihre Membership nie.
-Das kostet wertvolle Plätze! Neue Anforderungen:
+**Strategie-Meeting. Freitagnachmittag. Jemand hat exklusiven Matcha Latte mitgebracht.**
 
-1. **Täglich** eine Erinnerungsmail senden (non-interrupting Timer)
-2. Nach **3,5 Tagen** ohne Bestätigung → Membership automatisch abbrechen (interrupting Timer)
-3. Nutzer kann Bewerbung selbst **ablehnen** (Message Boundary)
+Miravelo startet den **Miravelo Inner Circle** – eine limitierte, exklusive Membership
+für echte Fans der Marke. Gravel Bike im Keller, Rennrad an der Wand – du weißt, wen wir meinen.
+
+Tausend Plätze. Zählt bis tausend. Das ist die Kapazität.
+
+Warum tausend? Weil Knappheit Wert erzeugt. Weil FOMO ein Business-Modell ist. Weil irgendjemand
+ein Buch über Luxusmarken gelesen hat und jetzt „Premium Positioning" in jeden Satz einbaut.
+
+> *„Wir sind nicht exklusiv weil wir gut sind. Wir sind exklusiv weil wir nur tausend Plätze
+> haben und der Counter in der Datenbank auf 1000 steht."*
+> — Ehrlichster Kommentar im Sprint Planning
+
+Das Gute daran: Aus Prozesssicht brauchen wir ein **Gateway**. Der gnadenlose Türsteher im
+Prozessfluss. Hat die Person einen Platz bekommen? Herzlichen Glückwunsch, weiter. Kein Platz?
+Ablehnungsmail. Kein Einspruch. Das Gateway entscheidet.
+
+Mit 27 eine Absage vom Fahrradladen des Vertrauens zu bekommen trifft anders. Aber das ist
+jetzt das Problem der Bewerber, nicht deins.
+
+> **Hinweis:** In dieser Aufgabe findet ein Domain-Refactoring statt. Bisher war die Domäne
+> eine einfache Newsletter-Subscription. Ab jetzt wird daraus eine **Membership** im
+> Miravelo Inner Circle. Benenne die bestehenden Klassen entsprechend um
+> (z.B. `Subscription` → `Membership`, `SubscriptionId` → `MembershipId`, etc.).
 
 ### Neuer Prozessablauf
 
 ```
-[Claim membership] → [Has empty spots?]
-                            ↓ Yes
-              ┌─────────────────────────────┐
-              │  Confirm Membership         │
-              │  [Send confirmation mail]   │
-              │  [Confirm membership]       │ ←── Timer (täglich): Erinnerungsmail
-              └─────────────────────────────┘
-                      ↑ Timer (3.5 Tage): Abbruch
-                      ↑ Message: Ablehnung durch Nutzer
-                            ↓ Confirmed
-              [Send Welcome Mail] → [Membership confirmed]
+[Submit registration form]
+         ↓
+[Claim membership]         ← NEU (Service Task)
+         ↓
+[Has empty spots?]         ← NEU (Exclusive Gateway)
+   ↓ Yes              ↓ No
+[Send confirmation]   [Send rejection mail]  ← NEU
+         ↓                    ↓
+[Confirm membership]  [Membership rejected]  ← NEU End Event
+         ↓
+[Send Welcome Mail]
+         ↓
+[Membership confirmed]
 ```
 
 ## Aufgaben
 
-### 1. BPMN erweitern
+### 1. BPMN komplett neu modellieren
 
-Erstelle den Prozess nach `../models/task-4-with-boundary.bpmn`.
+Erstelle den Prozess nach dem Referenz-Modell `../models/task-4-gateway.bpmn`.
 
-**Neuer Subprozess** `subProcess_confirmMembership`:
-- Enthält: `serviceTask_sendConfirmationMail` + `userTask_confirmMembership`
-
-**Boundary Events am Subprozess:**
+Neue Elemente:
 
 | Element | Typ | ID | Name | Konfiguration |
 |---|---|---|---|---|
-| Täglich | Non-Interrupting Timer | `timer_resendEveryDay` | Every day | Duration: `PT1M` (1 Minute, für Tests) |
-| Timeout | Interrupting Timer | `timer_abortAfter3HalfDays` | After 3½ days | Duration: `PT3M` (3 Minuten, für Tests) |
-| Ablehnung | Interrupting Message | `event_confirmationRejected` | Confirmation rejected | Message: `Message_ConfirmationRejected` |
+| Claim | Service Task | `serviceTask_claimMembership` | Claim membership | `#{claimMembershipDelegate}` |
+| Gateway | Exclusive Gateway | `gateway_hasEmptySpots` | Has empty spots? | Default-Flow: `Yes`-Pfad |
+| Rejection Mail | Service Task | `serviceTask_sendRejectionMail` | Send rejection mail | `#{sendRejectionMailDelegate}` |
+| Abgelehnt | End Event | `endEvent_membershipRejected` | Membership rejected | – |
 
-**Neue Service Tasks:**
+**Gateway-Bedingung (Nein-Pfad):** `${!hasEmptySpots}`
 
-| Element | ID | Name | Delegate |
-|---|---|---|---|
-| Erinnerungsmail | `serviceTask_reSendConfirmationMail` | Re-Send confirmation mail | `#{reSendConfirmationMailDelegate}` |
-| Claim freigeben | `serviceTask_revokeClaim` | Revoke claim | `#{revokeClaimDelegate}` |
+### 2. Domain erweitern: `MembershipCapacity`
 
-**Neue End Events:**
+**Neue Datei:** `domain/MembershipCapacity.java`
 
-| ID | Name |
-|---|---|
-| `endEvent_membershipDeclined` | Membership declined |
-| `endEvent_membershipActivated` | Membership activated |
+Erstelle eine Klasse `MembershipCapacity` mit folgenden Eigenschaften:
+- `maxSpots` (int, Default: 1000) – maximale Anzahl verfügbarer Plätze
+- `claimedSpots` (int, Default: 0) – aktuell belegte Plätze
+- `hasEmptySpots` – gibt `true` zurück, wenn `claimedSpots < maxSpots`
+- `claim()` – erhöht `claimedSpots` um 1
 
-### 2. Neue Use Cases & Delegates implementieren
+### 3. Use Cases und Services erstellen
 
-**`ReSendConfirmationMailUseCase`** / **`ReSendConfirmationMailService`**:
-- Loggt "Re-sending confirmation mail to [email]"
+Erstelle nach dem bewährten Muster (analog zu Aufgabe 3):
 
-**`RevokeClaimUseCase`** / **`RevokeClaimService`**:
-- Loggt "Revoking claim for [membershipId]" 
-- Gibt den Kapazitäts-Slot wieder frei (Counter dekrementieren)
+- `ClaimMembershipUseCase` / `ClaimMembershipService`
+  - Prüft Kapazität (einfacher Counter in Memory reicht)
+  - Setzt Prozessvariable `hasEmptySpots` (via `DelegateExecution.setVariable(...)`)
+- `SendRejectionMailUseCase` / `SendRejectionMailService`
+  - Loggt "Sending rejection mail to [email]"
 
-**`RevokeClaimDelegate`** / **`ReSendConfirmationMailDelegate`**: analog zu bisherigen Delegates
+### 4. Delegates erstellen
 
-### 3. Message-Boundary korrelieren
+- `ClaimMembershipDelegate`: Prüft Kapazität, setzt Variable `hasEmptySpots` auf der `DelegateExecution`
+- `SendRejectionMailDelegate`: Liest `membershipId`, ruft Use Case auf
 
-Der Message Boundary `Message_ConfirmationRejected` wird von außen ausgelöst.
-Füge einen REST-Endpoint hinzu:
-
-```
-POST /api/memberships/{membershipId}/reject
-```
-
-Implementiere die Korrelation in `MembershipProcessAdapter`: Verwende `runtimeService.createMessageCorrelation(...)` mit dem Message-Namen aus dem BPMN-Modell und filtere auf die Prozessvariable `membershipId`.
-
-> Async-Continuations (siehe Aufgabe 2): Setze `asyncAfter` zusätzlich an allen Boundary Events (`timer_resendEveryDay`, `timer_abortAfter3HalfDays`, `event_confirmationRejected`).
+**Hinweis:** Die Element-IDs und Variablennamen (z.B. `hasEmptySpots`) kannst du direkt aus dem BPMN-Modell entnehmen. Async-Continuations (siehe Aufgabe 3) gelten ab hier als bekannt – `asyncBefore` am Message-Start, `asyncAfter` am User Task.
 
 ## Testen
 
+**Happy Path (Kapazität vorhanden):**
 ```bash
-# Membership starten
-MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8080/api/memberships \
-  -d '{"email": "eve@miravelo.com", "name": "Eve", "age": 26}')
+curl -X POST http://localhost:8080/api/memberships \
+  -d '{"email": "carol@miravelo.com", "name": "Carol", "age": 27}'
+```
 
-# Nach ~1 Minute: Erinnerungsmail im Log
-
-# Ablehnung senden
-curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
-
-# Nach ~3 Minuten ohne Bestätigung: Timeout-Abbruch
+**Rejection Path (Kapazität auf 0 setzen → Anwendungs-Config anpassen):**
+```bash
+# Setze maxSpots = 0 in der Konfiguration
+curl -X POST http://localhost:8080/api/memberships \
+  -d '{"email": "dave@miravelo.com", "name": "Dave", "age": 30}'
+# Erwartetes Log: "Sending rejection mail to dave@miravelo.com"
 ```
 
 ## Referenzlösung

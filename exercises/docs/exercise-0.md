@@ -1,4 +1,4 @@
-# Aufgabe 0 – BPMN Modellierung
+# Aufgabe 0 – Fachliche BPMN-Modellierung
 
 ## Ziel-Modell
 
@@ -6,10 +6,14 @@
 
 ## Lernziele
 
-- Camunda Modeler installieren und kennenlernen
-- Einen einfachen BPMN-Prozess modellieren
-- Prozess-IDs und Element-IDs nach CIB7-Konvention vergeben
-- Den Prozess im CIB Seven Cockpit deployen und testen
+- Einen **BPMN-Modeler** installieren und kennenlernen
+- Einen Geschäftsprozess **fachlich** modellieren – den Ablauf, nicht die Technik
+- Die BPMN-Grundelemente kennen: Start Event, User Task, Service Task, End Event
+- Sprechende, verständliche Namen vergeben
+
+> **Tool:** Wir nutzen den **[Miragon BPMN Modeler](https://miragon.github.io/bpmn-modeler/)**.
+> Es gibt ihn als VS-Code-Extension, IntelliJ-Plugin und Standalone-Desktop-App –
+> nimm einfach die Variante, die dir am besten passt.
 
 ## Hintergrund
 
@@ -26,6 +30,10 @@ Jemand trägt sich ein, kriegt eine Welcome Mail – fertig.
 > *„Das ist doch in einer Stunde gebaut."*
 > — Jeder Entwickler, der einen Newsletter unterschätzt hat.
 
+Bevor wir irgendetwas automatisieren, halten wir den Ablauf erst einmal **fachlich**
+fest: Was passiert, in welcher Reihenfolge? Das ist die Sprache, in der Fachbereich
+und Entwicklung sich einig werden – ganz ohne technische Details.
+
 ### Prozess
 
 ```
@@ -35,51 +43,37 @@ Jemand trägt sich ein, kriegt eine Welcome Mail – fertig.
 
 ## Aufgabe
 
-Modelliere mit dem **Camunda Modeler** den Newsletter-Anmeldeprozess und speichere ihn
-als `src/main/resources/bpmn/newsletter.bpmn`.
+Modelliere im Modeler den Newsletter-Anmeldeprozess **fachlich** und
+speichere ihn als `src/main/resources/bpmn/newsletter.bpmn`.
 
 ### Anforderungen
 
-| Element | Typ | ID | Name |
-|---|---|---|---|
-| Start-Event | None Start Event | `startEvent_newsletterWanted` | Newsletter wanted |
-| Formular | User Task | `userTask_fillOutForm` | Fill out form |
-| Welcome Mail | Service Task | `serviceTask_sendWelcomeMail` | Send Welcome Mail |
-| End-Event | None End Event | `endEvent_userSubscribed` | User subscribed |
+| Element | Typ | Name |
+|---|---|---|
+| Start-Event | None Start Event | Newsletter wanted |
+| Formular | User Task | Fill out form |
+| Welcome Mail | Service Task | Send Welcome Mail |
+| End-Event | None End Event | User subscribed |
 
-**Prozess-ID:** `subscribeNewsletter`
+Verbinde die Elemente mit Sequenzflüssen zum durchgängigen Ablauf.
 
-**Formular-Felder** (am User Task konfigurieren):
-- `email` (String) – E-Mail-Adresse
-- `name` (String) – Vollständiger Name
-- `age` (Long) – Alter in Jahren
-
-**Service Task Konfiguration:**
-- Implementation: `Delegate Expression`
-- Delegate Expression: `#{sendWelcomeMailDelegate}`
-
-### Element-ID-Konventionen
-
-| Präfix | Für |
-|---|---|
-| `startEvent_` | Start-Events |
-| `endEvent_` | End-Events |
-| `userTask_` | User Tasks |
-| `serviceTask_` | Service Tasks |
-| `gateway_` | Gateways |
-| `subProcess_` | Subprozesse |
-| `boundaryEvent_` | Boundary Events |
+> **Nur fachlich!** In dieser Aufgabe geht es ausschließlich um den Ablauf und die
+> Benennung. Die **technische** Modellierung – Prozess- und Element-IDs nach Konvention,
+> Formularfelder, die Anbindung des Service Tasks an Code, `executable`/`historyTimeToLive` –
+> lassen wir hier bewusst weg.
+>
+> Du bekommst sie in **Aufgabe 1** fertig zu sehen (ein externer Consultant hat sie
+> übernommen) und machst sie in **Aufgabe 2** selbst.
 
 ## Kontrolle
 
-1. Anwendung starten: `../mvnw spring-boot:run`
-2. Cockpit öffnen: [http://localhost:8080/camunda](http://localhost:8080/camunda) (admin / admin)
-3. Unter **Processes** sollte `Subscribe Newsletter` erscheinen
-4. Eine Prozessinstanz manuell starten und die UserTask ausfüllen
+- Öffne dein Modell im Modeler und prüfe: Start → User Task → Service Task → End,
+  sauber mit Sequenzflüssen verbunden und verständlich benannt.
+- Vergleiche es mit dem Referenzmodell `../models/task-0-basic-newsletter.bpmn`.
 
 ## Referenzlösung
 
-`../models/task-1-basic-newsletter.bpmn`
+`../models/task-0-basic-newsletter.bpmn`
 
 ---
 

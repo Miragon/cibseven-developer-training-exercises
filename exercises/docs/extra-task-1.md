@@ -1,18 +1,18 @@
 # Extra-Aufgabe 1 – Raus aus dem Engine-Lock-in: die Process-Engine-API
 
-> **Voraussetzung:** Aufgabe 7 ist abgeschlossen. Der Prozess läuft vollständig – mit Service Tasks, User Tasks, Gateways, Boundary Events, Subprozess, Signal, Call Activity, DMN und Kompensation.
+> **Voraussetzung:** Aufgabe 8 ist abgeschlossen. Der Prozess läuft vollständig – mit Service Tasks, User Tasks, Gateways, Boundary Events, Subprozess, Signal, Call Activity, DMN und Kompensation.
 
 ## Ziel-Modell
 
-Das Prozessmodell ändert sich **fachlich nicht**. Es ist exakt der Prozess aus Aufgabe 7 – nur die technische Anbindung der Service Tasks wechselt.
+Das Prozessmodell ändert sich **fachlich nicht**. Es ist exakt der Prozess aus Aufgabe 8 – nur die technische Anbindung der Service Tasks wechselt.
 
 Hauptprozess:
 
-![BPMN Hauptprozess](assets/exercise-7-main.svg)
+![BPMN Hauptprozess](assets/exercise-8-main.svg)
 
 Sub-Prozess `handleRejection`:
 
-![BPMN Sub-Prozess](assets/exercise-7-sub.svg)
+![BPMN Sub-Prozess](assets/exercise-8-sub.svg)
 
 ## Lernziele
 
@@ -40,7 +40,7 @@ Das Beste daran: **Domain, Application-Services und Ports bleiben unangetastet.*
 
 ## Was sich ändert (und was nicht)
 
-| Schicht | Aufgabe 7 (nativ CIB7) | Extra-Aufgabe 1 (Process-Engine-API) |
+| Schicht | Aufgabe 8 (nativ CIB7) | Extra-Aufgabe 1 (Process-Engine-API) |
 |---|---|---|
 | `domain/`, `application/` | unverändert | **unverändert** |
 | Inbound Service Tasks | `JavaDelegate` + `DelegateExecution` | `@ProcessEngineWorker`-Worker |
@@ -211,26 +211,26 @@ Wenn dieser Test grün ist, lebt die Engine nur noch in `pom.xml` und `applicati
 
 ## Testen
 
-Die REST-Schnittstelle und das Verhalten sind identisch zu Aufgabe 7 – nur der Port ist ein anderer (`8089`). Service Tasks werden jetzt per Polling (~5 s) abgearbeitet, es kann also einen Moment dauern.
+Die REST-Schnittstelle und das Verhalten sind identisch zu Aufgabe 8 – nur der Port ist ein anderer (`8090`). Service Tasks werden jetzt per Polling (~5 s) abgearbeitet, es kann also einen Moment dauern.
 
 **Einfache Ablehnung (Alter außerhalb 21–29):**
 ```bash
-MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8089/api/memberships \
+MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8090/api/memberships \
   -d '{"email": "grace@miravelo.com", "name": "Grace", "age": 35}' | tr -d '"')
 
-curl -X POST http://localhost:8089/api/memberships/$MEMBERSHIP_ID/reject
+curl -X POST http://localhost:8090/api/memberships/$MEMBERSHIP_ID/reject
 ```
 
-Im Cockpit (`http://localhost:8089/camunda`, admin/admin):
+Im Cockpit (`http://localhost:8090/camunda`, admin/admin):
 1. Worker `sendConfirmationMail` feuert, User Task „Confirm membership" erscheint
 2. Nach dem Reject läuft die Call Activity `handleRejection`, danach feuert über die Kompensation der Worker `revokeClaim` (Log: „Revoking claim …")
 
 **VIP-Bewerber (Alter 21–29):**
 ```bash
-MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8089/api/memberships \
+MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8090/api/memberships \
   -d '{"email": "hanna@miravelo.com", "name": "Hanna", "age": 25}' | tr -d '"')
 
-curl -X POST http://localhost:8089/api/memberships/$MEMBERSHIP_ID/reject
+curl -X POST http://localhost:8090/api/memberships/$MEMBERSHIP_ID/reject
 ```
 
 ## Kontrolle
@@ -240,7 +240,7 @@ curl -X POST http://localhost:8089/api/memberships/$MEMBERSHIP_ID/reject
 - [ ] Der Outbound-Adapter nutzt `StartProcessApi` / `CorrelationApi` statt `RuntimeService`
 - [ ] `@EnableProcessApplication` ist entfernt, der `EngineCommandExecutor`-Bean ist gesetzt
 - [ ] Der ArchUnit-Test bestätigt: **0** `org.cibseven.bpm`-Abhängigkeiten im Code
-- [ ] Fachliches Verhalten ist identisch zu Aufgabe 7
+- [ ] Fachliches Verhalten ist identisch zu Aufgabe 8
 
 ## Referenzlösung
 

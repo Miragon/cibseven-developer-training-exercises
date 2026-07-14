@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.miragon</groupId>
+        <artifactId>cibseven-developer-training-exercises</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>exercise-1-starter</artifactId>
+    <name>exercise-1-starter</name>
+
+    <!--
+      Starter-Modul für Aufgabe 1. Es kompiliert im Auslieferungszustand, startet aber
+      KEINE Engine: Die CIB-Seven-Dependencies sind auskommentiert. Deine Aufgabe ist es,
+      sie (zusammen mit Annotation & Konfiguration) scharf zu schalten und das Modul
+      lauffähig zu machen. Versionen kommen zentral vom Root (dependencyManagement) –
+      du fügst die Deps also OHNE <version> hinzu.
+    -->
+    <dependencies>
+        <!-- Spring Boot Core – reicht, damit die Anwendung kompiliert. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
+        <!--
+          TODO Aufgabe 1: Die folgenden Abhängigkeiten einkommentieren, damit die
+          CIB-Seven-Engine mit Web-Cockpit + REST-API startet und eine PostgreSQL-Datenbank
+          angebunden wird.
+        -->
+        <!--
+        <dependency>
+            <groupId>org.cibseven.bpm.springboot</groupId>
+            <artifactId>cibseven-bpm-spring-boot-starter-webapp-4</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.cibseven.bpm.springboot</groupId>
+            <artifactId>cibseven-bpm-spring-boot-starter-rest-4</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+        -->
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>io.miragon.training.TrainingApplication</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
