@@ -45,6 +45,7 @@ http://localhost:8080/camunda  (admin / admin)
 | [3](docs/exercise-3.md) | Bestätigungs-Mail | Service Tasks erweitern, Confirmation-Flow |
 | [4](docs/exercise-4.md) | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung |
 | [5](docs/exercise-5.md) | Prozess-Tests | Prozess-Unit-Test: In-Memory-Engine, gemockte Use Cases, ohne PostgreSQL |
+| [5 · Add-on](docs/exercise-5-addon.md) | bpmn-to-code | Typsichere Process-API aus dem BPMN generieren – Strings raus, Konstanten rein |
 | [6](docs/exercise-6.md) | Boundary Events | Timer- und Message-Boundary-Events, Subprozesse |
 | [7](docs/exercise-7.md) | Signal Events | Signal-Events für Systemkommunikation |
 | [8](docs/exercise-8.md) | Compensation | Automatisches Rollback via BPMN-Kompensation |

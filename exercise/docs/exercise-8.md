@@ -87,7 +87,7 @@ Der `RevokeClaimDelegate` bleibt unverändert – er wird jetzt nur anders aufge
 Fachlich ändert sich am Ergebnis der Decline-Pfade nichts – `serviceTask_revokeClaim` läuft weiterhin,
 nur jetzt als **Kompensations-Handler** (ausgelöst durch das Compensating End Event
 `endEvent_membershipDeclined`). Deine bestehenden Assertions
-`hasPassed("serviceTask_revokeClaim", "endEvent_membershipDeclined")` und
+`hasPassed(Elements.SERVICE_TASK_REVOKE_CLAIM.getValue(), Elements.END_EVENT_MEMBERSHIP_DECLINED.getValue())` und
 `verify(revokeClaimUseCase).revokeClaim(id)` gelten unverändert – ein schönes Beispiel dafür, dass ein
 guter Prozess-Test gegen das **beobachtbare Verhalten** prüft, nicht gegen den Mechanismus. Lass den
 Test grün bleiben, während du das Modell auf Kompensation umbaust.

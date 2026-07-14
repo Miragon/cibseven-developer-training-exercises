@@ -165,9 +165,11 @@ Die Decline-Behandlung liegt jetzt in der Call Activity `callActivity_handleReje
 
 - **Low-Value-Bewerber** (z. B. `age = 40`): Nach Timer-/Message-Abbruch läuft die Call Activity
   synchron durch (Accept Rejection), danach greift die Kompensation. Prüfe
-  `hasPassed("callActivity_handleRejection", "serviceTask_revokeClaim", "endEvent_membershipDeclined")`.
+  `hasPassed(SubscribeNewsletterProcessApi.Elements.CALL_ACTIVITY_HANDLE_REJECTION.getValue(), SubscribeNewsletterProcessApi.Elements.SERVICE_TASK_REVOKE_CLAIM.getValue(), SubscribeNewsletterProcessApi.Elements.END_EVENT_MEMBERSHIP_DECLINED.getValue())`.
 - **High-Value-Bewerber** (`age` zwischen 21 und 29): Der aufgerufene Prozess wartet an
-  `userTask_writeRegretMail`. Hole die Aufgabe über `taskDefinitionKey("userTask_writeRegretMail")`,
+  `userTask_writeRegretMail`. Weil das Element im **aufgerufenen** Prozess liegt, kommt seine Konstante
+  aus der zweiten generierten API: hole die Aufgabe über
+  `taskDefinitionKey(HandleRejectionProcessApi.Elements.USER_TASK_WRITE_REGRET_MAIL.getValue())`,
   schließe sie ab, treibe weiter und prüfe denselben Abschluss.
 
 > Assertions wie `hasPassed(...)` auf der Hauptinstanz sehen nur deren Aktivitäten (u. a. die Call

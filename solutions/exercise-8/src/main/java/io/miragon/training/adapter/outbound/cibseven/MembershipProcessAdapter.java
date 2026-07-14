@@ -1,5 +1,6 @@
 package io.miragon.training.adapter.outbound.cibseven;
 
+import io.miragon.training.adapter.process.SubscribeNewsletterProcessApi.Messages;
 import io.miragon.training.application.port.outbound.MembershipProcess;
 import io.miragon.training.domain.Membership;
 import io.miragon.training.domain.MembershipId;
@@ -19,7 +20,7 @@ public class MembershipProcessAdapter implements MembershipProcess {
 
     @Override
     public void startProcess(Membership membership) {
-        runtimeService.createMessageCorrelation("Message_SubscriptionRequested")
+        runtimeService.createMessageCorrelation(Messages.MESSAGE_SUBSCRIPTION_REQUESTED.getValue())
                 .setVariables(Map.of(
                         "membershipId", membership.id().value().toString(),
                         "email", membership.email().value(),
@@ -31,7 +32,7 @@ public class MembershipProcessAdapter implements MembershipProcess {
 
     @Override
     public void rejectMembership(MembershipId membershipId) {
-        runtimeService.createMessageCorrelation("Message_ConfirmationRejected")
+        runtimeService.createMessageCorrelation(Messages.MESSAGE_CONFIRMATION_REJECTED.getValue())
                 .processInstanceVariableEquals("membershipId", membershipId.value().toString())
                 .correlate();
     }

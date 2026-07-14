@@ -111,13 +111,17 @@ curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
 Dein Prozess-Test aus [Aufgabe 5](exercise-5.md) deckt bisher nur Happy Path und Ablehnung ab.
 Jetzt sind drei neue Pfade dazugekommen – ergänze für jeden einen Test:
 
+> Seit Aufgabe 5 referenzierst du Element-IDs über die generierte `SubscribeNewsletterProcessApi` statt
+> über Strings. Die neuen Elemente (Timer, Compensation) tauchen nach dem nächsten `generate-sources`
+> automatisch als `Elements.*`-Konstanten auf.
+
 - **Abbruch-Timer (interrupting):** Warte am User Task, feuere den Timer mit dem neuen Helfer
-  `fireTimer(processEngine, "timer_abortAfter3HalfDays")`, treibe weiter und prüfe
-  `hasPassed("serviceTask_revokeClaim", "endEvent_membershipDeclined")`. Mocke dafür
-  `RevokeClaimUseCase`.
+  `fireTimer(processEngine, Elements.TIMER_ABORT_AFTER_3_HALF_DAYS.getValue())`, treibe weiter und prüfe
+  `hasPassed(Elements.SERVICE_TASK_REVOKE_CLAIM.getValue(), Elements.END_EVENT_MEMBERSHIP_DECLINED.getValue())`.
+  Mocke dafür `RevokeClaimUseCase`.
 - **Reject-Message:** Statt des Timers `membershipProcess.rejectMembership(id)` aufrufen – gleicher
   Ausgang (`revokeClaim` → declined).
-- **Resend-Timer (non-interrupting):** `fireTimer(..., "timer_resendEveryDay")`, dann prüfen, dass
+- **Resend-Timer (non-interrupting):** `fireTimer(..., Elements.TIMER_RESEND_EVERY_DAY.getValue())`, dann prüfen, dass
   `reSendConfirmationMailUseCase.reSendConfirmationMail(id)` ein **zweites** Mal lief und der Prozess
   weiter am User Task wartet. Mocke `ReSendConfirmationMailUseCase`.
 

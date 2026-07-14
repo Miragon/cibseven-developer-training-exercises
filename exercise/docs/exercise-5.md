@@ -196,6 +196,9 @@ void happyPath_membershipIsConfirmedAndWelcomeMailIsSent() {
 }
 ```
 
+> Diese Element-IDs stehen hier noch als Strings im Test – im [Add-on](exercise-5-addon.md) räumen wir
+> sie gleich weg. Merk dir schon mal, wie viele es sind.
+
 ### 5. Rejection-Pfad testen (selbst)
 
 Schreibe einen zweiten Test `noCapacity_membershipIsRejected`:
@@ -211,9 +214,10 @@ Schreibe einen zweiten Test `noCapacity_membershipIsRejected`:
 ../mvnw -pl exercise test -Dtest=MembershipProcessTest
 ```
 
-> **Ausblick:** Die Element-IDs stehen hier noch als Strings im Test. In der **Extra-Aufgabe**
-> generierst du aus dem BPMN eine typsichere Process-API – dann werden aus `"userTask_confirmMembership"`
-> geprüfte Konstanten.
+> **Add-on:** Die Element-IDs stehen jetzt noch als handgetippte Strings im Test – fragil, sobald jemand
+> im Modeler umbenennt. Im [Add-on: bpmn-to-code](exercise-5-addon.md) generierst du daraus eine
+> typsichere Process-API und ersetzt die Strings durch geprüfte Konstanten. **Ab dann nutzen alle
+> Lösungen die generierte API.**
 
 ## Referenzlösung
 
@@ -221,4 +225,4 @@ Schreibe einen zweiten Test `noCapacity_membershipIsRejected`:
 
 ---
 
-➡️ [Weiter zu Aufgabe 6](exercise-6.md)
+➡️ [Weiter zum Add-on: bpmn-to-code](exercise-5-addon.md)
