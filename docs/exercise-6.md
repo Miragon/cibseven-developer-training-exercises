@@ -129,9 +129,11 @@ Nach dem bekannten Muster (Delegate → Use Case → Service → Outbound-Port �
 
 ### Teil B – Worker-Service (`services/notification-service`)
 
-Der Worker liegt im Modul `services/notification-service/` und wird von dir gefüllt (`TODO Aufgabe 6`).
+Im Worker-Modul `services/notification-service/` implementierst du nur den **Handler** (den „Delegate"
+des Workers) und den **Service**. Der Teams-Adapter `MicrosoftTeamsMessagePublisher` ist bereits
+**vorgegeben** – der Adaptive-Card-Aufbau und der REST-Call sind Infrastruktur, kein Lernziel.
 
-#### 4. External Task Handler abonnieren
+#### 4. External Task Handler abonnieren (der „Delegate")
 
 `adapter/inbound/cibseven/NotifyEmployeesHandler` implementiert `ExternalTaskHandler` und
 abonniert den Topic:
@@ -152,11 +154,19 @@ public class NotifyEmployeesHandler implements ExternalTaskHandler {
 Der Handler übersetzt das External-Task-Event in ein Domain-Objekt **`Notification`** (Titel + Text)
 und gibt es an den Use Case `PublishNotificationUseCase` weiter – **nicht** den Member selbst.
 
-#### 5. Teams-Kanal benachrichtigen
+#### 5. Service implementieren
 
-`adapter/outbound/teams/MicrosoftTeamsMessagePublisher`: baut aus der `Notification` eine
-**Adaptive Card** und **POST**et sie (per `RestClient`) an die Teams-Webhook-URL. Kein Token im
-Worker nötig – die Webhook-URL ist das Secret.
+`application/service/PublishNotificationService` (implementiert `PublishNotificationUseCase`) reicht
+die `Notification` an den Out-Port weiter:
+
+```java
+public void publish(Notification notification) {
+    notificationPublisher.publish(notification);   // NotificationPublisherOutPort
+}
+```
+
+> Der Out-Port `NotificationPublisherOutPort` und seine Implementierung
+> `MicrosoftTeamsMessagePublisher` (der Teams-Adapter) sind schon da – du rufst sie nur auf.
 
 Die Verbindung zur Remote Engine und die Ziel-URL stehen in `application.yaml`:
 
