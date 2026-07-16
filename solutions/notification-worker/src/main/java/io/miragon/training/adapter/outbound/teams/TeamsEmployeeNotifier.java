@@ -4,7 +4,6 @@ import io.miragon.training.application.port.outbound.EmployeeNotifier;
 import io.miragon.training.domain.NewMember;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -14,12 +13,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Alternative sink: posts an Adaptive Card to a Microsoft Teams channel via a Power Automate
- * "Workflows" webhook (template "When a Teams webhook request is received"). Enabled with
- * {@code notification.sink=teams}. No token needed in the worker — the webhook URL is the secret.
+ * Posts an Adaptive Card to a Microsoft Teams channel via a Power Automate "Workflows" webhook
+ * (template "When a Teams webhook request is received"). No token needed in the worker — the
+ * webhook URL is the secret (supply it via {@code notification.teams.webhook-url}).
  */
 @Component
-@ConditionalOnProperty(name = "notification.sink", havingValue = "teams")
 public class TeamsEmployeeNotifier implements EmployeeNotifier {
 
     private static final Logger log = LoggerFactory.getLogger(TeamsEmployeeNotifier.class);

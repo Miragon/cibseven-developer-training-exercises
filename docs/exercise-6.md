@@ -16,7 +16,7 @@ Der zweite Prozess `employeeNotification` mit dem External Service Task:
 - **External Service Task** (`camunda:type="external"` + Topic) modellieren
 - Einen **External Task Worker** in einem **eigenen Service** (eigene JVM) bauen, der sich
   über die **REST-API** mit der Engine verbindet (Remote Engine)
-- Aus dem Worker einen echten **Web-Service** aufrufen (kollaborative „Members Wall")
+- Aus dem Worker einen echten **Web-Service** aufrufen (Nachricht in einen Microsoft-Teams-Kanal posten)
 
 ## Hintergrund
 
@@ -27,9 +27,9 @@ Mitglied bestätigt ist, eine Nachricht **werfen**, die einen zweiten, eigenstä
 nicht mehr von einem Delegate in der Engine erledigt, sondern von einem **separaten Worker-Service**,
 der die Engine nur über deren REST-API kennt – das klassische **External-Task-Pattern**.
 
-Der Worker trägt jeden neuen Member in eine **gemeinsame, öffentliche „Inner Circle Members Wall"**
-ein, die der ganze Schulungsraum live im Browser mitliest. Jeder sieht seinen eigenen Eintrag –
-und den der anderen – auftauchen. Das ist unser öffentliches Erfolgserlebnis. 🎉
+Der Worker postet jeden neuen Member als **Karte in einen gemeinsamen Microsoft-Teams-Kanal**,
+den das ganze Team mitliest. Jeder sieht die neuen Mitglieder in Echtzeit im Kanal auftauchen –
+unser öffentliches Erfolgserlebnis. 🎉
 
 ### Neuer Prozessablauf
 
@@ -43,21 +43,19 @@ Zweiter Prozess (employeeNotification):
              external, topic="notifyEmployees"
                      ▲
                      │ fetch & lock, complete
-        Worker-Service (eigene JVM):  NotifyEmployeesHandler → RestClient → Members Wall
+        Worker-Service (eigene JVM):  NotifyEmployeesHandler → RestClient → Teams-Kanal
 ```
 
 ## Architektur
 
 Es kommen **zwei Dinge** dazu:
 
-1. **Hauptservice** (das `exercise`-Modul): ein Message-Throw-Event + ein zweiter Prozess
-   (`employeeNotification`) mit einem External Service Task.
+1. **Hauptservice** (das `services/process-application`-Modul): ein Message-Throw-Event + ein zweiter
+   Prozess (`employeeNotification`) mit einem External Service Task.
 2. **Worker-Service** (neues Modul `services/notification-service`): ein eigenständiger Spring-Boot-Prozess
    **ohne eigene Engine**, der sich per External Task Client remote an `http://localhost:8080/engine-rest`
-   hängt und den Topic `notifyEmployees` abarbeitet. Er hat einen Out-Port `EmployeeNotifier` mit
-   **zwei Implementierungen**, umschaltbar per `notification.sink`:
-   - `JsonBlobEmployeeNotifier` (Default) → Members Wall auf jsonblob.com
-   - `TeamsEmployeeNotifier` → Microsoft-Teams-Kanal (Alternative)
+   hängt und den Topic `notifyEmployees` abarbeitet. Über den Out-Port `EmployeeNotifier` postet der
+   `TeamsEmployeeNotifier` eine **Adaptive Card** in einen Microsoft-Teams-Kanal.
 
 ## Aufgaben
 
@@ -131,12 +129,12 @@ public class NotifyEmployeesHandler implements ExternalTaskHandler {
 }
 ```
 
-#### 5. Members Wall aufrufen
+#### 5. Teams-Kanal benachrichtigen
 
-`adapter/outbound/jsonblob/JsonBlobEmployeeNotifier` (Default-Sink): den geteilten Blob **GET**en,
-den neuen Member anhängen, die aktualisierte Liste **PUT**en (per `RestClient`).
+`adapter/outbound/teams/TeamsEmployeeNotifier`: baut eine **Adaptive Card** und **POST**et sie (per
+`RestClient`) an die Teams-Webhook-URL. Kein Token im Worker nötig – die Webhook-URL ist das Secret.
 
-Die Verbindung zur Remote Engine steht in `application.yaml`:
+Die Verbindung zur Remote Engine und die Ziel-URL stehen in `application.yaml`:
 
 ```yaml
 camunda:
@@ -144,25 +142,24 @@ camunda:
     client:
       base-url: http://localhost:8080/engine-rest   # Remote Engine REST-API
 notification:
-  sink: jsonblob                                     # jsonblob (default) | teams
-  jsonblob:
-    blob-url: https://jsonblob.com/api/jsonBlob/CHANGE-ME
+  teams:
+    # Echte URL per Umgebungsvariable TEAMS_WEBHOOK_URL – kein Secret ins Repo committen.
+    webhook-url: ${TEAMS_WEBHOOK_URL:https://CHANGE-ME}
 ```
 
-## Members Wall einrichten (jsonblob.com – kein Account nötig)
+## Teams-Webhook einrichten (Power Automate „Workflows")
 
-1. [jsonblob.com](https://jsonblob.com) öffnen, den Editor-Inhalt durch `[]` ersetzen, **Save**.
-2. Die URL wird zu `https://jsonblob.com/<uuid>`; die **API-URL** ist
-   `https://jsonblob.com/api/jsonBlob/<uuid>` – diese in `notification.jsonblob.blob-url` eintragen.
-3. `wall.html` (im Worker-Modul) im Browser öffnen, dieselbe Blob-URL eintragen → die Wand füllt
-   sich live.
+1. In Teams beim Ziel-**Kanal** auf **••• → Workflows** (oder die **Workflows**-App → **Neuer Flow**).
+2. Vorlage **„Post to a channel when a webhook request is received"** wählen (Trigger
+   „When a Teams webhook request is received"), Teams-Verbindung bestätigen.
+3. **Team** + **Kanal** auswählen → **Erstellen**. Es entsteht eine **HTTP-POST-URL** (`https://…`).
+4. Diese URL beim Start des Workers als Umgebungsvariable übergeben:
+   `TEAMS_WEBHOOK_URL='<deine-URL>'` (oder Argument `--notification.teams.webhook-url=<URL>`).
 
-> **Alternative – Microsoft Teams:** `notification.sink=teams` setzen und in
-> `notification.teams.webhook-url` eine **Power-Automate-„Workflows"-Webhook-URL** eintragen
-> (Vorlage „When a Teams webhook request is received"). Nicht den alten Incoming-Webhook-Connector
-> verwenden (wird 2026 abgeschaltet). Nur für Team-Mitglieder sichtbar.
->
-> **Alternative – webhook.site:** eine geteilte URL, roher Live-Feed, komplett ohne Account.
+> ⚠️ Die Signatur (`sig=…`) in der URL ist ein **Secret** – nicht ins Repo committen. Den alten
+> „Incoming Webhook"-Connector **nicht** verwenden (2026 abgeschaltet). Der Kanal ist nur für
+> Team-Mitglieder sichtbar. Da die Ausgabe hinter dem Out-Port `EmployeeNotifier` steckt, lässt
+> sich statt Teams leicht ein anderer Web-Service anbinden.
 
 ## Testen
 
@@ -171,13 +168,13 @@ notification:
 cd stack && docker-compose up -d
 cd ../solutions/exercise-6 && ../../mvnw spring-boot:run
 
-# 2. Worker mit deiner Blob-URL starten (eigenes Terminal)
+# 2. Worker mit deiner Teams-Webhook-URL starten (eigenes Terminal)
 cd solutions/notification-worker
-../../mvnw spring-boot:run -Dspring-boot.run.arguments=--notification.jsonblob.blob-url=https://jsonblob.com/api/jsonBlob/<uuid>
+TEAMS_WEBHOOK_URL='<deine-Teams-Webhook-URL>' ../../mvnw spring-boot:run
 
 # 3. Membership anlegen und im Cockpit (http://localhost:8080/camunda, admin/admin)
 #    die Confirm-Aufgabe abschließen → der External Task wird vom Worker abgeholt →
-#    ein neuer Member erscheint auf wall.html.
+#    eine Karte erscheint im Teams-Kanal.
 curl -X POST http://localhost:8080/api/memberships \
   -H "Content-Type: application/json" \
   -d '{"email":"jane@example.com","name":"Jane","age":30}'

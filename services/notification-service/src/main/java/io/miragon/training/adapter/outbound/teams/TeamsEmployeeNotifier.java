@@ -4,22 +4,16 @@ import io.miragon.training.application.port.outbound.EmployeeNotifier;
 import io.miragon.training.domain.NewMember;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import java.util.List;
-import java.util.Map;
-
 /**
- * Alternative sink: posts an Adaptive Card to a Microsoft Teams channel via a Power Automate
- * "Workflows" webhook (template "When a Teams webhook request is received"). Enabled with
- * {@code notification.sink=teams}. No token needed in the worker — the webhook URL is the secret.
+ * Posts an Adaptive Card to a Microsoft Teams channel via a Power Automate "Workflows" webhook
+ * (template "When a Teams webhook request is received"). No token needed in the worker — the
+ * webhook URL is the secret (supply it via {@code notification.teams.webhook-url}).
  */
 @Component
-@ConditionalOnProperty(name = "notification.sink", havingValue = "teams")
 public class TeamsEmployeeNotifier implements EmployeeNotifier {
 
     private static final Logger log = LoggerFactory.getLogger(TeamsEmployeeNotifier.class);
@@ -35,37 +29,16 @@ public class TeamsEmployeeNotifier implements EmployeeNotifier {
 
     @Override
     public void publish(NewMember member) {
-        restClient.post()
-                .uri(webhookUrl)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(adaptiveCardMessage(member))
-                .retrieve()
-                .toBodilessEntity();
-
-        log.info("Posted new member {} to Teams", member.name());
-    }
-
-    private Map<String, Object> adaptiveCardMessage(NewMember member) {
-        Map<String, Object> textBlock = Map.of(
-                "type", "TextBlock",
-                "text", "🎉 New Inner Circle member: " + member.name() + "!",
-                "weight", "Bolder",
-                "size", "Medium",
-                "wrap", true
-        );
-        Map<String, Object> card = Map.of(
-                "$schema", "http://adaptivecards.io/schemas/adaptive-card.json",
-                "type", "AdaptiveCard",
-                "version", "1.4",
-                "body", List.of(textBlock)
-        );
-        Map<String, Object> attachment = Map.of(
-                "contentType", "application/vnd.microsoft.card.adaptive",
-                "content", card
-        );
-        return Map.of(
-                "type", "message",
-                "attachments", List.of(attachment)
-        );
+        // TODO Aufgabe 6: post an Adaptive Card to the Teams webhook (this.webhookUrl).
+        //  Build the request body:
+        //    { "type": "message",
+        //      "attachments": [ {
+        //        "contentType": "application/vnd.microsoft.card.adaptive",
+        //        "content": { "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        //                     "type": "AdaptiveCard", "version": "1.4",
+        //                     "body": [ { "type": "TextBlock",
+        //                                 "text": "🎉 New Inner Circle member: " + member.name() + "!" } ] } } ] }
+        //  Then POST it with the injected `restClient` (contentType application/json).
+        throw new UnsupportedOperationException("TODO Aufgabe 6: implement the Teams notification POST");
     }
 }

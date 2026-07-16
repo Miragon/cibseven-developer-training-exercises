@@ -42,7 +42,7 @@ Detaillierte Aufgabenbeschreibungen befinden sich in [`docs/`](docs/).
 | 3 | Bestätigungs-Mail | Double-Opt-In-Pattern, weitere Service Tasks |
 | 4 | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung, Domain-Refactoring |
 | 5 | Prozess-Tests | Prozess-Unit-Test mit In-Memory-Engine, gemockten Use Cases, ohne PostgreSQL |
-| 6 | Remote Engine & External Task | Message Throw Event, zweiter Prozess, External Task Worker in eigenem Service, kollaborative Members Wall |
+| 6 | Remote Engine & External Task | Message Throw Event, zweiter Prozess, External Task Worker in eigenem Service, Benachrichtigung in einen Teams-Kanal |
 | 7 | Boundary Events & Subprozesse | Timer, Message Boundary Events, Subprocess |
 | 8 | Signal Events | Signal End/Start Events, Event-Publishing |
 | 9 | Kompensation (SAGA) | Compensation Boundary Events, automatisches Rollback |
@@ -58,7 +58,7 @@ cd stack && docker-compose up -d
 # Alles bauen
 ./mvnw clean install
 
-# Exercise-Modul starten (das eine Modul, in dem du alle Aufgaben bearbeitest)
+# process-application-Modul starten (das eine Modul, in dem du alle Aufgaben bearbeitest)
 cd services/process-application && ../../mvnw spring-boot:run
 
 # CIB Seven Cockpit
@@ -67,8 +67,8 @@ open http://localhost:8080/camunda    # admin / admin
 
 ### Lösung einer Aufgabe laden
 
-Das `exercise`-Modul startet im Zustand von **Aufgabe 1** (Engine noch auskommentiert). Wenn du
-eine Aufgabe nicht ganz fertig bekommst, kannst du die Referenzlösung in dein `exercise`-Modul
+Das `process-application`-Modul startet im Zustand von **Aufgabe 1** (Engine noch auskommentiert). Wenn du
+eine Aufgabe nicht ganz fertig bekommst, kannst du die Referenzlösung in dein `process-application`-Modul
 kopieren und mit ihr weiterarbeiten:
 
 ```bash
@@ -77,7 +77,7 @@ kopieren und mit ihr weiterarbeiten:
 ```
 
 Der Task ersetzt `src/main` komplett (Java, `application.yaml`, BPMN/DMN); `src/test` bleibt
-unberührt. Alle Module – das `exercise`-Modul **und** alle Solutions – laufen auf demselben Port
+unberührt. Alle Module – das `process-application`-Modul **und** alle Solutions – laufen auf demselben Port
 (`8080`) und demselben DB-Schema (`exercise`); es läuft also immer nur **ein** Modul zur Zeit.
 Die in **Aufgabe 1** aktivierten CIB-Seven-Abhängigkeiten (`pom.xml`) bleiben bestehen – lade
 eine Lösung ab `exercise-2` daher erst, nachdem Aufgabe 1 abgeschlossen ist.

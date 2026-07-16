@@ -46,7 +46,7 @@ http://localhost:8080/camunda  (admin / admin)
 | [4](../../docs/exercise-4.md) | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung |
 | [5](../../docs/exercise-5.md) | Prozess-Tests | Prozess-Unit-Test: In-Memory-Engine, gemockte Use Cases, ohne PostgreSQL |
 | [5 · Add-on](../../docs/exercise-5-addon.md) | bpmn-to-code | Typsichere Process-API aus dem BPMN generieren – Strings raus, Konstanten rein |
-| [6](../../docs/exercise-6.md) | Remote Engine & External Task | Message Throw Event, zweiter Prozess, External Task Worker im eigenen Service, kollaborative Members Wall |
+| [6](../../docs/exercise-6.md) | Remote Engine & External Task | Message Throw Event, zweiter Prozess, External Task Worker im eigenen Service, Benachrichtigung in einen Teams-Kanal |
 | [7](../../docs/exercise-7.md) | Boundary Events | Timer- und Message-Boundary-Events, Subprozesse |
 | [8](../../docs/exercise-8.md) | Signal Events | Signal-Events für Systemkommunikation |
 | [9](../../docs/exercise-9.md) | Compensation | Automatisches Rollback via BPMN-Kompensation |

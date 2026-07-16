@@ -10,15 +10,12 @@ camunda:
       base-url: http://localhost:8080/engine-rest
       lock-duration: 20000
 
-# Which collaborative surface to publish to. Switch to "teams" to post to a Teams channel instead.
+# Where to announce new members: a Microsoft Teams channel via a Power Automate "Workflows" webhook
+# (template: "When a Teams webhook request is received").
 notification:
-  sink: jsonblob                        # jsonblob (default) | teams
-  jsonblob:
-    # Your shared, public members-wall blob. Create one at https://jsonblob.com (content = []).
-    blob-url: https://jsonblob.com/api/jsonBlob/CHANGE-ME
   teams:
-    # Power Automate "Workflows" webhook URL (template: "When a Teams webhook request is received").
-    webhook-url: https://prod-00.westeurope.logic.azure.com/workflows/CHANGE-ME
+    # Supply the real webhook URL via the TEAMS_WEBHOOK_URL env var — do NOT commit the secret.
+    webhook-url: ${TEAMS_WEBHOOK_URL:https://CHANGE-ME}
 
 logging:
   level:
