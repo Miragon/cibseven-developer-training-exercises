@@ -1,38 +1,33 @@
 package io.miragon.training.adapter.inbound.cibseven;
 
-import io.miragon.training.application.port.inbound.NotifyEmployeesUseCase;
+import io.miragon.training.application.port.inbound.PublishNotificationUseCase;
 import org.cibseven.bpm.client.task.ExternalTask;
 import org.cibseven.bpm.client.task.ExternalTaskHandler;
 import org.cibseven.bpm.client.task.ExternalTaskService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * Remote external-task worker. Connects to the engine REST API (see {@code camunda.bpm.client}
- * config), fetches and locks tasks of the {@code notifyEmployees} topic, announces the new member,
- * and completes the task.
+ * Remote external-task worker: subscribes to the {@code notifyEmployees} topic, turns the locked
+ * task into a {@link io.miragon.training.domain.Notification}, publishes it, and completes the task.
  */
 @Component
-// TODO Aufgabe 6: subscribe this handler to the external-task topic "notifyEmployees"
-//  Hint: annotate the class with @ExternalTaskSubscription(topicName = "notifyEmployees")
-//        (org.cibseven.bpm.client.spring.annotation.ExternalTaskSubscription)
+// TODO Aufgabe 6: subscribe to the topic — @ExternalTaskSubscription(topicName = "notifyEmployees")
+//                 (org.cibseven.bpm.client.spring.annotation.ExternalTaskSubscription)
 public class NotifyEmployeesHandler implements ExternalTaskHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(NotifyEmployeesHandler.class);
+    private final PublishNotificationUseCase publishNotification;
 
-    private final NotifyEmployeesUseCase useCase;
-
-    public NotifyEmployeesHandler(NotifyEmployeesUseCase useCase) {
-        this.useCase = useCase;
+    public NotifyEmployeesHandler(PublishNotificationUseCase publishNotification) {
+        this.publishNotification = publishNotification;
     }
 
     @Override
-    public void execute(ExternalTask externalTask, ExternalTaskService externalTaskService) {
+    public void execute(ExternalTask task, ExternalTaskService taskService) {
         // TODO Aufgabe 6:
-        //  1. Read the "name" and "email" process variables (externalTask.getVariable(...))
-        //  2. Announce the member: useCase.notify(new NewMember(name, email, LocalDateTime.now().toString()))
-        //  3. Complete the external task: externalTaskService.complete(externalTask)
+        //   1. read the "name" task variable       -> task.getVariable("name")
+        //   2. build a Notification                -> new Notification("Miravelo Inner Circle", "🎉 New Inner Circle member: " + name + "!")
+        //   3. publish it                          -> publishNotification.publish(notification)
+        //   4. complete the task                   -> taskService.complete(task)
         throw new UnsupportedOperationException("TODO Aufgabe 6: implement the external task handler");
     }
 }

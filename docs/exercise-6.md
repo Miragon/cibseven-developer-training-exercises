@@ -74,8 +74,8 @@ Es kommen **zwei Dinge** dazu:
    Prozess (`employeeNotification`) mit einem External Service Task.
 2. **Worker-Service** (neues Modul `services/notification-service`): ein eigenständiger Spring-Boot-Prozess
    **ohne eigene Engine**, der sich per External Task Client remote an `http://localhost:8080/engine-rest`
-   hängt und den Topic `notifyEmployees` abarbeitet. Über den Out-Port `EmployeeNotifier` postet der
-   `TeamsEmployeeNotifier` eine **Adaptive Card** in einen Microsoft-Teams-Kanal.
+   hängt und den Topic `notifyEmployees` abarbeitet. Über den Out-Port `NotificationPublisherOutPort`
+   postet der `MicrosoftTeamsMessagePublisher` eine **Adaptive Card** in einen Microsoft-Teams-Kanal.
 
 ## Aufgaben
 
@@ -140,19 +140,23 @@ abonniert den Topic:
 @Component
 @ExternalTaskSubscription(topicName = "notifyEmployees")
 public class NotifyEmployeesHandler implements ExternalTaskHandler {
-    public void execute(ExternalTask task, ExternalTaskService service) {
+    public void execute(ExternalTask task, ExternalTaskService taskService) {
         String name = task.getVariable("name");
-        String email = task.getVariable("email");
-        useCase.notify(new NewMember(name, email, LocalDateTime.now().toString()));
-        service.complete(task);   // Task abschließen!
+        publishNotification.publish(new Notification(
+                "Miravelo Inner Circle", "🎉 New Inner Circle member: " + name + "!"));
+        taskService.complete(task);   // Task abschließen!
     }
 }
 ```
 
+Der Handler übersetzt das External-Task-Event in ein Domain-Objekt **`Notification`** (Titel + Text)
+und gibt es an den Use Case `PublishNotificationUseCase` weiter – **nicht** den Member selbst.
+
 #### 5. Teams-Kanal benachrichtigen
 
-`adapter/outbound/teams/TeamsEmployeeNotifier`: baut eine **Adaptive Card** und **POST**et sie (per
-`RestClient`) an die Teams-Webhook-URL. Kein Token im Worker nötig – die Webhook-URL ist das Secret.
+`adapter/outbound/teams/MicrosoftTeamsMessagePublisher`: baut aus der `Notification` eine
+**Adaptive Card** und **POST**et sie (per `RestClient`) an die Teams-Webhook-URL. Kein Token im
+Worker nötig – die Webhook-URL ist das Secret.
 
 Die Verbindung zur Remote Engine und die Ziel-URL stehen in `application.yaml`:
 
@@ -178,7 +182,7 @@ notification:
 
 > ⚠️ Die Signatur (`sig=…`) in der URL ist ein **Secret** – nicht ins Repo committen. Den alten
 > „Incoming Webhook"-Connector **nicht** verwenden (2026 abgeschaltet). Der Kanal ist nur für
-> Team-Mitglieder sichtbar. Da die Ausgabe hinter dem Out-Port `EmployeeNotifier` steckt, lässt
+> Team-Mitglieder sichtbar. Da die Ausgabe hinter dem Out-Port `NotificationPublisherOutPort` steckt, lässt
 > sich statt Teams leicht ein anderer Web-Service anbinden.
 
 ## Testen
