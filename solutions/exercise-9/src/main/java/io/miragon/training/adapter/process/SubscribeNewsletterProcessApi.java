@@ -9,7 +9,6 @@ import io.miragon.bpmn.runtime.ElementId;
 import io.miragon.bpmn.runtime.MessageName;
 import io.miragon.bpmn.runtime.ProcessId;
 import io.miragon.bpmn.runtime.SignalName;
-import io.miragon.bpmn.runtime.VariableName;
 import java.lang.String;
 import java.util.List;
 
@@ -25,8 +24,6 @@ public final class SubscribeNewsletterProcessApi {
    */
   public static final class Elements {
     public static final ElementId BOUNDARY_COMPENSATE_CLAIM = new ElementId("boundary_compensateClaim");
-
-    public static final ElementId CALL_ACTIVITY_HANDLE_REJECTION = new ElementId("callActivity_handleRejection");
 
     public static final ElementId END_EVENT_MAIL_SENT_AGAIN = new ElementId("endEvent_mailSentAgain");
 
@@ -71,10 +68,6 @@ public final class SubscribeNewsletterProcessApi {
     public static final ElementId TIMER_RESEND_EVERY_DAY = new ElementId("timer_resendEveryDay");
 
     public static final ElementId USER_TASK_CONFIRM_MEMBERSHIP = new ElementId("userTask_confirmMembership");
-  }
-
-  public static final class CallActivities {
-    public static final ProcessId CALL_ACTIVITY_HANDLE_REJECTION = new ProcessId("handleRejection");
   }
 
   /**
@@ -123,19 +116,6 @@ public final class SubscribeNewsletterProcessApi {
   }
 
   /**
-   * Process variables grouped by the BPMN element that declares them.
-   * Direction is encoded in each variable's wrapper type: {@code VariableName.Input}, {@code VariableName.Output}, or {@code VariableName.InOut} when the variable is both read and written by the same element.
-   * Consumer APIs that take a specific subtype (for example, a method accepting {@code VariableName.Output}) get compile-time direction enforcement.
-   */
-  public static final class Variables {
-    public static final class CallActivityHandleRejection {
-      public static final VariableName.Input AGE = new VariableName.Input("age");
-
-      public static final VariableName.Input MEMBERSHIP_ID = new VariableName.Input("membershipId");
-    }
-  }
-
-  /**
    * Sequence flows between BPMN elements.
    * Mainly useful for process-model tooling, tests, and AI-agent consumers reasoning about the process shape.
    * Worker code typically does not need these.
@@ -151,7 +131,7 @@ public final class SubscribeNewsletterProcessApi {
 
     public static final BpmnFlow FLOW_0_HLNR_3_K = new BpmnFlow("Flow_0hlnr3k", null, "serviceTask_claimMembership", "gateway_hasEmptySpots", null, false);
 
-    public static final BpmnFlow FLOW_0_HO_2_DHW = new BpmnFlow("Flow_0ho2dhw", null, "timer_abortAfter3HalfDays", "callActivity_handleRejection", null, false);
+    public static final BpmnFlow FLOW_0_HO_2_DHW = new BpmnFlow("Flow_0ho2dhw", null, "timer_abortAfter3HalfDays", "endEvent_membershipDeclined", null, false);
 
     public static final BpmnFlow FLOW_0_P_7_KO_1_G = new BpmnFlow("Flow_0p7ko1g", null, "startEvent_submitRegistration", "serviceTask_claimMembership", null, false);
 
@@ -161,9 +141,7 @@ public final class SubscribeNewsletterProcessApi {
 
     public static final BpmnFlow FLOW_14_BK_7_Y_3 = new BpmnFlow("Flow_14bk7y3", null, "serviceTask_sendWelcomeMail", "endEvent_membershipActivated", null, false);
 
-    public static final BpmnFlow FLOW_14_Y_1_UNW = new BpmnFlow("Flow_14y1unw", null, "callActivity_handleRejection", "endEvent_membershipDeclined", null, false);
-
-    public static final BpmnFlow FLOW_153_MCRS = new BpmnFlow("Flow_153mcrs", null, "event_confirmationRejected", "callActivity_handleRejection", null, false);
+    public static final BpmnFlow FLOW_153_MCRS = new BpmnFlow("Flow_153mcrs", null, "event_confirmationRejected", "endEvent_membershipDeclined", null, false);
 
     public static final BpmnFlow FLOW_1_J_9_L_21_Y = new BpmnFlow("Flow_1j9l21y", null, "subProcess_confirmMembership", "serviceTask_sendWelcomeMail", null, false);
 
@@ -183,21 +161,19 @@ public final class SubscribeNewsletterProcessApi {
   public static final class Relations {
     public static final BpmnRelations BOUNDARY_COMPENSATE_CLAIM = new BpmnRelations(null, List.of(), List.of(), null, "serviceTask_claimMembership", List.of());
 
-    public static final BpmnRelations CALL_ACTIVITY_HANDLE_REJECTION = new BpmnRelations("Handle rejection", List.of("timer_abortAfter3HalfDays", "event_confirmationRejected"), List.of("endEvent_membershipDeclined"), null, null, List.of());
-
     public static final BpmnRelations END_EVENT_MAIL_SENT_AGAIN = new BpmnRelations("Mail sent again", List.of("serviceTask_reSendConfirmationMail"), List.of(), null, null, List.of());
 
     public static final BpmnRelations END_EVENT_MEMBERSHIP_ACTIVATED = new BpmnRelations("Membership activated", List.of("serviceTask_sendWelcomeMail"), List.of(), null, null, List.of());
 
     public static final BpmnRelations END_EVENT_MEMBERSHIP_CONFIRMED = new BpmnRelations("Membership confirmed", List.of("userTask_confirmMembership"), List.of(), "subProcess_confirmMembership", null, List.of());
 
-    public static final BpmnRelations END_EVENT_MEMBERSHIP_DECLINED = new BpmnRelations("Membership declined", List.of("callActivity_handleRejection"), List.of(), null, null, List.of());
+    public static final BpmnRelations END_EVENT_MEMBERSHIP_DECLINED = new BpmnRelations("Membership declined", List.of("timer_abortAfter3HalfDays", "event_confirmationRejected"), List.of(), null, null, List.of());
 
     public static final BpmnRelations END_EVENT_MEMBERSHIP_REJECTED = new BpmnRelations("Membership rejected", List.of("serviceTask_sendRejectionMail"), List.of(), null, null, List.of());
 
     public static final BpmnRelations END_EVENT_NOTIFICATION_SENT = new BpmnRelations("Notification sent", List.of("serviceTask_publishSignal"), List.of(), null, null, List.of());
 
-    public static final BpmnRelations EVENT_CONFIRMATION_REJECTED = new BpmnRelations("Confirmation rejected", List.of(), List.of("callActivity_handleRejection"), null, "subProcess_confirmMembership", List.of());
+    public static final BpmnRelations EVENT_CONFIRMATION_REJECTED = new BpmnRelations("Confirmation rejected", List.of(), List.of("endEvent_membershipDeclined"), null, "subProcess_confirmMembership", List.of());
 
     public static final BpmnRelations GATEWAY_HAS_EMPTY_SPOTS = new BpmnRelations("Has empty spots", List.of("serviceTask_claimMembership"), List.of("subProcess_confirmMembership", "serviceTask_sendRejectionMail"), null, null, List.of());
 
@@ -223,7 +199,7 @@ public final class SubscribeNewsletterProcessApi {
 
     public static final BpmnRelations SUB_PROCESS_CONFIRM_MEMBERSHIP = new BpmnRelations("Confirm membership", List.of("gateway_hasEmptySpots"), List.of("serviceTask_sendWelcomeMail"), null, null, List.of("timer_abortAfter3HalfDays", "event_confirmationRejected", "timer_resendEveryDay"));
 
-    public static final BpmnRelations TIMER_ABORT_AFTER_3_HALF_DAYS = new BpmnRelations("After 3 1/2 days", List.of(), List.of("callActivity_handleRejection"), null, "subProcess_confirmMembership", List.of());
+    public static final BpmnRelations TIMER_ABORT_AFTER_3_HALF_DAYS = new BpmnRelations("After 3 1/2 days", List.of(), List.of("endEvent_membershipDeclined"), null, "subProcess_confirmMembership", List.of());
 
     public static final BpmnRelations TIMER_RESEND_EVERY_DAY = new BpmnRelations("Every day", List.of(), List.of("serviceTask_reSendConfirmationMail"), null, "subProcess_confirmMembership", List.of());
 

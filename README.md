@@ -42,11 +42,11 @@ Detaillierte Aufgabenbeschreibungen befinden sich in [`exercise/docs/`](exercise
 | 3 | Bestätigungs-Mail | Double-Opt-In-Pattern, weitere Service Tasks |
 | 4 | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung, Domain-Refactoring |
 | 5 | Prozess-Tests | Prozess-Unit-Test mit In-Memory-Engine, gemockten Use Cases, ohne PostgreSQL |
-| 6 | Boundary Events & Subprozesse | Timer, Message Boundary Events, Subprocess |
-| 7 | Signal Events | Signal End/Start Events, Event-Publishing |
-| 8 | Kompensation (SAGA) | Compensation Boundary Events, automatisches Rollback |
-| 9 | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
-| Extra 1 | Process-Engine-API | Aufgabe 9 engine-neutral umbauen: Worker statt JavaDelegate, Adapter-Tausch statt Engine-Lock-in |
+| 7 | Boundary Events & Subprozesse | Timer, Message Boundary Events, Subprocess |
+| 8 | Signal Events | Signal End/Start Events, Event-Publishing |
+| 9 | Kompensation (SAGA) | Compensation Boundary Events, automatisches Rollback |
+| 10 | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
+| Extra 1 | Process-Engine-API | Aufgabe 10 engine-neutral umbauen: Worker statt JavaDelegate, Adapter-Tausch statt Engine-Lock-in |
 
 ## Quick Start
 
@@ -71,7 +71,7 @@ eine Aufgabe nicht ganz fertig bekommst, kannst du die Referenzlösung in dein `
 kopieren und mit ihr weiterarbeiten:
 
 ```bash
-# solutions/exercise-2 in das exercise-Modul kopieren (gültige Werte: 1–9)
+# solutions/exercise-2 in das exercise-Modul kopieren (gültige Werte: 1–10)
 ./mvnw -pl exercise antrun:run@load-solution -Dsolution=2
 ```
 
@@ -86,7 +86,7 @@ eine Lösung ab `exercise-2` daher erst, nachdem Aufgabe 1 abgeschlossen ist.
 ```
 cibseven-developer-training-exercises/
 ├── exercise/                         # Das eine Arbeitsmodul (startet im Zustand von Aufgabe 1)
-│   ├── docs/                         # Aufgabenbeschreibungen (exercise-0.md … exercise-9.md)
+│   ├── docs/                         # Aufgabenbeschreibungen (exercise-0.md … exercise-10.md)
 │   └── src/main/java/io/miragon/training/
 │       ├── adapter/
 │       │   ├── inbound/
@@ -101,8 +101,8 @@ cibseven-developer-training-exercises/
 │       │   │   └── outbound/         # Repository- und Prozess-Port-Interfaces
 │       │   └── service/              # Use-Case-Implementierungen
 │       └── domain/                   # Domain-Modell (reines Java, keine Framework-Abhängigkeiten)
-├── solutions/                        # Kumulative Lösungen pro Aufgabe (exercise-1 … exercise-9, extra-task-1)
-│   └── exercise-{1-9}/
+├── solutions/                        # Kumulative Lösungen pro Aufgabe (exercise-1 … exercise-10, extra-task-1)
+│   └── exercise-{1-10}/
 ├── models/                           # Referenz-BPMN-/DMN-Modelle
 ├── stack/
 │   ├── docker-compose.yml            # PostgreSQL + MailHog

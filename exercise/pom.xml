@@ -85,7 +85,7 @@
               Ersetzt komplett src/main (Java + Ressourcen inkl. application.yaml + BPMN/DMN).
               Alle Module teilen sich denselben Port (8080) und dasselbe DB-Schema (exercise),
               daher kann die application.yaml einfach mitkopiert werden. src/test bleibt
-              unberührt. Gültige Werte: 1–9.
+              unberührt. Gültige Werte: 1–10.
             -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -103,7 +103,7 @@
                                       message="Bitte die Solution-Nummer angeben, z.B.: mvn -pl exercise antrun:run@load-solution -Dsolution=2"/>
                                 <property name="solutionSrc"
                                           location="${maven.multiModuleProjectDirectory}/solutions/exercise-${solution}/src"/>
-                                <fail message="Solution 'exercise-${solution}' nicht gefunden (gültige Werte: 1-9). Erwarteter Pfad: ${solutionSrc}">
+                                <fail message="Solution 'exercise-${solution}' nicht gefunden (gültige Werte: 1-10). Erwarteter Pfad: ${solutionSrc}">
                                     <condition>
                                         <not>
                                             <available file="${solutionSrc}" type="dir"/>
