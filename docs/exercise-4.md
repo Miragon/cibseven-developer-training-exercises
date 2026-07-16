@@ -35,6 +35,12 @@ Ablehnungsmail. Kein Einspruch. Das Gateway entscheidet.
 Mit 27 eine Absage vom Fahrradladen des Vertrauens zu bekommen trifft anders. Aber das ist
 jetzt das Problem der Bewerber, nicht deins.
 
+Und wenn wir schon echte Mitgliedschaften verwalten: Jede Anmeldung ist ab jetzt ein
+handfestes fachliches Objekt mit einer eigenen ID. Genau die wollen wir auch im Cockpit
+wiederfinden. Deshalb bekommt jede Prozessinstanz in dieser Aufgabe einen **Business Key** –
+die `membershipId`. Kein „welche der 40 laufenden Instanzen war nochmal Carol?" mehr, sondern
+eine Instanz, die eindeutig ihrer Anmeldung zugeordnet ist.
+
 > **Hinweis:** In dieser Aufgabe findet ein Domain-Refactoring statt. Bisher war die Domäne
 > eine einfache Newsletter-Subscription. Ab jetzt wird daraus eine **Membership** im
 > Miravelo Inner Circle. Benenne die bestehenden Klassen entsprechend um
