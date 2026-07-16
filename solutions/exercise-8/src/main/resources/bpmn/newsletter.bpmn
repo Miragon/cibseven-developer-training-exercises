@@ -54,9 +54,15 @@
       <bpmn:incoming>Flow_03vzvil</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:endEvent id="endEvent_membershipActivated" name="Membership activated">
-      <bpmn:incoming>Flow_14bk7y3</bpmn:incoming>
+      <bpmn:incoming>Flow_notifyToEnd</bpmn:incoming>
       <bpmn:signalEventDefinition id="SignalEventDefinition_0qglo4a" signalRef="Signal_membershipActivated" />
     </bpmn:endEvent>
+    <bpmn:intermediateThrowEvent id="throw_notifyNewMember" name="Notify new member">
+      <bpmn:incoming>Flow_14bk7y3</bpmn:incoming>
+      <bpmn:outgoing>Flow_notifyToEnd</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_notifyNewMember" messageRef="Message_NewMemberJoined" camunda:delegateExpression="#{notifyNewMemberDelegate}" />
+    </bpmn:intermediateThrowEvent>
+    <bpmn:sequenceFlow id="Flow_notifyToEnd" sourceRef="throw_notifyNewMember" targetRef="endEvent_membershipActivated" />
     <bpmn:startEvent id="startEvent_membershipActivated" name="Membership activated" camunda:asyncBefore="true">
       <bpmn:outgoing>Flow_0ayt3tk</bpmn:outgoing>
       <bpmn:signalEventDefinition id="SignalEventDefinition_0q6ianv" signalRef="Signal_membershipActivated" />
@@ -93,7 +99,7 @@
         <bpmn:timeCycle xsi:type="bpmn:tFormalExpression">R/P1D</bpmn:timeCycle>
       </bpmn:timerEventDefinition>
     </bpmn:boundaryEvent>
-    <bpmn:sequenceFlow id="Flow_14bk7y3" sourceRef="serviceTask_sendWelcomeMail" targetRef="endEvent_membershipActivated" />
+    <bpmn:sequenceFlow id="Flow_14bk7y3" sourceRef="serviceTask_sendWelcomeMail" targetRef="throw_notifyNewMember" />
     <bpmn:sequenceFlow id="Flow_0p7ko1g" sourceRef="startEvent_submitRegistration" targetRef="serviceTask_claimMembership" />
     <bpmn:sequenceFlow id="Flow_0camehw" name="Yes" sourceRef="gateway_hasEmptySpots" targetRef="subProcess_confirmMembership" />
     <bpmn:sequenceFlow id="Flow_1j9l21y" sourceRef="subProcess_confirmMembership" targetRef="serviceTask_sendWelcomeMail" />
@@ -111,6 +117,7 @@
   </bpmn:process>
   <bpmn:message id="Message_3p5jpc1" name="Message_SubscriptionRequested" />
   <bpmn:message id="Message_ConfirmationRejected" name="Message_ConfirmationRejected" />
+  <bpmn:message id="Message_NewMemberJoined" name="Message_NewMemberJoined" />
   <bpmn:signal id="Signal_membershipActivated" name="signal_membershipActivated" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="subscribeNewsletter">
@@ -203,9 +210,15 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_11di40p_di" bpmnElement="endEvent_membershipActivated">
-        <dc:Bounds x="52" y="-738" width="36" height="36" />
+        <dc:Bounds x="120" y="-738" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="40" y="-687" width="61" height="27" />
+          <dc:Bounds x="108" y="-687" width="61" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="throw_notifyNewMember_di" bpmnElement="throw_notifyNewMember">
+        <dc:Bounds x="20" y="-738" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="-2" y="-687" width="80" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_125tc29" bpmnElement="serviceTask_revokeClaim">
@@ -252,7 +265,11 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_14bk7y3_di" bpmnElement="Flow_14bk7y3">
         <di:waypoint x="0" y="-720" />
-        <di:waypoint x="52" y="-720" />
+        <di:waypoint x="20" y="-720" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_notifyToEnd_di" bpmnElement="Flow_notifyToEnd">
+        <di:waypoint x="56" y="-720" />
+        <di:waypoint x="120" y="-720" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0p7ko1g_di" bpmnElement="Flow_0p7ko1g">
         <di:waypoint x="-1002" y="-720" />

@@ -9,6 +9,7 @@ import io.miragon.training.application.port.inbound.RevokeClaimUseCase;
 import io.miragon.training.application.port.inbound.SendConfirmationMailUseCase;
 import io.miragon.training.application.port.inbound.SendRejectionMailUseCase;
 import io.miragon.training.application.port.inbound.SendWelcomeMailUseCase;
+import io.miragon.training.application.port.inbound.StartEmployeeNotificationUseCase;
 import io.miragon.training.application.port.outbound.MembershipProcess;
 import io.miragon.training.domain.Age;
 import io.miragon.training.domain.Email;
@@ -82,6 +83,9 @@ class MembershipProcessTest {
     @MockitoBean
     private NotifyAboutSignedMembershipUseCase notifyAboutSignedMembershipUseCase;
 
+    @MockitoBean
+    private StartEmployeeNotificationUseCase startEmployeeNotificationUseCase;
+
     @BeforeEach
     void setUp() {
         init(processEngine);
@@ -114,10 +118,11 @@ class MembershipProcessTest {
 
         assertThat(instance)
                 .isEnded()
-                .hasPassed(SubscribeNewsletterProcessApi.Elements.SERVICE_TASK_SEND_WELCOME_MAIL.getValue(), SubscribeNewsletterProcessApi.Elements.END_EVENT_MEMBERSHIP_ACTIVATED.getValue())
+                .hasPassed(SubscribeNewsletterProcessApi.Elements.SERVICE_TASK_SEND_WELCOME_MAIL.getValue(), SubscribeNewsletterProcessApi.Elements.THROW_NOTIFY_NEW_MEMBER.getValue(), SubscribeNewsletterProcessApi.Elements.END_EVENT_MEMBERSHIP_ACTIVATED.getValue())
                 .hasNotPassed(SubscribeNewsletterProcessApi.Elements.CALL_ACTIVITY_HANDLE_REJECTION.getValue(), SubscribeNewsletterProcessApi.Elements.END_EVENT_MEMBERSHIP_DECLINED.getValue());
 
         verify(sendWelcomeMailUseCase, times(1)).sendWelcomeMail(id);
+        verify(startEmployeeNotificationUseCase, times(1)).startEmployeeNotification(any());
         org.assertj.core.api.Assertions.assertThat(runtimeService.createProcessInstanceQuery()
                 .processDefinitionKey(SubscribeNewsletterProcessApi.PROCESS_ID.getValue()).count()).isEqualTo(1L);
     }

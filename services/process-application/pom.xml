@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.miragon</groupId>
+        <artifactId>cibseven-developer-training-exercises</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>process-application</artifactId>
+    <name>process-application</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!--
+          TODO Aufgabe 1: Die CIB-Seven-Starter einkommentieren, damit die Engine mit
+          Web-Cockpit und REST-API startet. Die Versionen kommen zentral aus der Root-pom.xml
+          (dependencyManagement) – du fügst die Deps also OHNE <version> hinzu.
+        -->
+        <!-- CIB Seven engine + Cockpit-Webapp + REST-API (Version zentral gemanagt)
+        <dependency>
+            <groupId>org.cibseven.bpm.springboot</groupId>
+            <artifactId>cibseven-bpm-spring-boot-starter-webapp-4</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.cibseven.bpm.springboot</groupId>
+            <artifactId>cibseven-bpm-spring-boot-starter-rest-4</artifactId>
+        </dependency>
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>io.miragon.training.TrainingApplication</mainClass>
+                </configuration>
+            </plugin>
+
+            <!--
+              "Lösung laden"-Task (Gradle-Task-Analogon). Kopiert die Referenzlösung einer
+              Aufgabe in dieses Modul – so kann man mit der korrekten Lösung weitermachen,
+              falls die eigene Umsetzung nicht ganz passt.
+
+                mvn -pl services/process-application antrun:run@load-solution -Dsolution=2
+                (aus dem process-application-Verzeichnis: ../../mvnw antrun:run@load-solution -Dsolution=2)
+
+              Ersetzt komplett src/main (Java + Ressourcen inkl. application.yaml + BPMN/DMN).
+              Alle Module teilen sich denselben Port (8080) und dasselbe DB-Schema (exercise),
+              daher kann die application.yaml einfach mitkopiert werden. src/test bleibt
+              unberührt. Gültige Werte: 1–10. Hinweis: Der Worker-Service aus Aufgabe 6 liegt im
+              separaten Modul services/notification-service/ (Referenz: solutions/notification-worker/) und
+              wird von diesem Task nicht mitkopiert.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>load-solution</id>
+                        <phase>none</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <fail unless="solution"
+                                      message="Bitte die Solution-Nummer angeben, z.B.: mvn -pl services/process-application antrun:run@load-solution -Dsolution=2"/>
+                                <property name="solutionSrc"
+                                          location="${maven.multiModuleProjectDirectory}/solutions/exercise-${solution}/src"/>
+                                <fail message="Solution 'exercise-${solution}' nicht gefunden (gültige Werte: 1-10). Erwarteter Pfad: ${solutionSrc}">
+                                    <condition>
+                                        <not>
+                                            <available file="${solutionSrc}" type="dir"/>
+                                        </not>
+                                    </condition>
+                                </fail>
+                                <echo message="Lade Solution ${solution} in das process-application-Modul ..."/>
+                                <!-- src/main komplett ersetzen (Java + Ressourcen inkl. application.yaml + BPMN/DMN); src/test bleibt unberührt -->
+                                <delete dir="${project.basedir}/src/main"/>
+                                <copy todir="${project.basedir}/src/main">
+                                    <fileset dir="${solutionSrc}/main"/>
+                                </copy>
+                                <echo message="Fertig. Solution ${solution} wurde nach services/process-application/src/main kopiert."/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

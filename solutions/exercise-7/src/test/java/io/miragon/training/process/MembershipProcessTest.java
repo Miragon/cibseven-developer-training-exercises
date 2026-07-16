@@ -6,6 +6,7 @@ import io.miragon.training.application.port.inbound.RevokeClaimUseCase;
 import io.miragon.training.application.port.inbound.SendConfirmationMailUseCase;
 import io.miragon.training.application.port.inbound.SendRejectionMailUseCase;
 import io.miragon.training.application.port.inbound.SendWelcomeMailUseCase;
+import io.miragon.training.application.port.inbound.StartEmployeeNotificationUseCase;
 import io.miragon.training.adapter.process.SubscribeNewsletterProcessApi.Elements;
 import io.miragon.training.application.port.outbound.MembershipProcess;
 import io.miragon.training.domain.Age;
@@ -76,6 +77,9 @@ class MembershipProcessTest {
     @MockitoBean
     private RevokeClaimUseCase revokeClaimUseCase;
 
+    @MockitoBean
+    private StartEmployeeNotificationUseCase startEmployeeNotificationUseCase;
+
     @BeforeEach
     void setUp() {
         init(processEngine);
@@ -113,6 +117,7 @@ class MembershipProcessTest {
                         Elements.SERVICE_TASK_SEND_CONFIRMATION_MAIL.getValue(),
                         Elements.USER_TASK_CONFIRM_MEMBERSHIP.getValue(),
                         Elements.SERVICE_TASK_SEND_WELCOME_MAIL.getValue(),
+                        Elements.THROW_NOTIFY_NEW_MEMBER.getValue(),
                         Elements.END_EVENT_MEMBERSHIP_ACTIVATED.getValue())
                 .hasNotPassed(
                         Elements.SERVICE_TASK_REVOKE_CLAIM.getValue(),
@@ -122,6 +127,7 @@ class MembershipProcessTest {
 
         verify(sendConfirmationMailUseCase, times(1)).sendConfirmationMail(id);
         verify(sendWelcomeMailUseCase, times(1)).sendWelcomeMail(id);
+        verify(startEmployeeNotificationUseCase, times(1)).startEmployeeNotification(any());
         verify(revokeClaimUseCase, never()).revokeClaim(any());
     }
 
