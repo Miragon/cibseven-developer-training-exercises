@@ -23,13 +23,33 @@ Der zweite Prozess `employeeNotification` mit dem External Service Task:
 Miravelo wächst – und jedes Mal, wenn jemand dem **Inner Circle** beitritt, sollen es *alle*
 mitbekommen. Bisher endet der Prozess still mit „Membership confirmed". Jetzt soll er, sobald ein
 Mitglied bestätigt ist, eine Nachricht **werfen**, die einen zweiten, eigenständigen
-**Benachrichtigungs-Prozess** startet. Dessen einzige Aufgabe (ein External Service Task) wird
-nicht mehr von einem Delegate in der Engine erledigt, sondern von einem **separaten Worker-Service**,
-der die Engine nur über deren REST-API kennt – das klassische **External-Task-Pattern**.
+**Benachrichtigungs-Prozess** startet. 
+
+Dessen einzige Aufgabe (ein External Service Task) wird nicht mehr von einem Delegate in der Engine erledigt, sondern von einem **separaten Worker-Service**, der die Engine nur über deren REST-API kennt – das klassische **External-Task-Pattern**.
 
 Der Worker postet jeden neuen Member als **Karte in einen gemeinsamen Microsoft-Teams-Kanal**,
 den das ganze Team mitliest. Jeder sieht die neuen Mitglieder in Echtzeit im Kanal auftauchen –
 unser öffentliches Erfolgserlebnis. 🎉
+
+### Warum eine Remote Engine – und keine embedded?
+
+Bisher lief die Engine **embedded** – mitten in der Prozess-Anwendung. Hier machen wir es bewusst
+anders: Der Notification-Worker **betreibt keine eigene Engine**, er **nutzt** nur die fremde – über
+REST. Genau das meint **„Remote Engine"**: die Engine läuft woanders, unser Service klopft nur an.
+
+Warum der Aufwand? Weil so ein Schnitt eine **Architektur-Entscheidung nach den Eigenschaften des
+Service** ist, kein Selbstzweck. Nehmen wir an:
+
+- **Skalierung:** Die Prozess-Anwendung stemmt alle Anmeldungen und darf ordentlich hochskalieren.
+  Der Worker tuckert dagegen gemütlich vor sich hin – ein neues Mitglied alle paar Minuten. Den
+  wollen wir **deutlich schwächer skalieren** (eine Instanz reicht), statt in jeder Kopie eine ganze
+  Engine mitzuschleppen.
+- **Security:** In diesem Service steckt eine **Webhook-URL mit Secret** (die Signatur ist quasi ein
+  Passwort). Solche Geheimnisse **isoliert** man lieber in einem kleinen, streng abgesicherten
+  Service – nicht in der breit ausgerollten Prozess-Anwendung, wo die Angriffsfläche riesig ist.
+
+**Unterschiedliche Charakteristiken → unterschiedliche Services.** Die Engine bleibt in der
+Prozess-Anwendung; unser Worker redet nur höflich per REST mit ihr.
 
 ### Neuer Prozessablauf
 
