@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/services/process-application/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/services/notification-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/services/notification-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/services/process-application/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/solutions/exercise-1/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/solutions/exercise-10/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/solutions/exercise-2/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/solutions/exercise-3/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/solutions/exercise-4/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/solutions/exercise-5/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/solutions/exercise-6/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/solutions/exercise-7/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/solutions/exercise-8/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/solutions/exercise-9/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/solutions/extra-task-1/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/solutions/notification-worker/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/solutions/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/solutions/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+  </component>
+</project>

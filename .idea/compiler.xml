@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="solution-exercise-4" />
+        <module name="solution-exercise-3" />
+        <module name="solution-exercise-2" />
+        <module name="solution-notification-worker" />
+        <module name="solution-exercise-1" />
+        <module name="solution-exercise-8" />
+        <module name="solution-exercise-7" />
+        <module name="solution-exercise-6" />
+        <module name="solution-exercise-5" />
+        <module name="solution-exercise-9" />
+        <module name="process-application" />
+        <module name="notification-service" />
+        <module name="solution-exercise-10" />
+        <module name="solution-extra-task-1" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="process-application" target="21" />
+      <module name="notification-service" target="21" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="process-application" options="-parameters" />
+      <module name="notification-service" options="-parameters" />
+      <module name="notification-service" options="-parameters" />
+      <module name="process-application" options="-parameters" />
+      <module name="solution-exercise-1" options="-parameters" />
+      <module name="solution-exercise-10" options="-parameters" />
+      <module name="solution-exercise-2" options="-parameters" />
+      <module name="solution-exercise-3" options="-parameters" />
+      <module name="solution-exercise-4" options="-parameters" />
+      <module name="solution-exercise-5" options="-parameters" />
+      <module name="solution-exercise-6" options="-parameters" />
+      <module name="solution-exercise-7" options="-parameters" />
+      <module name="solution-exercise-8" options="-parameters" />
+      <module name="solution-exercise-9" options="-parameters" />
+      <module name="solution-extra-task-1" options="-parameters" />
+      <module name="solution-notification-worker" options="-parameters" />
+    </option>
+  </component>
+</project>

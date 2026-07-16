@@ -52,7 +52,7 @@ Es kommen **zwei Dinge** dazu:
 
 1. **Hauptservice** (das `exercise`-Modul): ein Message-Throw-Event + ein zweiter Prozess
    (`employeeNotification`) mit einem External Service Task.
-2. **Worker-Service** (neues Modul `notification-worker`): ein eigenständiger Spring-Boot-Prozess
+2. **Worker-Service** (neues Modul `services/notification-service`): ein eigenständiger Spring-Boot-Prozess
    **ohne eigene Engine**, der sich per External Task Client remote an `http://localhost:8080/engine-rest`
    hängt und den Topic `notifyEmployees` abarbeitet. Er hat einen Out-Port `EmployeeNotifier` mit
    **zwei Implementierungen**, umschaltbar per `notification.sink`:
@@ -109,9 +109,9 @@ Nach dem bekannten Muster (Delegate → Use Case → Service → Outbound-Port �
 > Die typsichere `EmployeeNotificationProcessApi` wird beim Build aus der neuen BPMN generiert
 > (bpmn-to-code, siehe [Aufgabe 5 · Add-on](exercise-5-addon.md)).
 
-### Teil B – Worker-Service (`notification-worker`)
+### Teil B – Worker-Service (`services/notification-service`)
 
-Der Worker liegt im Modul `notification-worker/` und wird von dir gefüllt (`TODO Aufgabe 6`).
+Der Worker liegt im Modul `services/notification-service/` und wird von dir gefüllt (`TODO Aufgabe 6`).
 
 #### 4. External Task Handler abonnieren
 

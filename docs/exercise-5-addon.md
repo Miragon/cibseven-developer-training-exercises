@@ -65,7 +65,7 @@ Version zentral aus der Root-`pom.xml`, im Modul also ohne `<version>`:
 Das Plugin läuft in der Phase `generate-sources` – ein Build genügt:
 
 ```bash
-../mvnw -pl exercise generate-sources
+../../mvnw -pl services/process-application generate-sources
 ```
 
 Danach liegt `io.miragon.training.adapter.process.SubscribeNewsletterProcessApi` in `src/main/java`.
@@ -113,7 +113,7 @@ Ab hier gilt: **Ab dieser Aufgabe nutzen alle Lösungen die generierte Process-A
 ## Testen
 
 ```bash
-../mvnw -pl exercise test -Dtest=MembershipProcessTest
+../../mvnw -pl services/process-application test -Dtest=MembershipProcessTest
 ```
 
 > **Gegenprobe:** Benenne testweise ein Element im `newsletter.bpmn` um, führe `generate-sources` aus –

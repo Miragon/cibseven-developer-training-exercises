@@ -211,7 +211,7 @@ Schreibe einen zweiten Test `noCapacity_membershipIsRejected`:
 
 ```bash
 # Nur den Prozess-Test ausführen (kein PostgreSQL nötig):
-../mvnw -pl exercise test -Dtest=MembershipProcessTest
+../../mvnw -pl services/process-application test -Dtest=MembershipProcessTest
 ```
 
 > **Add-on:** Die Element-IDs stehen jetzt noch als handgetippte Strings im Test – fragil, sobald jemand

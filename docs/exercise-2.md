@@ -154,7 +154,7 @@ Ersetze das `TODO` in `startProcess(subscription)`:
 
 ```bash
 # Anwendung starten
-../mvnw spring-boot:run
+../../mvnw spring-boot:run
 
 # Subscription registrieren
 curl -X POST http://localhost:8080/api/subscriptions \

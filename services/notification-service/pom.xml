@@ -9,10 +9,11 @@
         <groupId>io.miragon</groupId>
         <artifactId>cibseven-developer-training-exercises</artifactId>
         <version>1.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>notification-worker</artifactId>
-    <name>notification-worker</name>
+    <artifactId>notification-service</artifactId>
+    <name>notification-service</name>
 
     <dependencies>
         <!-- spring-web brings the RestClient used to call the collaborative wall / Teams;

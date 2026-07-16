@@ -59,13 +59,13 @@ sind bereits aktiv.)
 
 ### 3. Konfiguration setzen
 
-Kommentiere in `exercise/src/main/resources/application.yaml` die Konfiguration ein:
+Kommentiere in `services/process-application/src/main/resources/application.yaml` die Konfiguration ein:
 Datenbank-Anbindung (PostgreSQL aus dem Stack), Cockpit-Admin-User und Webclient.
 Ohne DB-Verbindung startet die Engine nicht.
 
 ### 4. Deployment-Annotation setzen
 
-In `exercise/src/main/java/io/miragon/training/TrainingApplication.java`:
+In `services/process-application/src/main/java/io/miragon/training/TrainingApplication.java`:
 aktiviere die Imports und Annotationen **`@SpringBootApplication`** und
 **`@EnableJpaRepositories`**. Erst dadurch greifen Auto-Configuration und das automatische
 BPMN-Deployment – alle `*.bpmn` unter `src/main/resources` werden beim Start deployt.
@@ -73,7 +73,7 @@ BPMN-Deployment – alle `*.bpmn` unter `src/main/resources` werden beim Start d
 ### 5. Los geht's – starten
 
 ```bash
-cd exercise && ../mvnw spring-boot:run
+cd services/process-application && ../../mvnw spring-boot:run
 ```
 
 Im Log sollte `Auto-Deploying resources: [... newsletter.bpmn]` und
@@ -130,7 +130,7 @@ Unter **Processes** erscheint `Subscribe Newsletter`. Klick dich durch **Cockpit
 - Fertiges, lauffähiges Modul: `../solutions/exercise-1/`
 - Modell: `../models/task-1-basic-newsletter.bpmn`
 - Du kannst die Lösung auch direkt in dein Modul laden:
-  `./mvnw -pl exercise antrun:run@load-solution -Dsolution=1`
+  `./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=1`
   (ersetzt `src/main` inkl. `application.yaml`; nur die `pom.xml` – und damit die in Schritt 2
   aktivierten CIB-Deps – bleibt bestehen)
 

@@ -32,7 +32,7 @@ jede Aufgabe baut auf der vorherigen auf.
 
 ### Aufgabenübersicht
 
-Detaillierte Aufgabenbeschreibungen befinden sich in [`exercise/docs/`](exercise/docs/).
+Detaillierte Aufgabenbeschreibungen befinden sich in [`docs/`](docs/).
 
 | Aufgabe | Thema | Beschreibung |
 |---|---|---|
@@ -59,7 +59,7 @@ cd stack && docker-compose up -d
 ./mvnw clean install
 
 # Exercise-Modul starten (das eine Modul, in dem du alle Aufgaben bearbeitest)
-cd exercise && ../mvnw spring-boot:run
+cd services/process-application && ../../mvnw spring-boot:run
 
 # CIB Seven Cockpit
 open http://localhost:8080/camunda    # admin / admin
@@ -72,8 +72,8 @@ eine Aufgabe nicht ganz fertig bekommst, kannst du die Referenzlösung in dein `
 kopieren und mit ihr weiterarbeiten:
 
 ```bash
-# solutions/exercise-2 in das exercise-Modul kopieren (gültige Werte: 1–10)
-./mvnw -pl exercise antrun:run@load-solution -Dsolution=2
+# solutions/exercise-2 in das process-application-Modul kopieren (gültige Werte: 1–10)
+./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=2
 ```
 
 Der Task ersetzt `src/main` komplett (Java, `application.yaml`, BPMN/DMN); `src/test` bleibt
@@ -86,25 +86,26 @@ eine Lösung ab `exercise-2` daher erst, nachdem Aufgabe 1 abgeschlossen ist.
 
 ```
 cibseven-developer-training-exercises/
-├── exercise/                         # Das eine Arbeitsmodul (startet im Zustand von Aufgabe 1)
-│   ├── docs/                         # Aufgabenbeschreibungen (exercise-0.md … exercise-10.md)
-│   └── src/main/java/io/miragon/training/
-│       ├── adapter/
-│       │   ├── inbound/
-│       │   │   ├── cibseven/         # JavaDelegate-Implementierungen
-│       │   │   └── rest/             # REST-Controller
-│       │   └── outbound/
-│       │       ├── cibseven/         # Process-Engine-Adapter (Start/Korrelation)
-│       │       └── db/               # JPA-Persistence-Adapter
-│       ├── application/
-│       │   ├── port/
-│       │   │   ├── inbound/          # Use-Case-Interfaces
-│       │   │   └── outbound/         # Repository- und Prozess-Port-Interfaces
-│       │   └── service/              # Use-Case-Implementierungen
-│       └── domain/                   # Domain-Modell (reines Java, keine Framework-Abhängigkeiten)
+├── docs/                             # Aufgabenbeschreibungen (exercise-0.md … exercise-10.md) + Assets
+├── services/                         # Die Services, an denen du arbeitest
+│   ├── process-application/          # Prozess-Anwendung (startet im Zustand von Aufgabe 1)
+│   │   └── src/main/java/io/miragon/training/
+│   │       ├── adapter/
+│   │       │   ├── inbound/
+│   │       │   │   ├── cibseven/     # JavaDelegate-Implementierungen
+│   │       │   │   └── rest/         # REST-Controller
+│   │       │   └── outbound/
+│   │       │       ├── cibseven/     # Process-Engine-Adapter (Start/Korrelation)
+│   │       │       └── db/           # JPA-Persistence-Adapter
+│   │       ├── application/
+│   │       │   ├── port/
+│   │       │   │   ├── inbound/      # Use-Case-Interfaces
+│   │       │   │   └── outbound/     # Repository- und Prozess-Port-Interfaces
+│   │       │   └── service/          # Use-Case-Implementierungen
+│   │       └── domain/               # Domain-Modell (reines Java, keine Framework-Abhängigkeiten)
+│   └── notification-service/         # External-Task-Worker-Service (Aufgabe 6)
 ├── solutions/                        # Kumulative Lösungen pro Aufgabe (exercise-1 … exercise-10, extra-task-1, notification-worker)
 │   └── exercise-{1-10}/
-├── notification-worker/              # Skeleton des External-Task-Worker-Service (Aufgabe 6)
 ├── models/                           # Referenz-BPMN-/DMN-Modelle
 ├── stack/
 │   ├── docker-compose.yml            # PostgreSQL + MailHog

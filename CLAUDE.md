@@ -11,14 +11,14 @@ cd stack && docker-compose up -d
 # Build
 ./mvnw clean install
 
-# Run the exercise module (http://localhost:8080) — the single module participants work in
-cd exercise && ../mvnw spring-boot:run
+# Run the process-application module (http://localhost:8080) — the main module participants work in
+cd services/process-application && ../../mvnw spring-boot:run
 
 # Run a specific solution
 cd solutions/exercise-1 && ../../mvnw spring-boot:run
 
-# Load a reference solution into the exercise module (catch-up; valid: 1-9)
-./mvnw -pl exercise antrun:run@load-solution -Dsolution=2
+# Load a reference solution into the process-application module (catch-up; valid: 1-10)
+./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=2
 
 # Run all tests
 ./mvnw test
@@ -61,21 +61,24 @@ REST / JavaDelegates           Application              CIB7 / Database
 ## Project Structure
 
 Multi-module Maven project:
-- `exercise/` — The single module participants work in. Ships in the Aufgabe-1 (Hybrid) state:
+- `services/process-application/` — The main module participants work in. Ships in the Aufgabe-1 (Hybrid) state:
   full hexagonal skeleton present, but CIB deps/config/`@SpringBootApplication` (`TODO Aufgabe 1`)
   and the business-layer beans (`TODO Aufgabe 2`) are commented out. Exercise 1 = switch the
   engine on; Exercise 2 = uncomment the business layer + fill the TODOs.
-- `solutions/exercise-{1-9}/` + `solutions/extra-task-1/` — Cumulative solutions, each building on the previous
+- `services/notification-service/` — External-task worker service (Aufgabe 6); connects remotely to the
+  engine REST API and processes the `notifyEmployees` topic. Ships with `TODO Aufgabe 6`.
+- `docs/` — Per-exercise instructions (`exercise-0.md … exercise-10.md`) + assets.
+- `solutions/exercise-{1-10}/` + `solutions/extra-task-1/` + `solutions/notification-worker/` — Cumulative solutions, each building on the previous
 - `models/` — Reference BPMN/DMN models
-- All modules (exercise + every solution) run on the same port (`8080`) and DB schema (`exercise`) —
+- All modules (process-application + every solution) run on the same port (`8080`) and DB schema (`exercise`) —
   one module at a time. `stack/init-schemas.sql` creates just that one schema.
-- The `load-solution` antrun task replaces `exercise/src/main` wholesale (Java, `application.yaml`,
+- The `load-solution` antrun task replaces `services/process-application/src/main` wholesale (Java, `application.yaml`,
   BPMN/DMN) from a solution; `src/test` and `pom.xml` are left untouched.
 
 ## Domain
 
 Exercises 0-3: Newsletter subscription (Subscription naming).
-Exercises 4-9: Miravelo Inner Circle membership (Membership naming).
+Exercises 4-10: Miravelo Inner Circle membership (Membership naming).
 
 Workflow: subscribe → send confirmation mail → wait for confirmation (with timer retry/abort) → send welcome mail.
 
