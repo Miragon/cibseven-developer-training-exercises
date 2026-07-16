@@ -1,4 +1,4 @@
-# Aufgabe 7 – Signal Events
+# Aufgabe 7 – Boundary Events & Subprozesse
 
 ## Ziel-Modell
 
@@ -6,110 +6,127 @@
 
 ## Lernziele
 
-- Signal End Events und Signal Start Events verstehen
-- Signale innerhalb eines Prozessmodells verwenden
-- Outbound Port für externe Kommunikation einführen
+- Subprozesse (Subprocesses) modellieren
+- Non-interrupting Timer Boundary Events (täglich wiederholen)
+- Interrupting Timer Boundary Events (Timeout → Abbruch)
+- Message Boundary Events (nutzerinitiierter Abbruch)
 
 ## Hintergrund
 
-Wenn jemand seine Membership erfolgreich aktiviert, dann ist das ein echtes Highlight! 🎉
-Wir haben jemanden auf seiner Reise durch die Quarterlife Crisis für Miravelo gewonnen – das verdient Aufmerksamkeit!
+Miravelo stellt fest: Viele Bewerber bestätigen ihre Membership nie.
+Das kostet wertvolle Plätze! Neue Anforderungen:
 
-Das Team will diese Erfolgsmomente feiern: Eine Nachricht im Community-Forum posten, eine Benachrichtigung an Slack senden, vielleicht sogar einen Webhook triggern. Denn jede aktivierte Membership ist ein Beweis, dass unser Konzept funktioniert.
+1. **Täglich** eine Erinnerungsmail senden (non-interrupting Timer)
+2. Nach **3,5 Tagen** ohne Bestätigung → Membership automatisch abbrechen (interrupting Timer)
+3. Nutzer kann Bewerbung selbst **ablehnen** (Message Boundary)
 
-Technisch lösen wir das mit einem **Signal Event**: Sobald die Membership aktiviert wird, feuert ein Signal End Event. Dieses Signal wird im selben Prozessmodell durch einen separaten Prozess mit Signal Start Event aufgefangen – und dort starten wir die Benachrichtigungen.
-
-### Erweiterter Prozessablauf
+### Neuer Prozessablauf
 
 ```
-...
-[Send Welcome Mail]
-        ↓
-[Membership activated]     ← Signal End Event (wirft: Signal_membershipActivated)
-
-                ↓ (wird empfangen durch)
-
-[Membership activated]     ← Signal Start Event (empfängt: Signal_membershipActivated)
-        ↓
-[Publish message in forum] ← Service Task
-        ↓
-[Done]
+[Claim membership] → [Has empty spots?]
+                            ↓ Yes
+              ┌─────────────────────────────┐
+              │  Confirm Membership         │
+              │  [Send confirmation mail]   │
+              │  [Confirm membership]       │ ←── Timer (täglich): Erinnerungsmail
+              └─────────────────────────────┘
+                      ↑ Timer (3.5 Tage): Abbruch
+                      ↑ Message: Ablehnung durch Nutzer
+                            ↓ Confirmed
+              [Send Welcome Mail] → [Membership confirmed]
 ```
 
 ## Aufgaben
 
 ### 1. BPMN erweitern
 
-Erweitere den Prozess nach `../models/task-6-signal.bpmn`.
+Erstelle den Prozess nach `../models/task-5-with-boundary.bpmn`.
 
-**Änderungen:**
+**Neuer Subprozess** `subProcess_confirmMembership`:
+- Enthält: `serviceTask_sendConfirmationMail` + `userTask_confirmMembership`
 
-1. End Event `endEvent_membershipActivated` → **Signal End Event**
-   - Signal Name: `Signal_membershipActivated`
+**Boundary Events am Subprozess:**
 
-2. Neuer **Top-Level Signal Start Event** (außerhalb des Hauptflusses, aber im selben Pool):
-   - ID: `startEvent_membershipActivated`
-   - Name: `Membership activated`
-   - Signal: `Signal_membershipActivated`
+| Element | Typ | ID | Name | Konfiguration |
+|---|---|---|---|---|
+| Täglich | Non-Interrupting Timer | `timer_resendEveryDay` | Every day | Duration: `PT1M` (1 Minute, für Tests) |
+| Timeout | Interrupting Timer | `timer_abortAfter3HalfDays` | After 3½ days | Duration: `PT3M` (3 Minuten, für Tests) |
+| Ablehnung | Interrupting Message | `event_confirmationRejected` | Confirmation rejected | Message: `Message_ConfirmationRejected` |
 
-3. Neuer Service Task nach dem Signal Start Event:
-   - ID: `serviceTask_publishSignal`
-   - Name: `Publish message in forum`
-   - Delegate Expression: `#{notifyAboutSignedMembershipDelegate}`
+**Neue Service Tasks:**
 
-### 2. Outbound Port erstellen
+| Element | ID | Name | Delegate |
+|---|---|---|---|
+| Erinnerungsmail | `serviceTask_reSendConfirmationMail` | Re-Send confirmation mail | `#{reSendConfirmationMailDelegate}` |
+| Claim freigeben | `serviceTask_revokeClaim` | Revoke claim | `#{revokeClaimDelegate}` |
 
-**Neue Datei:** `application/port/outbound/MembershipEventPublisher.java`
+**Neue End Events:**
 
-Erstelle ein Interface mit einer Methode `publishMembershipActivated(MembershipId membershipId)`.
+| ID | Name |
+|---|---|
+| `endEvent_membershipDeclined` | Membership declined |
+| `endEvent_membershipActivated` | Membership activated |
 
-### 3. Use Case und Service
+### 2. Neue Use Cases & Delegates implementieren
 
-**`NotifyAboutSignedMembershipUseCase`** / **`NotifyAboutSignedMembershipService`**:
+**`ReSendConfirmationMailUseCase`** / **`ReSendConfirmationMailService`**:
+- Loggt "Re-sending confirmation mail to [email]"
 
-Lade die Membership aus dem Repository und publiziere das Event über den `MembershipEventPublisher`.
+**`RevokeClaimUseCase`** / **`RevokeClaimService`**:
+- Loggt "Revoking claim for [membershipId]" 
+- Gibt den Kapazitäts-Slot wieder frei (Counter dekrementieren)
 
-### 4. Publisher-Adapter implementieren
+**`RevokeClaimDelegate`** / **`ReSendConfirmationMailDelegate`**: analog zu bisherigen Delegates
 
-**Neue Datei:** `adapter/outbound/MembershipEventPublisherAdapter.java`
+### 3. Message-Boundary korrelieren
 
-Implementiere das `MembershipEventPublisher`-Interface. Für den Moment reicht ein einfaches Logging – z.B. `"EVENT: MembershipActivated(id=...)"`. Später könnte hier ein HTTP-Webhook oder Kafka-Event angebunden werden.
+Der Message Boundary `Message_ConfirmationRejected` wird von außen ausgelöst.
+Füge einen REST-Endpoint hinzu:
 
-### 5. `NotifyAboutSignedMembershipDelegate` erstellen
+```
+POST /api/memberships/{membershipId}/reject
+```
 
-Analog zu bisherigen Delegates, ruft `NotifyAboutSignedMembershipUseCase` auf.
+Implementiere die Korrelation in `MembershipProcessAdapter`: Verwende `runtimeService.createMessageCorrelation(...)` mit dem Message-Namen aus dem BPMN-Modell und filtere auf die Prozessvariable `membershipId`.
 
-> Async-Continuations (siehe Aufgabe 3): Setze `asyncBefore` auch am neuen Signal-Start-Event `startEvent_membershipActivated` – Signal-Korrelation soll nicht im Caller-TX laufen.
+> Async-Continuations (siehe Aufgabe 3): Setze `asyncAfter` zusätzlich an allen Boundary Events (`timer_resendEveryDay`, `timer_abortAfter3HalfDays`, `event_confirmationRejected`).
 
 ## Testen
 
 ```bash
-# Membership komplett durchführen (starten + UserTask abschließen)
+# Membership starten
 MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8080/api/memberships \
-  -d '{"email": "frank@miravelo.com", "name": "Frank", "age": 29}')
-```
+  -d '{"email": "eve@miravelo.com", "name": "Eve", "age": 26}')
 
-Im Cockpit:
-1. UserTask `Confirm membership` erscheint
-2. Task abschließen
-3. Im Log erscheint: `EVENT: MembershipActivated(id=...)`
+# Nach ~1 Minute: Erinnerungsmail im Log
+
+# Ablehnung senden
+curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
+
+# Nach ~3 Minuten ohne Bestätigung: Timeout-Abbruch
+```
 
 ## Prozess-Test erweitern
 
-Der Happy Path endet jetzt an `endEvent_membershipActivated`, das ein **Signal** wirft und darüber
-eine **zweite, unabhängige Instanz** (`startEvent_membershipActivated` → `serviceTask_publishSignal`)
-für die Forum-Benachrichtigung startet. Passe deinen Test an:
+Dein Prozess-Test aus [Aufgabe 5](exercise-5.md) deckt bisher nur Happy Path und Ablehnung ab.
+Jetzt sind drei neue Pfade dazugekommen – ergänze für jeden einen Test:
 
-- Treibe im Happy Path nur die **ursprüngliche** Instanz weiter – nutze die instanz-gescopte Variante
-  `continueToNextWaitState(processEngine, instance.getProcessInstanceId())`. Sonst würde der Test auch
-  die Signal-Instanz ausführen.
-- Weise den Signal-Broadcast nach, indem du prüfst, dass nach Abschluss genau **eine** weitere
-  Prozessinstanz läuft (`runtimeService.createProcessInstanceQuery()…count()`), und räume laufende
-  Instanzen in `@AfterEach` auf.
+> Seit Aufgabe 5 referenzierst du Element-IDs über die generierte `SubscribeNewsletterProcessApi` statt
+> über Strings. Die neuen Elemente (Timer, Compensation) tauchen nach dem nächsten `generate-sources`
+> automatisch als `Elements.*`-Konstanten auf.
 
-> **Hinweis:** Die Signal-Instanz trägt die `membershipId` nicht mit (das globale Signal überträgt
-> keine Variablen). Deshalb wird sie im Test bewusst **nicht** bis zum `publishSignal`-Delegate
-> getrieben – ein guter Anlass, im echten Projekt über eine Signal-Payload nachzudenken.
+- **Abbruch-Timer (interrupting):** Warte am User Task, feuere den Timer mit dem neuen Helfer
+  `fireTimer(processEngine, Elements.TIMER_ABORT_AFTER_3_HALF_DAYS.getValue())`, treibe weiter und prüfe
+  `hasPassed(Elements.SERVICE_TASK_REVOKE_CLAIM.getValue(), Elements.END_EVENT_MEMBERSHIP_DECLINED.getValue())`.
+  Mocke dafür `RevokeClaimUseCase`.
+- **Reject-Message:** Statt des Timers `membershipProcess.rejectMembership(id)` aufrufen – gleicher
+  Ausgang (`revokeClaim` → declined).
+- **Resend-Timer (non-interrupting):** `fireTimer(..., Elements.TIMER_RESEND_EVERY_DAY.getValue())`, dann prüfen, dass
+  `reSendConfirmationMailUseCase.reSendConfirmationMail(id)` ein **zweites** Mal lief und der Prozess
+  weiter am User Task wartet. Mocke `ReSendConfirmationMailUseCase`.
+
+Den `fireTimer`-Helfer (Timer-Job direkt ausführen, unabhängig vom Fälligkeitsdatum) findest du in
+`ProcessEngineTestUtils`.
 
 ## Referenzlösung
 

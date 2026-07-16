@@ -27,8 +27,7 @@ public class MembershipController {
     @PostMapping
     public ResponseEntity<String> register(@RequestBody MembershipForm form) {
         var membershipId = registerMembership.register(
-                new RegisterMembershipUseCase.Command(form.email(), form.name(), form.age())
-        );
+                new RegisterMembershipUseCase.Command(form.email(), form.name(), form.age()));
         return ResponseEntity.ok(membershipId.value().toString());
     }
 
@@ -38,6 +37,5 @@ public class MembershipController {
         return ResponseEntity.ok().build();
     }
 
-    public record MembershipForm(String email, String name, int age) {
-    }
+    public record MembershipForm(String email, String name, int age) {}
 }
