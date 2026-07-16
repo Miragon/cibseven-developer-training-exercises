@@ -38,7 +38,7 @@ anders: Der Notification-Worker **betreibt keine eigene Engine**, er **nutzt** n
 REST. Genau das meint **„Remote Engine"**: die Engine läuft woanders, unser Service klopft nur an.
 
 Warum der Aufwand? Weil so ein Schnitt eine **Architektur-Entscheidung nach den Eigenschaften des
-Service** ist, kein Selbstzweck. Nehmen wir an:
+Service** ist, kein Selbstzweck. Spielen wir es an einem – zugegeben etwas überspitzten – Szenario durch:
 
 - **Skalierung:** Die Prozess-Anwendung stemmt alle Anmeldungen und darf ordentlich hochskalieren.
   Der Worker tuckert dagegen gemütlich vor sich hin – ein neues Mitglied alle paar Minuten. Den
