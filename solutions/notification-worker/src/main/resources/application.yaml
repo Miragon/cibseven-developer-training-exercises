@@ -1,0 +1,25 @@
+# Notification worker — a standalone External Task Client (no HTTP server of its own).
+spring:
+  main:
+    web-application-type: none          # pure worker; no port clash with the engine on 8080
+
+# CIB Seven External Task Client: connect remotely to the engine's REST API and poll our topic.
+camunda:
+  bpm:
+    client:
+      base-url: http://localhost:8080/engine-rest
+      lock-duration: 20000
+
+# Which collaborative surface to publish to. Switch to "teams" to post to a Teams channel instead.
+notification:
+  sink: jsonblob                        # jsonblob (default) | teams
+  jsonblob:
+    # Your shared, public members-wall blob. Create one at https://jsonblob.com (content = []).
+    blob-url: https://jsonblob.com/api/jsonBlob/CHANGE-ME
+  teams:
+    # Power Automate "Workflows" webhook URL (template: "When a Teams webhook request is received").
+    webhook-url: https://prod-00.westeurope.logic.azure.com/workflows/CHANGE-ME
+
+logging:
+  level:
+    io.miragon.training: INFO

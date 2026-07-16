@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Miravelo Inner Circle — Members Wall</title>
+  <style>
+    :root { --bg: #0f172a; --card: #1e293b; --accent: #f59e0b; --text: #f8fafc; --muted: #94a3b8; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+           background: var(--bg); color: var(--text); min-height: 100vh; }
+    header { padding: 24px 32px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+             border-bottom: 1px solid #334155; }
+    header h1 { margin: 0; font-size: 24px; }
+    header .count { margin-left: auto; color: var(--accent); font-weight: 700; font-size: 20px; }
+    .config { padding: 12px 32px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+              background: #111827; border-bottom: 1px solid #334155; }
+    .config input { flex: 1; min-width: 280px; padding: 8px 12px; border-radius: 8px;
+                    border: 1px solid #334155; background: #0b1220; color: var(--text); }
+    .config button { padding: 8px 16px; border-radius: 8px; border: 0; background: var(--accent);
+                     color: #1f2937; font-weight: 700; cursor: pointer; }
+    .grid { padding: 32px; display: grid; gap: 16px;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+    .member { background: var(--card); border-radius: 14px; padding: 18px; border: 1px solid #334155;
+              animation: pop .4s ease; }
+    .member .avatar { font-size: 34px; }
+    .member .name { font-size: 18px; font-weight: 700; margin-top: 6px; }
+    .member .meta { color: var(--muted); font-size: 12px; margin-top: 6px; word-break: break-all; }
+    .empty { padding: 48px 32px; color: var(--muted); }
+    @keyframes pop { from { transform: scale(.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌟 Miravelo Inner Circle — Members Wall</h1>
+    <div class="count" id="count">0 members</div>
+  </header>
+  <div class="config">
+    <input id="blobUrl" placeholder="https://jsonblob.com/api/jsonBlob/&lt;your-id&gt;" />
+    <button onclick="save()">Watch</button>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty">Paste your jsonblob API URL above and press “Watch”.</div>
+
+  <script>
+    const EMOJIS = ["🎉", "🥳", "🌟", "🚀", "✨", "🔥", "💎", "🦄", "🍾", "🎈"];
+    const input = document.getElementById("blobUrl");
+    const grid = document.getElementById("grid");
+    const empty = document.getElementById("empty");
+    const count = document.getElementById("count");
+
+    input.value = localStorage.getItem("blobUrl") || "";
+
+    function save() {
+      localStorage.setItem("blobUrl", input.value.trim());
+      poll();
+    }
+
+    function emojiFor(name) {
+      let h = 0;
+      for (const c of (name || "")) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+      return EMOJIS[h % EMOJIS.length];
+    }
+
+    function render(members) {
+      empty.style.display = members.length ? "none" : "block";
+      count.textContent = members.length + (members.length === 1 ? " member" : " members");
+      grid.innerHTML = members.map(m => `
+        <div class="member">
+          <div class="avatar">${emojiFor(m.name)}</div>
+          <div class="name">${(m.name || "Unknown")}</div>
+          <div class="meta">${(m.email || "")}</div>
+          <div class="meta">${(m.joinedAt || "")}</div>
+        </div>`).reverse().join("");
+    }
+
+    async function poll() {
+      const url = (localStorage.getItem("blobUrl") || "").trim();
+      if (!url) return;
+      try {
+        const res = await fetch(url, { headers: { "Accept": "application/json" } });
+        const data = await res.json();
+        render(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.warn("poll failed", e);
+      }
+    }
+
+    poll();
+    setInterval(poll, 3000);
+  </script>
+</body>
+</html>

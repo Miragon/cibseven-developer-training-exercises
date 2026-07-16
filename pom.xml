@@ -20,6 +20,7 @@
 
     <modules>
         <module>exercise</module>
+        <module>notification-worker</module>
         <module>solutions</module>
     </modules>
 
@@ -47,6 +48,12 @@
             <dependency>
                 <groupId>org.cibseven.bpm.springboot</groupId>
                 <artifactId>cibseven-bpm-spring-boot-starter-rest-4</artifactId>
+                <version>${cib7.version}</version>
+            </dependency>
+            <!-- External Task Client (remote worker connecting to the engine REST API, ab Aufgabe 6) -->
+            <dependency>
+                <groupId>org.cibseven.bpm.springboot</groupId>
+                <artifactId>cibseven-bpm-spring-boot-starter-external-task-client</artifactId>
                 <version>${cib7.version}</version>
             </dependency>
             <!-- Architecture tests -->

@@ -42,6 +42,7 @@ Detaillierte Aufgabenbeschreibungen befinden sich in [`exercise/docs/`](exercise
 | 3 | Bestätigungs-Mail | Double-Opt-In-Pattern, weitere Service Tasks |
 | 4 | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung, Domain-Refactoring |
 | 5 | Prozess-Tests | Prozess-Unit-Test mit In-Memory-Engine, gemockten Use Cases, ohne PostgreSQL |
+| 6 | Remote Engine & External Task | Message Throw Event, zweiter Prozess, External Task Worker in eigenem Service, kollaborative Members Wall |
 | 7 | Boundary Events & Subprozesse | Timer, Message Boundary Events, Subprocess |
 | 8 | Signal Events | Signal End/Start Events, Event-Publishing |
 | 9 | Kompensation (SAGA) | Compensation Boundary Events, automatisches Rollback |
@@ -101,8 +102,9 @@ cibseven-developer-training-exercises/
 │       │   │   └── outbound/         # Repository- und Prozess-Port-Interfaces
 │       │   └── service/              # Use-Case-Implementierungen
 │       └── domain/                   # Domain-Modell (reines Java, keine Framework-Abhängigkeiten)
-├── solutions/                        # Kumulative Lösungen pro Aufgabe (exercise-1 … exercise-10, extra-task-1)
+├── solutions/                        # Kumulative Lösungen pro Aufgabe (exercise-1 … exercise-10, extra-task-1, notification-worker)
 │   └── exercise-{1-10}/
+├── notification-worker/              # Skeleton des External-Task-Worker-Service (Aufgabe 6)
 ├── models/                           # Referenz-BPMN-/DMN-Modelle
 ├── stack/
 │   ├── docker-compose.yml            # PostgreSQL + MailHog

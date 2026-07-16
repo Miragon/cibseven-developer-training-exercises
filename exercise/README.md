@@ -6,7 +6,7 @@ Willkommen zum CIB Seven Developer Training!
 Laufausrüstung, Gravel Bikes, Rennräder. Das Unternehmen wächst, die Kundenbasis wächst,
 und die Prozesse müssen mithalten.
 
-In diesem Modul arbeitest du dich Schritt für Schritt durch 9 Aufgaben, die ein vollständiges
+In diesem Modul arbeitest du dich Schritt für Schritt durch 10 Aufgaben, die ein vollständiges
 Newsletter- und Membership-System auf Basis von CIB Seven (Camunda Platform 7) aufbauen.
 
 ## Der vollständige Zielprozess
@@ -46,6 +46,7 @@ http://localhost:8080/camunda  (admin / admin)
 | [4](docs/exercise-4.md) | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung |
 | [5](docs/exercise-5.md) | Prozess-Tests | Prozess-Unit-Test: In-Memory-Engine, gemockte Use Cases, ohne PostgreSQL |
 | [5 · Add-on](docs/exercise-5-addon.md) | bpmn-to-code | Typsichere Process-API aus dem BPMN generieren – Strings raus, Konstanten rein |
+| [6](docs/exercise-6.md) | Remote Engine & External Task | Message Throw Event, zweiter Prozess, External Task Worker im eigenen Service, kollaborative Members Wall |
 | [7](docs/exercise-7.md) | Boundary Events | Timer- und Message-Boundary-Events, Subprozesse |
 | [8](docs/exercise-8.md) | Signal Events | Signal-Events für Systemkommunikation |
 | [9](docs/exercise-9.md) | Compensation | Automatisches Rollback via BPMN-Kompensation |
