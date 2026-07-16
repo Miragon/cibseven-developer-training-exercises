@@ -10,6 +10,7 @@
 - Exclusive Gateway modellieren und implementieren
 - Neuen Service Task (Kapazitätsprüfung) hinzufügen
 - Alternativen Prozessausgang implementieren
+- Business Key setzen und Prozessinstanzen fachlich zuordnen
 
 ## Hintergrund
 
@@ -100,6 +101,26 @@ Erstelle nach dem bewährten Muster (analog zu Aufgabe 3):
 - `SendRejectionMailDelegate`: Liest `membershipId`, ruft Use Case auf
 
 **Hinweis:** Die Element-IDs und Variablennamen (z.B. `hasEmptySpots`) kannst du direkt aus dem BPMN-Modell entnehmen. Async-Continuations (siehe Aufgabe 3) gelten ab hier als bekannt – `asyncBefore` am Message-Start, `asyncAfter` am User Task.
+
+### 5. Business Key setzen
+
+Bislang starten wir den Prozess ohne fachliche Kennung – im Cockpit sind die Instanzen
+nur über ihre technische ID unterscheidbar. Setze deshalb beim Start des Prozesses einen
+**Business Key**. Verwende dafür die `membershipId` (die ID der Anmeldung).
+
+**Warum?** Der Business Key verknüpft die Prozessinstanz mit dem fachlichen Objekt. So
+lässt sich jede Instanz im Cockpit eindeutig einer Anmeldung zuordnen, gezielt suchen und
+später fachlich korrelieren.
+
+**Wo?** Dort, wo der Prozess gestartet wird (`MembershipProcessAdapter`). Der Message-
+Correlation-Builder bietet dafür `processInstanceBusinessKey(...)`:
+
+```java
+runtimeService.createMessageCorrelation("Message_SubscriptionRequested")
+        .processInstanceBusinessKey(membership.id().value().toString())
+        .setVariables(...)
+        .correlateStartMessage();
+```
 
 ## Testen
 

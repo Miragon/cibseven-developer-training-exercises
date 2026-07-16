@@ -19,6 +19,7 @@ public class MembershipProcessAdapter implements MembershipProcess {
     @Override
     public void startProcess(Membership membership) {
         runtimeService.createMessageCorrelation("Message_SubscriptionRequested")
+                .processInstanceBusinessKey(membership.id().value().toString())
                 .setVariables(Map.of(
                         "membershipId", membership.id().value().toString(),
                         "email", membership.email().value(),
