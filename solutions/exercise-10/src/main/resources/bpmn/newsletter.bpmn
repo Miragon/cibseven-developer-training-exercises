@@ -16,6 +16,14 @@
         <bpmn:outgoing>Flow_1wb7scj</bpmn:outgoing>
       </bpmn:serviceTask>
       <bpmn:userTask id="userTask_confirmMembership" name="Confirm membership" camunda:asyncAfter="true">
+        <bpmn:extensionElements>
+          <camunda:formData>
+            <camunda:formField id="name" label="Name" type="string" />
+            <camunda:formField id="email" label="E-Mail" type="string" />
+            <camunda:formField id="age" label="Age" type="long" />
+            <camunda:formField id="confirmed" label="Confirm membership" type="boolean" />
+          </camunda:formData>
+        </bpmn:extensionElements>
         <bpmn:incoming>Flow_1wb7scj</bpmn:incoming>
         <bpmn:outgoing>Flow_0w9368p</bpmn:outgoing>
       </bpmn:userTask>
