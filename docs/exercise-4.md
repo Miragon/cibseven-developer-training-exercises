@@ -11,6 +11,7 @@
 - Neuen Service Task (Kapazitätsprüfung) hinzufügen
 - Alternativen Prozessausgang implementieren
 - Business Key setzen und Prozessinstanzen fachlich zuordnen
+- User Task mit einem generierten Task-Formular ausstatten (Review & Approve im Cockpit)
 
 ## Hintergrund
 
@@ -128,6 +129,53 @@ runtimeService.createMessageCorrelation("Message_SubscriptionRequested")
         .correlateStartMessage();
 ```
 
+### 6. Task-Formular für den Confirm-Task (Review & Approve)
+
+Der User Task `userTask_confirmMembership` ist bisher eine Blackbox: Wer ihn im Cockpit
+bzw. in der Tasklist öffnet, sieht nur einen leeren Task und kann ihn blind abschließen.
+Für einen echten Freigabe-Schritt fehlt der Kontext. Gib dem Task deshalb ein
+**generiertes Task-Formular** – so sieht die freigebende Person die Anmeldedaten und kann
+die Mitgliedschaft bewusst bestätigen (approven).
+
+**Was?** Ein Formular mit vier Feldern:
+
+| Feld-ID | Label | Typ | Zweck |
+|---|---|---|---|
+| `name` | Name | string | Kontext (wird aus der Prozessvariable vorbefüllt) |
+| `email` | E-Mail | string | Kontext (vorbefüllt) |
+| `age` | Age | long | Kontext (vorbefüllt) |
+| `confirmed` | Confirm membership | boolean | Die eigentliche Freigabe (Checkbox) |
+
+Die Felder `name`, `email` und `age` tragen dieselben IDs wie die beim Prozessstart
+gesetzten Prozessvariablen und werden dadurch in der Tasklist **automatisch vorbefüllt**.
+`confirmed` ist neu und wird beim Abschließen des Tasks als boolesche Prozessvariable
+gespeichert (Review & Approve).
+
+**Wie?** Es handelt sich um ein *Generated Task Form* (Camunda-7-Bordmittel – keine
+zusätzliche Datei, kein HTML nötig). Im Camunda Modeler: User Task auswählen →
+Properties Panel → Abschnitt **Forms** → Form-Felder anlegen. Im BPMN-XML entsteht dabei
+ein `extensionElements`-Block direkt im User Task:
+
+```xml
+<bpmn:userTask id="userTask_confirmMembership" name="Confirm membership" camunda:asyncAfter="true">
+  <bpmn:extensionElements>
+    <camunda:formData>
+      <camunda:formField id="name" label="Name" type="string" />
+      <camunda:formField id="email" label="E-Mail" type="string" />
+      <camunda:formField id="age" label="Age" type="long" />
+      <camunda:formField id="confirmed" label="Confirm membership" type="boolean" />
+    </camunda:formData>
+  </bpmn:extensionElements>
+  <bpmn:incoming>...</bpmn:incoming>
+  <bpmn:outgoing>...</bpmn:outgoing>
+</bpmn:userTask>
+```
+
+> **Hinweis:** Der Feldtyp muss zum Typ der Prozessvariable passen, damit die Vorbefüllung
+> greift (`age` ist `long`, nicht `string`). Das Feld `confirmed` steuert in dieser Aufgabe
+> noch keinen Prozessfluss – es wird lediglich als Variable erfasst. Ein Muster für das
+> gleiche `formData`/`formField`-Konstrukt findest du am Task `userTask_fillOutForm`.
+
 ## Testen
 
 **Happy Path (Kapazität vorhanden):**
@@ -135,6 +183,11 @@ runtimeService.createMessageCorrelation("Message_SubscriptionRequested")
 curl -X POST http://localhost:8080/api/memberships \
   -d '{"email": "carol@miravelo.com", "name": "Carol", "age": 27}'
 ```
+
+Öffne anschließend in der **Tasklist** (`http://localhost:8080/camunda`, admin/admin) den
+Task `Confirm membership`: Name, E-Mail und Age sind bereits vorbefüllt. Setze den Haken bei
+**Confirm membership** und schließe den Task ab – der Prozess läuft weiter zu *Send Welcome
+Mail* und die Variable `confirmed` steht in der History auf `true`.
 
 **Rejection Path (Kapazität auf 0 setzen → Anwendungs-Config anpassen):**
 ```bash
