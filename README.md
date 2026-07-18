@@ -36,18 +36,18 @@ Detaillierte Aufgabenbeschreibungen befinden sich in [`docs/`](docs/).
 
 | Aufgabe | Thema | Beschreibung |
 |---|---|---|
-| 0 | Fachliche BPMN-Modellierung | Miragon BPMN Modeler kennenlernen, Prozess rein fachlich modellieren |
-| 1 | Engine & Tooling | Lauffähigen Newsletter deployen, Cockpit & DB-Tabellen der Engine kennenlernen |
-| 2 | Technische Modellierung & Automatisierung | Technisch modellieren, JavaDelegate, RuntimeService, REST-Endpoint |
-| 3 | Bestätigungs-Mail | Double-Opt-In-Pattern, weitere Service Tasks |
-| 4 | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung, Domain-Refactoring |
-| 5 | Prozess-Tests | Prozess-Unit-Test mit In-Memory-Engine, gemockten Use Cases, ohne PostgreSQL |
-| 6 | Remote Engine & External Task | Message Throw Event, zweiter Prozess, External Task Worker in eigenem Service, Benachrichtigung in einen Teams-Kanal |
-| 7 | Boundary Events & Subprozesse | Timer, Message Boundary Events, Subprocess |
-| 8 | Signal Events | Signal End/Start Events, Event-Publishing |
-| 9 | Kompensation (SAGA) | Compensation Boundary Events, automatisches Rollback |
-| 10 | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
-| Extra 1 | Process-Engine-API | Aufgabe 10 engine-neutral umbauen: Worker statt JavaDelegate, Adapter-Tausch statt Engine-Lock-in |
+| [0](docs/exercise-0.md) | Fachliche BPMN-Modellierung | Miragon BPMN Modeler kennenlernen, Prozess rein fachlich modellieren |
+| [1](docs/exercise-1.md) | Engine & Tooling | Lauffähigen Newsletter deployen, Cockpit & DB-Tabellen der Engine kennenlernen |
+| [2](docs/exercise-2.md) | Technische Modellierung & Automatisierung | Technisch modellieren, JavaDelegate, RuntimeService, REST-Endpoint |
+| [3](docs/exercise-3.md) | Bestätigungs-Mail | Double-Opt-In-Pattern, weitere Service Tasks |
+| [4](docs/exercise-4.md) | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung, Domain-Refactoring |
+| [5](docs/exercise-5.md) | Prozess-Tests | Prozess-Unit-Test mit In-Memory-Engine, gemockten Use Cases, ohne PostgreSQL |
+| [6](docs/exercise-6.md) | Remote Engine & External Task | Message Throw Event, zweiter Prozess, External Task Worker in eigenem Service, Benachrichtigung in einen Teams-Kanal |
+| [7](docs/exercise-7.md) | Boundary Events & Subprozesse | Timer, Message Boundary Events, Subprocess |
+| [8](docs/exercise-8.md) | Signal Events | Signal End/Start Events, Event-Publishing |
+| [9](docs/exercise-9.md) | Kompensation (SAGA) | Compensation Boundary Events, automatisches Rollback |
+| [10](docs/exercise-10.md) | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
+| [Extra 1](docs/extra-task-1.md) | Process-Engine-API | Aufgabe 10 engine-neutral umbauen: Worker statt JavaDelegate, Adapter-Tausch statt Engine-Lock-in |
 
 ## Quick Start
 
