@@ -72,8 +72,8 @@ eine Aufgabe nicht ganz fertig bekommst, kannst du die Referenzlösung in dein `
 kopieren und mit ihr weiterarbeiten:
 
 ```bash
-# solutions/exercise-2 in das process-application-Modul kopieren (gültige Werte: 1–10)
-./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=2
+# solutions/exercise-02 in das process-application-Modul kopieren (gültige Werte: 01–10, zweistellig)
+./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=02
 ```
 
 Der Task ersetzt `src/main` komplett (Java, `application.yaml`, BPMN/DMN); `src/test` bleibt
@@ -104,8 +104,9 @@ cibseven-developer-training-exercises/
 │   │       │   └── service/          # Use-Case-Implementierungen
 │   │       └── domain/               # Domain-Modell (reines Java, keine Framework-Abhängigkeiten)
 │   └── notification-service/         # External-Task-Worker-Service (Aufgabe 6)
-├── solutions/                        # Kumulative Lösungen pro Aufgabe (exercise-1 … exercise-10, extra-task-1, notification-worker)
-│   └── exercise-{1-10}/
+├── solutions/                        # Kumulative Lösungen pro Aufgabe (exercise-01 … exercise-10, extra-task-1)
+│   ├── exercise-{01-10}/             # exercise-06/ ist verschachtelt: process-application/ + notification-service/
+│   └── extra-task-1/
 ├── models/                           # Referenz-BPMN-/DMN-Modelle
 ├── stack/
 │   ├── docker-compose.yml            # PostgreSQL + MailHog

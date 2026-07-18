@@ -125,7 +125,7 @@ Ab hier gilt: **Ab dieser Aufgabe nutzen alle Lösungen die generierte Process-A
 
 ## Referenzlösung
 
-`../solutions/exercise-5/`
+`../solutions/exercise-05/`
 
 ---
 

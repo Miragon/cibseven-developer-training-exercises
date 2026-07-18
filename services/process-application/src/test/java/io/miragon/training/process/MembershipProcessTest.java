@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
  * Prozess mit den Helfern aus {@code process/util} bis zu seinen Wait States. Die genaue Anleitung
  * (Dependency, {@code application-test.yaml}, Helfer, Assertions) steht in
  * {@code exercise/docs/exercise-5.md}; die vollständige Lösung liegt unter
- * {@code solutions/exercise-5/}.
+ * {@code solutions/exercise-05/}.
  *
  * <p>Bis dahin ist der Test deaktiviert, damit das Starter-Modul auch ohne aktivierte Engine
  * kompiliert.

@@ -69,7 +69,7 @@ eine Instanz, die eindeutig ihrer Anmeldung zugeordnet ist.
 
 ### 1. BPMN komplett neu modellieren
 
-Erstelle den Prozess nach dem Referenz-Modell `../models/task-4-gateway.bpmn`.
+Erstelle den Prozess nach dem Referenz-Modell `../models/exercise-04/newsletter.bpmn`.
 
 Neue Elemente:
 
@@ -199,7 +199,7 @@ curl -X POST http://localhost:8080/api/memberships \
 
 ## Referenzlösung
 
-`../solutions/exercise-4/`
+`../solutions/exercise-04/`
 
 ---
 

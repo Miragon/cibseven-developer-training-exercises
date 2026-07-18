@@ -10,6 +10,9 @@ Der zweite Prozess `employeeNotification` mit dem External Service Task:
 
 ![BPMN Benachrichtigungs-Prozess](assets/exercise-6-notification.svg)
 
+Referenz-Modelle: `../models/exercise-06/newsletter.bpmn` (Hauptprozess) und
+`../models/exercise-06/employee-notification.bpmn` (Benachrichtigungs-Prozess).
+
 ## Lernziele
 
 - Message **Throw Event** (per Delegate) einsetzen, um einen **zweiten Prozess** zu starten
@@ -200,11 +203,11 @@ notification:
 ```bash
 # 1. Stack + Hauptservice (Port 8080) starten
 cd stack && docker-compose up -d
-cd ../solutions/exercise-6 && ../../mvnw spring-boot:run
+cd ../solutions/exercise-06/process-application && ../../../mvnw spring-boot:run
 
 # 2. Worker mit deiner Teams-Webhook-URL starten (eigenes Terminal)
-cd solutions/notification-worker
-TEAMS_WEBHOOK_URL='<deine-Teams-Webhook-URL>' ../../mvnw spring-boot:run
+cd solutions/exercise-06/notification-service
+TEAMS_WEBHOOK_URL='<deine-Teams-Webhook-URL>' ../../../mvnw spring-boot:run
 
 # 3. Membership anlegen und im Cockpit (http://localhost:8080/camunda, admin/admin)
 #    die Confirm-Aufgabe abschließen → der External Task wird vom Worker abgeholt →
@@ -218,12 +221,12 @@ curl -X POST http://localhost:8080/api/memberships \
 durchführen → der `employeeNotification`-Prozess wartet im Cockpit am External Task. Worker
 **starten** → er holt den Task ab und postet. 🎉
 
-Automatisiert: `../../mvnw -pl solutions/exercise-6 test -Dtest=MembershipProcessTest`.
+Automatisiert: `./mvnw -pl solutions/exercise-06/process-application test -Dtest=MembershipProcessTest`.
 
 ## Referenzlösung
 
-- Hauptservice: `../solutions/exercise-6/`
-- Worker-Service: `../solutions/notification-worker/`
+- Hauptservice: `../solutions/exercise-06/process-application/`
+- Worker-Service: `../solutions/exercise-06/notification-service/`
 
 ---
 

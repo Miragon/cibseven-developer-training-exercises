@@ -7,6 +7,8 @@
 > Es kommt **kein neues Modell** dazu. Du testest den Prozess, den du in Aufgabe 4 gebaut hast
 > (Message-Start → Claim → Gateway → Bestätigung → Welcome / Rejection).
 
+Referenz-Modell (unverändert gegenüber Aufgabe 4): `../models/exercise-05/newsletter.bpmn`
+
 ## Lernziele
 
 - Einen Prozess als **Unit-Test** absichern – ohne PostgreSQL, ohne laufende Infrastruktur
@@ -221,7 +223,7 @@ Schreibe einen zweiten Test `noCapacity_membershipIsRejected`:
 
 ## Referenzlösung
 
-`../solutions/exercise-5/`
+`../solutions/exercise-05/`
 
 ---
 

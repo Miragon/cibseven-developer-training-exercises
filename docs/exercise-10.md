@@ -61,7 +61,7 @@ Subprozess (membership-rejection.bpmn):
 
 Neue Datei: `src/main/resources/bpmn/membership-rejection.bpmn`
 
-Referenz: `../models/task-8-call-activity-sub.bpmn`
+Referenz: `../models/exercise-10/membership-rejection.bpmn`
 
 Struktur:
 - Process ID: `handleRejection`
@@ -81,7 +81,7 @@ Ersetze die direkten Decline-Pfade aus Aufgabe 9 durch eine **Call Activity**:
 
 Die Compensation aus Aufgabe 9 bleibt unangetastet. Nach Rückkehr aus der Call Activity feuert das Compensating End Event und die Engine ruft `serviceTask_revokeClaim` auf.
 
-Referenz: `../models/task-8-call-activity-main.bpmn`
+Referenz: `../models/exercise-10/newsletter.bpmn`
 
 ### 3. Variablen-Übergabe konfigurieren
 
@@ -98,7 +98,7 @@ In der Call Activity müssen Variablen übergeben werden:
 Kopiere die Referenz-DMN ins Projekt:
 
 ```bash
-cp ../models/categorize-applicant.dmn src/main/resources/dmn/categorize-applicant.dmn
+cp ../models/exercise-10/categorize-applicant.dmn src/main/resources/dmn/categorize-applicant.dmn
 ```
 
 Inhalt der DMN-Tabelle:

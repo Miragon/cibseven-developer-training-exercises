@@ -69,11 +69,11 @@ Verbinde die Elemente mit Sequenzflüssen zum durchgängigen Ablauf.
 
 - Öffne dein Modell im Modeler und prüfe: Start → User Task → Service Task → End,
   sauber mit Sequenzflüssen verbunden und verständlich benannt.
-- Vergleiche es mit dem Referenzmodell `../models/task-0-basic-newsletter.bpmn`.
+- Vergleiche es mit dem Referenzmodell `../models/exercise-00/newsletter.bpmn`.
 
 ## Referenzlösung
 
-`../models/task-0-basic-newsletter.bpmn`
+`../models/exercise-00/newsletter.bpmn`
 
 ---
 

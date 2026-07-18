@@ -93,7 +93,7 @@ Wenn du eine Aufgabe nicht ganz fertig bekommst, kannst du die Referenzlösung d
 dieses Modul kopieren und mit ihr weiterarbeiten (gültige Werte: 1–10):
 
 ```bash
-../../mvnw antrun:run@load-solution -Dsolution=2
+../../mvnw antrun:run@load-solution -Dsolution=02
 ```
 
 Der Task ersetzt `src/main` komplett (Java, `application.yaml`, BPMN/DMN); `src/test` bleibt
