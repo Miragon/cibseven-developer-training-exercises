@@ -8,6 +8,8 @@ selbst** – und verbindest sie mit Java-Code:
 
 ![BPMN Modell der Aufgabe](assets/exercise-2.svg)
 
+Referenz-Modell: `../models/exercise-02/newsletter.bpmn`
+
 ## Lernziele
 
 - Ein fachliches BPMN **technisch** vervollständigen (IDs, Prozess-Key, Formularfelder,
@@ -187,7 +189,7 @@ gemockte Use Cases, ohne PostgreSQL). Der Platzhalter dafür liegt schon bereit 
 
 ## Referenzlösung
 
-`../solutions/exercise-2/`
+`../solutions/exercise-02/`
 
 ---
 

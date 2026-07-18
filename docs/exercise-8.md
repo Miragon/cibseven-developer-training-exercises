@@ -40,7 +40,7 @@ Technisch lösen wir das mit einem **Signal Event**: Sobald die Membership aktiv
 
 ### 1. BPMN erweitern
 
-Erweitere den Prozess nach `../models/task-6-signal.bpmn`.
+Erweitere den Prozess nach `../models/exercise-08/newsletter.bpmn`.
 
 **Änderungen:**
 
@@ -113,7 +113,7 @@ für die Forum-Benachrichtigung startet. Passe deinen Test an:
 
 ## Referenzlösung
 
-`../solutions/exercise-8/`
+`../solutions/exercise-08/`
 
 ---
 

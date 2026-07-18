@@ -15,10 +15,10 @@ cd stack && docker-compose up -d
 cd services/process-application && ../../mvnw spring-boot:run
 
 # Run a specific solution
-cd solutions/exercise-1 && ../../mvnw spring-boot:run
+cd solutions/exercise-01 && ../../mvnw spring-boot:run
 
-# Load a reference solution into the process-application module (catch-up; valid: 1-10)
-./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=2
+# Load a reference solution into the process-application module (catch-up; valid: 01-10, two-digit)
+./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=02
 
 # Run all tests
 ./mvnw test
@@ -68,7 +68,9 @@ Multi-module Maven project:
 - `services/notification-service/` — External-task worker service (Aufgabe 6); connects remotely to the
   engine REST API and processes the `notifyEmployees` topic. Ships with `TODO Aufgabe 6`.
 - `docs/` — Per-exercise instructions (`exercise-0.md … exercise-10.md`) + assets.
-- `solutions/exercise-{1-10}/` + `solutions/extra-task-1/` + `solutions/notification-worker/` — Cumulative solutions, each building on the previous
+- `solutions/exercise-{01-10}/` + `solutions/extra-task-1/` — Cumulative solutions, each building on the previous.
+  Exercise 6 is nested into two sub-services: `solutions/exercise-06/process-application/` (main) +
+  `solutions/exercise-06/notification-service/` (the external-task worker)
 - `models/` — Reference BPMN/DMN models
 - All modules (process-application + every solution) run on the same port (`8080`) and DB schema (`exercise`) —
   one module at a time. `stack/init-schemas.sql` creates just that one schema.

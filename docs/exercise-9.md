@@ -43,7 +43,7 @@ endEvent_membershipDeclined  →  [Compensating End Event]  →  Engine ruft rev
    - Typ: Compensating End Event (der „Ring mit Pfeil"-Marker)
    - Beide Decline-Pfade münden in dieses Event
 
-Referenz-Modell: `../models/task-7-compensation.bpmn`
+Referenz-Modell: `../models/exercise-09/newsletter.bpmn`
 
 ## Aufgaben
 
@@ -94,7 +94,7 @@ Test grün bleiben, während du das Modell auf Kompensation umbaust.
 
 ## Referenzlösung
 
-`../solutions/exercise-9/`
+`../solutions/exercise-09/`
 
 ## Weiterführendes
 

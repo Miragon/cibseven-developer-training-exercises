@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.miragon</groupId>
+        <artifactId>solutions</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>solution-exercise-06</artifactId>
+    <packaging>pom</packaging>
+    <name>solution-exercise-06</name>
+
+    <!--
+      Aufgabe 6 besteht aus ZWEI Services (jeder in einer eigenen JVM):
+        - process-application: der Hauptservice mit der embedded Engine (Message Throw +
+          zweiter Prozess employeeNotification mit External Service Task)
+        - notification-service: der External-Task-Worker, der die Engine nur remote per
+          REST-API kennt und den Topic "notifyEmployees" abarbeitet
+    -->
+    <modules>
+        <module>process-application</module>
+        <module>notification-service</module>
+    </modules>
+
+</project>

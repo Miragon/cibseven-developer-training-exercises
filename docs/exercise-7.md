@@ -40,7 +40,7 @@ Das kostet wertvolle Plätze! Neue Anforderungen:
 
 ### 1. BPMN erweitern
 
-Erstelle den Prozess nach `../models/task-5-with-boundary.bpmn`.
+Erstelle den Prozess nach `../models/exercise-07/newsletter.bpmn`.
 
 **Neuer Subprozess** `subProcess_confirmMembership`:
 - Enthält: `serviceTask_sendConfirmationMail` + `userTask_confirmMembership`
@@ -130,7 +130,7 @@ Den `fireTimer`-Helfer (Timer-Job direkt ausführen, unabhängig vom Fälligkeit
 
 ## Referenzlösung
 
-`../solutions/exercise-7/`
+`../solutions/exercise-07/`
 
 ---
 

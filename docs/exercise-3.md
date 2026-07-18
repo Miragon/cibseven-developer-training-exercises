@@ -57,7 +57,7 @@ vielleicht wollen sie auch mehr als nur einen Newsletter. Vielleicht wollen sie 
 
 **Achtung:** Der Service Task `sendConfirmationMail` muss **vor** dem User Task stehen.
 
-Referenz-Modell: `../models/task-3-with-confirmation.bpmn`
+Referenz-Modell: `../models/exercise-03/newsletter.bpmn`
 
 ## Best Practice: Async Continuations
 
@@ -104,7 +104,7 @@ Im Cockpit:
 
 ## Referenzlösung
 
-`../solutions/exercise-3/`
+`../solutions/exercise-03/`
 
 ---
 
