@@ -2,7 +2,7 @@
 
 ## Ziel-Modell
 
-![BPMN Modell der Aufgabe](assets/exercise-3.svg)
+![BPMN Modell der Aufgabe](assets/exercise-03.svg)
 
 ## Lernziele
 
@@ -108,4 +108,4 @@ Im Cockpit:
 
 ---
 
-➡️ [Weiter zu Aufgabe 4](exercise-4.md)
+➡️ [Weiter zu Aufgabe 4](exercise-04.md)

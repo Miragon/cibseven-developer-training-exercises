@@ -2,7 +2,7 @@
 
 ## Ziel-Modell
 
-![BPMN Modell der Aufgabe](assets/exercise-5.svg)
+![BPMN Modell der Aufgabe](assets/exercise-05.svg)
 
 > Es kommt **kein neues Modell** dazu. Du testest den Prozess, den du in Aufgabe 4 gebaut hast
 > (Message-Start → Claim → Gateway → Bestätigung → Welcome / Rejection).
@@ -198,7 +198,7 @@ void happyPath_membershipIsConfirmedAndWelcomeMailIsSent() {
 }
 ```
 
-> Diese Element-IDs stehen hier noch als Strings im Test – im [Add-on](exercise-5-addon.md) räumen wir
+> Diese Element-IDs stehen hier noch als Strings im Test – im [Add-on](exercise-05-addon.md) räumen wir
 > sie gleich weg. Merk dir schon mal, wie viele es sind.
 
 ### 5. Rejection-Pfad testen (selbst)
@@ -217,7 +217,7 @@ Schreibe einen zweiten Test `noCapacity_membershipIsRejected`:
 ```
 
 > **Add-on:** Die Element-IDs stehen jetzt noch als handgetippte Strings im Test – fragil, sobald jemand
-> im Modeler umbenennt. Im [Add-on: bpmn-to-code](exercise-5-addon.md) generierst du daraus eine
+> im Modeler umbenennt. Im [Add-on: bpmn-to-code](exercise-05-addon.md) generierst du daraus eine
 > typsichere Process-API und ersetzt die Strings durch geprüfte Konstanten. **Ab dann nutzen alle
 > Lösungen die generierte API.**
 
@@ -227,4 +227,4 @@ Schreibe einen zweiten Test `noCapacity_membershipIsRejected`:
 
 ---
 
-➡️ [Weiter zum Add-on: bpmn-to-code](exercise-5-addon.md)
+➡️ [Weiter zum Add-on: bpmn-to-code](exercise-05-addon.md)

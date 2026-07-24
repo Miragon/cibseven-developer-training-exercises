@@ -2,7 +2,7 @@
 
 ## Ziel-Modell
 
-![BPMN Modell der Aufgabe](assets/exercise-9.svg)
+![BPMN Modell der Aufgabe](assets/exercise-09.svg)
 
 ## Lernziel
 

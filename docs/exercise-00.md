@@ -2,7 +2,7 @@
 
 ## Ziel-Modell
 
-![BPMN Modell der Aufgabe](assets/exercise-0.svg)
+![BPMN Modell der Aufgabe](assets/exercise-00.svg)
 
 ## Lernziele
 
@@ -77,4 +77,4 @@ Verbinde die Elemente mit Sequenzflüssen zum durchgängigen Ablauf.
 
 ---
 
-➡️ [Weiter zu Aufgabe 1](exercise-1.md)
+➡️ [Weiter zu Aufgabe 1](exercise-01.md)

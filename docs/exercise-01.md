@@ -2,7 +2,7 @@
 
 ## Ziel-Modell
 
-![BPMN Modell der Aufgabe](assets/exercise-1.svg)
+![BPMN Modell der Aufgabe](assets/exercise-01.svg)
 
 ## Lernziele
 
@@ -136,4 +136,4 @@ Unter **Processes** erscheint `Subscribe Newsletter`. Klick dich durch **Cockpit
 
 ---
 
-➡️ [Weiter zu Aufgabe 2](exercise-2.md)
+➡️ [Weiter zu Aufgabe 2](exercise-02.md)
