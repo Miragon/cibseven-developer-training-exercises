@@ -6,7 +6,7 @@ In Aufgabe 0 hast du den Prozess **fachlich** modelliert, in Aufgabe 1 die techn
 fertige Version des Consultants gesehen. Jetzt machst du die **technische Modellierung
 selbst** – und verbindest sie mit Java-Code:
 
-![BPMN Modell der Aufgabe](assets/exercise-2.svg)
+![BPMN Modell der Aufgabe](assets/exercise-02.svg)
 
 Referenz-Modell: `../models/exercise-02/newsletter.bpmn`
 
@@ -182,7 +182,7 @@ Im Miragon BPMN Modeler: Element selektieren → Properties Panel → "Asynchron
 
 ## Bonus: Prozesstest
 
-Prozess-Tests bekommen in **[Aufgabe 5](exercise-5.md)** ihren eigenen, ausführlichen Platz –
+Prozess-Tests bekommen in **[Aufgabe 5](exercise-05.md)** ihren eigenen, ausführlichen Platz –
 dort schreibst du einen vollwertigen Prozess-Test gegen den Membership-Prozess (In-Memory-Engine,
 gemockte Use Cases, ohne PostgreSQL). Der Platzhalter dafür liegt schon bereit unter
 `src/test/java/io/miragon/training/process/MembershipProcessTest.java`.
@@ -193,4 +193,4 @@ gemockte Use Cases, ohne PostgreSQL). Der Platzhalter dafür liegt schon bereit 
 
 ---
 
-➡️ [Weiter zu Aufgabe 3](exercise-3.md)
+➡️ [Weiter zu Aufgabe 3](exercise-03.md)

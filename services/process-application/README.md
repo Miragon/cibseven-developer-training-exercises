@@ -39,17 +39,17 @@ http://localhost:8080/camunda  (admin / admin)
 
 | Aufgabe | Thema | Beschreibung |
 |---|---|---|
-| [0](../../docs/exercise-0.md) | Fachliche BPMN-Modellierung | Prozess rein fachlich mit Miragon BPMN Modeler erstellen |
-| [1](../../docs/exercise-1.md) | Engine & Tooling | Lauffähigen Newsletter deployen, Cockpit & DB-Tabellen kennenlernen |
-| [2](../../docs/exercise-2.md) | Technische Modellierung & Automatisierung | Technisch modellieren & mit Java-Code verbinden |
-| [3](../../docs/exercise-3.md) | Bestätigungs-Mail | Service Tasks erweitern, Confirmation-Flow |
-| [4](../../docs/exercise-4.md) | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung |
-| [5](../../docs/exercise-5.md) | Prozess-Tests | Prozess-Unit-Test: In-Memory-Engine, gemockte Use Cases, ohne PostgreSQL |
-| [5 · Add-on](../../docs/exercise-5-addon.md) | bpmn-to-code | Typsichere Process-API aus dem BPMN generieren – Strings raus, Konstanten rein |
-| [6](../../docs/exercise-6.md) | Remote Engine & External Task | Message Throw Event, zweiter Prozess, External Task Worker im eigenen Service, Benachrichtigung in einen Teams-Kanal |
-| [7](../../docs/exercise-7.md) | Boundary Events | Timer- und Message-Boundary-Events, Subprozesse |
-| [8](../../docs/exercise-8.md) | Signal Events | Signal-Events für Systemkommunikation |
-| [9](../../docs/exercise-9.md) | Compensation | Automatisches Rollback via BPMN-Kompensation |
+| [0](../../docs/exercise-00.md) | Fachliche BPMN-Modellierung | Prozess rein fachlich mit Miragon BPMN Modeler erstellen |
+| [1](../../docs/exercise-01.md) | Engine & Tooling | Lauffähigen Newsletter deployen, Cockpit & DB-Tabellen kennenlernen |
+| [2](../../docs/exercise-02.md) | Technische Modellierung & Automatisierung | Technisch modellieren & mit Java-Code verbinden |
+| [3](../../docs/exercise-03.md) | Bestätigungs-Mail | Service Tasks erweitern, Confirmation-Flow |
+| [4](../../docs/exercise-04.md) | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung |
+| [5](../../docs/exercise-05.md) | Prozess-Tests | Prozess-Unit-Test: In-Memory-Engine, gemockte Use Cases, ohne PostgreSQL |
+| [5 · Add-on](../../docs/exercise-05-addon.md) | bpmn-to-code | Typsichere Process-API aus dem BPMN generieren – Strings raus, Konstanten rein |
+| [6](../../docs/exercise-06.md) | Remote Engine & External Task | Message Throw Event, zweiter Prozess, External Task Worker im eigenen Service, Benachrichtigung in einen Teams-Kanal |
+| [7](../../docs/exercise-07.md) | Boundary Events | Timer- und Message-Boundary-Events, Subprozesse |
+| [8](../../docs/exercise-08.md) | Signal Events | Signal-Events für Systemkommunikation |
+| [9](../../docs/exercise-09.md) | Compensation | Automatisches Rollback via BPMN-Kompensation |
 | [10](../../docs/exercise-10.md) | Call Activity & DMN | Prozess-Modularisierung mit Entscheidungstabellen |
 | [Extra 1](../../docs/extra-task-1.md) | Process-Engine-API | Engine-Lock-in lösen: Worker statt Delegates, engine-neutraler Adapter-Layer |
 

@@ -2,7 +2,7 @@
 
 ## Ziel-Modell
 
-![BPMN Modell der Aufgabe](assets/exercise-4.svg)
+![BPMN Modell der Aufgabe](assets/exercise-04.svg)
 
 ## Lernziele
 
@@ -203,4 +203,4 @@ curl -X POST http://localhost:8080/api/memberships \
 
 ---
 
-➡️ [Weiter zu Aufgabe 5](exercise-5.md)
+➡️ [Weiter zu Aufgabe 5](exercise-05.md)

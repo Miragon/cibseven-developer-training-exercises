@@ -121,7 +121,7 @@ public class SendConfirmationMailWorker {
 }
 ```
 
-> Die Topic-Konstanten (`ServiceTasks.SEND_CONFIRMATION_MAIL`) stammen aus der aus dem BPMN **generierten** Process-API, die du seit [Aufgabe 5](exercise-5.md) kennst – hier binden sich die Worker jetzt zusätzlich über ihre `ServiceTasks`-Konstanten an die Service Tasks. Das Plugin ist bereits eingerichtet; du kannst die Topics zur Not auch als schlichte Strings schreiben.
+> Die Topic-Konstanten (`ServiceTasks.SEND_CONFIRMATION_MAIL`) stammen aus der aus dem BPMN **generierten** Process-API, die du seit [Aufgabe 5](exercise-05.md) kennst – hier binden sich die Worker jetzt zusätzlich über ihre `ServiceTasks`-Konstanten an die Service Tasks. Das Plugin ist bereits eingerichtet; du kannst die Topics zur Not auch als schlichte Strings schreiben.
 
 Der `claimMembership`-Worker gibt – anders als die übrigen – ein Ergebnis zurück, das das Gateway auswertet:
 

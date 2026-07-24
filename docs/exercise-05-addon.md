@@ -1,6 +1,6 @@
 # Aufgabe 5 · Add-on – Von Strings zu typsicheren Konstanten (bpmn-to-code)
 
-> Add-on zu [Aufgabe 5](exercise-5.md). Es kommt **kein neues Modell** dazu – du härtest den
+> Add-on zu [Aufgabe 5](exercise-05.md). Es kommt **kein neues Modell** dazu – du härtest den
 > Prozess-Test, den du gerade geschrieben hast.
 
 ## Hintergrund
@@ -129,4 +129,4 @@ Ab hier gilt: **Ab dieser Aufgabe nutzen alle Lösungen die generierte Process-A
 
 ---
 
-➡️ [Weiter zu Aufgabe 6](exercise-6.md)
+➡️ [Weiter zu Aufgabe 6](exercise-06.md)

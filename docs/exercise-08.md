@@ -2,7 +2,7 @@
 
 ## Ziel-Modell
 
-![BPMN Modell der Aufgabe](assets/exercise-8.svg)
+![BPMN Modell der Aufgabe](assets/exercise-08.svg)
 
 ## Lernziele
 
@@ -117,4 +117,4 @@ für die Forum-Benachrichtigung startet. Passe deinen Test an:
 
 ---
 
-➡️ [Weiter zu Aufgabe 9](exercise-9.md)
+➡️ [Weiter zu Aufgabe 9](exercise-09.md)

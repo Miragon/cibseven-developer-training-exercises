@@ -2,7 +2,7 @@
 
 ## Ziel-Modell
 
-![BPMN Modell der Aufgabe](assets/exercise-7.svg)
+![BPMN Modell der Aufgabe](assets/exercise-07.svg)
 
 ## Lernziele
 
@@ -108,7 +108,7 @@ curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
 
 ## Prozess-Test erweitern
 
-Dein Prozess-Test aus [Aufgabe 5](exercise-5.md) deckt bisher nur Happy Path und Ablehnung ab.
+Dein Prozess-Test aus [Aufgabe 5](exercise-05.md) deckt bisher nur Happy Path und Ablehnung ab.
 Jetzt sind drei neue Pfade dazugekommen – ergänze für jeden einen Test:
 
 > Seit Aufgabe 5 referenzierst du Element-IDs über die generierte `SubscribeNewsletterProcessApi` statt
@@ -134,4 +134,4 @@ Den `fireTimer`-Helfer (Timer-Job direkt ausführen, unabhängig vom Fälligkeit
 
 ---
 
-➡️ [Weiter zu Aufgabe 8](exercise-8.md)
+➡️ [Weiter zu Aufgabe 8](exercise-08.md)

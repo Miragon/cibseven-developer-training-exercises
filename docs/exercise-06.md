@@ -4,11 +4,11 @@
 
 Hauptprozess mit dem neuen Message Throw Event `throw_notifyNewMember`:
 
-![BPMN Hauptprozess](assets/exercise-6.svg)
+![BPMN Hauptprozess](assets/exercise-06.svg)
 
 Der zweite Prozess `employeeNotification` mit dem External Service Task:
 
-![BPMN Benachrichtigungs-Prozess](assets/exercise-6-notification.svg)
+![BPMN Benachrichtigungs-Prozess](assets/exercise-06-notification.svg)
 
 Referenz-Modelle: `../models/exercise-06/newsletter.bpmn` (Hauptprozess) und
 `../models/exercise-06/employee-notification.bpmn` (Benachrichtigungs-Prozess).
@@ -128,7 +128,7 @@ Nach dem bekannten Muster (Delegate → Use Case → Service → Outbound-Port �
   ```
 
 > Die typsichere `EmployeeNotificationProcessApi` wird beim Build aus der neuen BPMN generiert
-> (bpmn-to-code, siehe [Aufgabe 5 · Add-on](exercise-5-addon.md)).
+> (bpmn-to-code, siehe [Aufgabe 5 · Add-on](exercise-05-addon.md)).
 
 ### Teil B – Worker-Service (`services/notification-service`)
 
@@ -230,4 +230,4 @@ Automatisiert: `./mvnw -pl solutions/exercise-06/process-application test -Dtest
 
 ---
 
-➡️ [Weiter zu Aufgabe 7](exercise-7.md)
+➡️ [Weiter zu Aufgabe 7](exercise-07.md)
