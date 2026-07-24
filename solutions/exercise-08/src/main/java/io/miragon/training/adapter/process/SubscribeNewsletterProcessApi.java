@@ -23,6 +23,8 @@ public final class SubscribeNewsletterProcessApi {
    * Worker runtime code rarely needs these.
    */
   public static final class Elements {
+    public static final ElementId BOUNDARY_COMPENSATE_CLAIM = new ElementId("boundary_compensateClaim");
+
     public static final ElementId END_EVENT_MAIL_SENT_AGAIN = new ElementId("endEvent_mailSentAgain");
 
     public static final ElementId END_EVENT_MEMBERSHIP_ACTIVATED = new ElementId("endEvent_membershipActivated");
@@ -109,6 +111,12 @@ public final class SubscribeNewsletterProcessApi {
     public static final BpmnTimer TIMER_RESEND_EVERY_DAY = new BpmnTimer("Cycle", "R/P1D");
   }
 
+  public static final class Compensations {
+    public static final ElementId BOUNDARY_COMPENSATE_CLAIM = new ElementId("boundary_compensateClaim");
+
+    public static final ElementId END_EVENT_MEMBERSHIP_DECLINED = new ElementId("endEvent_membershipDeclined");
+  }
+
   public static final class Signals {
     public static final SignalName SIGNAL_MEMBERSHIP_ACTIVATED = new SignalName("signal_membershipActivated");
   }
@@ -129,7 +137,7 @@ public final class SubscribeNewsletterProcessApi {
 
     public static final BpmnFlow FLOW_0_HLNR_3_K = new BpmnFlow("Flow_0hlnr3k", null, "serviceTask_claimMembership", "gateway_hasEmptySpots", null, false);
 
-    public static final BpmnFlow FLOW_0_HO_2_DHW = new BpmnFlow("Flow_0ho2dhw", null, "timer_abortAfter3HalfDays", "serviceTask_revokeClaim", null, false);
+    public static final BpmnFlow FLOW_0_HO_2_DHW = new BpmnFlow("Flow_0ho2dhw", null, "timer_abortAfter3HalfDays", "endEvent_membershipDeclined", null, false);
 
     public static final BpmnFlow FLOW_0_P_7_KO_1_G = new BpmnFlow("Flow_0p7ko1g", null, "startEvent_submitRegistration", "serviceTask_claimMembership", null, false);
 
@@ -139,9 +147,7 @@ public final class SubscribeNewsletterProcessApi {
 
     public static final BpmnFlow FLOW_14_BK_7_Y_3 = new BpmnFlow("Flow_14bk7y3", null, "serviceTask_sendWelcomeMail", "throw_notifyNewMember", null, false);
 
-    public static final BpmnFlow FLOW_14_Y_1_UNW = new BpmnFlow("Flow_14y1unw", null, "serviceTask_revokeClaim", "endEvent_membershipDeclined", null, false);
-
-    public static final BpmnFlow FLOW_153_MCRS = new BpmnFlow("Flow_153mcrs", null, "event_confirmationRejected", "serviceTask_revokeClaim", null, false);
+    public static final BpmnFlow FLOW_153_MCRS = new BpmnFlow("Flow_153mcrs", null, "event_confirmationRejected", "endEvent_membershipDeclined", null, false);
 
     public static final BpmnFlow FLOW_1_J_9_L_21_Y = new BpmnFlow("Flow_1j9l21y", null, "subProcess_confirmMembership", "serviceTask_sendWelcomeMail", null, false);
 
@@ -161,29 +167,31 @@ public final class SubscribeNewsletterProcessApi {
    * Intended for tooling and tests, not worker runtime code.
    */
   public static final class Relations {
+    public static final BpmnRelations BOUNDARY_COMPENSATE_CLAIM = new BpmnRelations(null, List.of(), List.of(), null, "serviceTask_claimMembership", List.of());
+
     public static final BpmnRelations END_EVENT_MAIL_SENT_AGAIN = new BpmnRelations("Mail sent again", List.of("serviceTask_reSendConfirmationMail"), List.of(), null, null, List.of());
 
     public static final BpmnRelations END_EVENT_MEMBERSHIP_ACTIVATED = new BpmnRelations("Membership activated", List.of("throw_notifyNewMember"), List.of(), null, null, List.of());
 
     public static final BpmnRelations END_EVENT_MEMBERSHIP_CONFIRMED = new BpmnRelations("Membership confirmed", List.of("userTask_confirmMembership"), List.of(), "subProcess_confirmMembership", null, List.of());
 
-    public static final BpmnRelations END_EVENT_MEMBERSHIP_DECLINED = new BpmnRelations("Membership declined", List.of("serviceTask_revokeClaim"), List.of(), null, null, List.of());
+    public static final BpmnRelations END_EVENT_MEMBERSHIP_DECLINED = new BpmnRelations("Membership declined", List.of("timer_abortAfter3HalfDays", "event_confirmationRejected"), List.of(), null, null, List.of());
 
     public static final BpmnRelations END_EVENT_MEMBERSHIP_REJECTED = new BpmnRelations("Membership rejected", List.of("serviceTask_sendRejectionMail"), List.of(), null, null, List.of());
 
     public static final BpmnRelations END_EVENT_NOTIFICATION_SENT = new BpmnRelations("Notification sent", List.of("serviceTask_publishSignal"), List.of(), null, null, List.of());
 
-    public static final BpmnRelations EVENT_CONFIRMATION_REJECTED = new BpmnRelations("Confirmation rejected", List.of(), List.of("serviceTask_revokeClaim"), null, "subProcess_confirmMembership", List.of());
+    public static final BpmnRelations EVENT_CONFIRMATION_REJECTED = new BpmnRelations("Confirmation rejected", List.of(), List.of("endEvent_membershipDeclined"), null, "subProcess_confirmMembership", List.of());
 
     public static final BpmnRelations GATEWAY_HAS_EMPTY_SPOTS = new BpmnRelations("Has empty spots", List.of("serviceTask_claimMembership"), List.of("subProcess_confirmMembership", "serviceTask_sendRejectionMail"), null, null, List.of());
 
-    public static final BpmnRelations SERVICE_TASK_CLAIM_MEMBERSHIP = new BpmnRelations("Claim membership", List.of("startEvent_submitRegistration"), List.of("gateway_hasEmptySpots"), null, null, List.of());
+    public static final BpmnRelations SERVICE_TASK_CLAIM_MEMBERSHIP = new BpmnRelations("Claim membership", List.of("startEvent_submitRegistration"), List.of("gateway_hasEmptySpots"), null, null, List.of("boundary_compensateClaim"));
 
     public static final BpmnRelations SERVICE_TASK_PUBLISH_SIGNAL = new BpmnRelations("Publish message in forum", List.of("startEvent_membershipActivated"), List.of("endEvent_notificationSent"), null, null, List.of());
 
     public static final BpmnRelations SERVICE_TASK_RE_SEND_CONFIRMATION_MAIL = new BpmnRelations("Re-Send confirmation mail", List.of("timer_resendEveryDay"), List.of("endEvent_mailSentAgain"), null, null, List.of());
 
-    public static final BpmnRelations SERVICE_TASK_REVOKE_CLAIM = new BpmnRelations("Revoke claim", List.of("timer_abortAfter3HalfDays", "event_confirmationRejected"), List.of("endEvent_membershipDeclined"), null, null, List.of());
+    public static final BpmnRelations SERVICE_TASK_REVOKE_CLAIM = new BpmnRelations("Revoke claim", List.of(), List.of(), null, null, List.of());
 
     public static final BpmnRelations SERVICE_TASK_SEND_CONFIRMATION_MAIL = new BpmnRelations("Send confirmation mail", List.of("startEvent_confirmationRequired"), List.of("userTask_confirmMembership"), "subProcess_confirmMembership", null, List.of());
 
@@ -201,7 +209,7 @@ public final class SubscribeNewsletterProcessApi {
 
     public static final BpmnRelations THROW_NOTIFY_NEW_MEMBER = new BpmnRelations("Notify new member", List.of("serviceTask_sendWelcomeMail"), List.of("endEvent_membershipActivated"), null, null, List.of());
 
-    public static final BpmnRelations TIMER_ABORT_AFTER_3_HALF_DAYS = new BpmnRelations("After 3 1/2 days", List.of(), List.of("serviceTask_revokeClaim"), null, "subProcess_confirmMembership", List.of());
+    public static final BpmnRelations TIMER_ABORT_AFTER_3_HALF_DAYS = new BpmnRelations("After 3 1/2 days", List.of(), List.of("endEvent_membershipDeclined"), null, "subProcess_confirmMembership", List.of());
 
     public static final BpmnRelations TIMER_RESEND_EVERY_DAY = new BpmnRelations("Every day", List.of(), List.of("serviceTask_reSendConfirmationMail"), null, "subProcess_confirmMembership", List.of());
 

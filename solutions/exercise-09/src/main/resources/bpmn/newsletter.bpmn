@@ -84,24 +84,33 @@
     <bpmn:boundaryEvent id="boundary_compensateClaim" attachedToRef="serviceTask_claimMembership">
       <bpmn:compensateEventDefinition id="CompensateEventDefinition_claim" />
     </bpmn:boundaryEvent>
-    <bpmn:endEvent id="endEvent_membershipDeclined" name="Membership declined">
+    <bpmn:callActivity id="callActivity_handleRejection" name="Handle rejection" calledElement="handleRejection">
+      <bpmn:extensionElements>
+        <camunda:in source="membershipId" target="membershipId" />
+        <camunda:in source="age" target="age" />
+      </bpmn:extensionElements>
       <bpmn:incoming>Flow_0ho2dhw</bpmn:incoming>
       <bpmn:incoming>Flow_153mcrs</bpmn:incoming>
+      <bpmn:outgoing>Flow_14y1unw</bpmn:outgoing>
+    </bpmn:callActivity>
+    <bpmn:endEvent id="endEvent_membershipDeclined" name="Membership declined">
+      <bpmn:incoming>Flow_14y1unw</bpmn:incoming>
       <bpmn:compensateEventDefinition id="CompensateEventDefinition_declined" />
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_0ho2dhw" sourceRef="timer_abortAfter3HalfDays" targetRef="endEvent_membershipDeclined" />
-    <bpmn:sequenceFlow id="Flow_153mcrs" sourceRef="event_confirmationRejected" targetRef="endEvent_membershipDeclined" />
-    <bpmn:boundaryEvent id="timer_abortAfter3HalfDays" name="After 3&#10;1/2 days" attachedToRef="subProcess_confirmMembership" camunda:asyncAfter="true">
+    <bpmn:sequenceFlow id="Flow_0ho2dhw" sourceRef="timer_abortAfter3HalfDays" targetRef="callActivity_handleRejection" />
+    <bpmn:sequenceFlow id="Flow_153mcrs" sourceRef="event_confirmationRejected" targetRef="callActivity_handleRejection" />
+    <bpmn:sequenceFlow id="Flow_14y1unw" sourceRef="callActivity_handleRejection" targetRef="endEvent_membershipDeclined" />
+    <bpmn:boundaryEvent id="timer_abortAfter3HalfDays" name="After 3&#10;1/2 days" camunda:asyncAfter="true" attachedToRef="subProcess_confirmMembership">
       <bpmn:outgoing>Flow_0ho2dhw</bpmn:outgoing>
       <bpmn:timerEventDefinition id="TimerEventDefinition_1ipk14c">
         <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">P3DT12H</bpmn:timeDuration>
       </bpmn:timerEventDefinition>
     </bpmn:boundaryEvent>
-    <bpmn:boundaryEvent id="event_confirmationRejected" name="Confirmation rejected" attachedToRef="subProcess_confirmMembership" camunda:asyncAfter="true">
+    <bpmn:boundaryEvent id="event_confirmationRejected" name="Confirmation rejected" camunda:asyncAfter="true" attachedToRef="subProcess_confirmMembership">
       <bpmn:outgoing>Flow_153mcrs</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0po7vrz" messageRef="Message_ConfirmationRejected" />
     </bpmn:boundaryEvent>
-    <bpmn:boundaryEvent id="timer_resendEveryDay" name="Every day" cancelActivity="false" attachedToRef="subProcess_confirmMembership" camunda:asyncAfter="true">
+    <bpmn:boundaryEvent id="timer_resendEveryDay" name="Every day" camunda:asyncAfter="true" cancelActivity="false" attachedToRef="subProcess_confirmMembership">
       <bpmn:outgoing>Flow_1unns5i</bpmn:outgoing>
       <bpmn:timerEventDefinition id="TimerEventDefinition_1f4kmf0">
         <bpmn:timeCycle xsi:type="bpmn:tFormalExpression">R/P1D</bpmn:timeCycle>
@@ -136,20 +145,13 @@
           <dc:Bounds x="-1059" y="-695" width="80" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1t0ex0z_di" bpmnElement="startEvent_membershipActivated">
-        <dc:Bounds x="-778" y="-308" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="-790" y="-257" width="61" height="27" />
-        </bpmndi:BPMNLabel>
+      <bpmndi:BPMNShape id="BPMNShape_callActivityHandleRejection_di" bpmnElement="callActivity_handleRejection">
+        <dc:Bounds x="-100" y="-975" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0yfzwpg_di" bpmnElement="serviceTask_publishSignal">
-        <dc:Bounds x="-670" y="-330" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1wawwip_di" bpmnElement="endEvent_notificationSent">
-        <dc:Bounds x="-508" y="-308" width="36" height="36" />
+      <bpmndi:BPMNShape id="BPMNShape_1rl3e7i" bpmnElement="endEvent_membershipDeclined">
+        <dc:Bounds x="52" y="-953" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="-529" y="-265" width="79" height="14" />
+          <dc:Bounds x="40" y="-910" width="61" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0h6nlhr_di" bpmnElement="subProcess_confirmMembership" isExpanded="true">
@@ -230,17 +232,24 @@
           <dc:Bounds x="-2" y="-687" width="80" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1t0ex0z_di" bpmnElement="startEvent_membershipActivated">
+        <dc:Bounds x="-778" y="-308" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="-790" y="-257" width="61" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0yfzwpg_di" bpmnElement="serviceTask_publishSignal">
+        <dc:Bounds x="-670" y="-330" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_125tc29" bpmnElement="serviceTask_revokeClaim">
         <dc:Bounds x="-820" y="-880" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_boundaryCompensateClaim_di" bpmnElement="boundary_compensateClaim">
-        <dc:Bounds x="-908" y="-700" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_1rl3e7i" bpmnElement="endEvent_membershipDeclined">
-        <dc:Bounds x="62" y="-948" width="36" height="36" />
+      <bpmndi:BPMNShape id="Event_1wawwip_di" bpmnElement="endEvent_notificationSent">
+        <dc:Bounds x="-508" y="-308" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="50" y="-905" width="61" height="27" />
+          <dc:Bounds x="-529" y="-265" width="79" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_08wx372_di" bpmnElement="timer_resendEveryDay">
@@ -261,19 +270,26 @@
           <dc:Bounds x="-181" y="-864" width="42" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_boundaryCompensateClaim_di" bpmnElement="boundary_compensateClaim">
+        <dc:Bounds x="-908" y="-700" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0ayt3tk_di" bpmnElement="Flow_0ayt3tk">
+        <di:waypoint x="-742" y="-290" />
+        <di:waypoint x="-670" y="-290" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_01oybl0" bpmnElement="Flow_0ho2dhw">
         <di:waypoint x="-200" y="-838" />
-        <di:waypoint x="-200" y="-930" />
-        <di:waypoint x="62" y="-930" />
+        <di:waypoint x="-200" y="-935" />
+        <di:waypoint x="-100" y="-935" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_1mexfn5" bpmnElement="Flow_153mcrs">
         <di:waypoint x="-270" y="-838" />
-        <di:waypoint x="-270" y="-948" />
-        <di:waypoint x="62" y="-948" />
+        <di:waypoint x="-270" y="-935" />
+        <di:waypoint x="-100" y="-935" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="BPMNEdge_associationCompensateClaim" bpmnElement="association_compensateClaim">
-        <di:waypoint x="-890" y="-700" />
-        <di:waypoint x="-820" y="-840" />
+      <bpmndi:BPMNEdge id="BPMNEdge_Flow14y1unw" bpmnElement="Flow_14y1unw">
+        <di:waypoint x="0" y="-935" />
+        <di:waypoint x="52" y="-935" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_14bk7y3_di" bpmnElement="Flow_14bk7y3">
         <di:waypoint x="0" y="-720" />
@@ -323,13 +339,13 @@
         <di:waypoint x="0" y="-500" />
         <di:waypoint x="52" y="-500" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0ayt3tk_di" bpmnElement="Flow_0ayt3tk">
-        <di:waypoint x="-742" y="-290" />
-        <di:waypoint x="-670" y="-290" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1xadvxb_di" bpmnElement="Flow_1xadvxb">
         <di:waypoint x="-570" y="-290" />
         <di:waypoint x="-508" y="-290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_associationCompensateClaim" bpmnElement="association_compensateClaim">
+        <di:waypoint x="-890" y="-700" />
+        <di:waypoint x="-820" y="-840" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

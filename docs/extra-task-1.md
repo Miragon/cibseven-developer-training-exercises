@@ -1,6 +1,6 @@
 # Extra-Aufgabe 1 – Raus aus dem Engine-Lock-in: die Process-Engine-API
 
-> **Voraussetzung:** Aufgabe 10 ist abgeschlossen. Der Prozess läuft vollständig – mit Service Tasks, User Tasks, Gateways, Boundary Events, Subprozess, Signal, Call Activity, DMN und Kompensation.
+> **Voraussetzung:** Aufgabe 9 ist abgeschlossen. Der Prozess läuft vollständig – mit Service Tasks, User Tasks, Gateways, Boundary Events, Subprozess, Signal, Call Activity, DMN und Kompensation.
 
 ## Ziel-Modell
 

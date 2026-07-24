@@ -40,7 +40,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Process test for the membership process at the "signal events" stage (exercise 7).
+ * Process test for the membership process at the "compensation" stage (exercise 8) — revokeClaim now runs as a compensation handler.
  *
  * <p>Reaching {@code endEvent_membershipActivated} now throws a signal that starts a second,
  * independent instance ({@code startEvent_membershipActivated} → {@code serviceTask_publishSignal})

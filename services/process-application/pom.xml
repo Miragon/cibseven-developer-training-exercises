@@ -113,7 +113,7 @@
                                 <property name="solutionModuleDir" value="exercise-${solution}"/>
                                 <property name="solutionSrc"
                                           location="${maven.multiModuleProjectDirectory}/solutions/${solutionModuleDir}/src"/>
-                                <fail message="Solution '${solutionModuleDir}' nicht gefunden (gültige Werte: 01-10, zweistellig). Erwarteter Pfad: ${solutionSrc}">
+                                <fail message="Solution '${solutionModuleDir}' nicht gefunden (gültige Werte: 01-09, zweistellig). Erwarteter Pfad: ${solutionSrc}">
                                     <condition>
                                         <not>
                                             <available file="${solutionSrc}" type="dir"/>

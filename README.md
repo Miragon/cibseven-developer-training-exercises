@@ -44,10 +44,9 @@ Detaillierte Aufgabenbeschreibungen befinden sich in [`docs/`](docs/).
 | [5](docs/exercise-05.md) | Prozess-Tests | Prozess-Unit-Test mit In-Memory-Engine, gemockten Use Cases, ohne PostgreSQL |
 | [6](docs/exercise-06.md) | Remote Engine & External Task | Message Throw Event, zweiter Prozess, External Task Worker in eigenem Service, Benachrichtigung in einen Teams-Kanal |
 | [7](docs/exercise-07.md) | Boundary Events & Subprozesse | Timer, Message Boundary Events, Subprocess |
-| [8](docs/exercise-08.md) | Signal Events | Signal End/Start Events, Event-Publishing |
-| [9](docs/exercise-09.md) | Kompensation (SAGA) | Compensation Boundary Events, automatisches Rollback |
-| [10](docs/exercise-10.md) | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
-| [Extra 1](docs/extra-task-1.md) | Process-Engine-API | Aufgabe 10 engine-neutral umbauen: Worker statt JavaDelegate, Adapter-Tausch statt Engine-Lock-in |
+| [8](docs/exercise-08.md) | Signal Events & Kompensation (SAGA) | Signal End/Start Events, Event-Publishing, Compensation Boundary Events, automatisches Rollback |
+| [9](docs/exercise-09.md) | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
+| [Extra 1](docs/extra-task-1.md) | Process-Engine-API | Aufgabe 9 engine-neutral umbauen: Worker statt JavaDelegate, Adapter-Tausch statt Engine-Lock-in |
 
 ## Quick Start
 
