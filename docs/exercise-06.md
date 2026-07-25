@@ -1,21 +1,17 @@
-# Aufgabe 6 – Remote Engine & External Task
+# Aufgabe 6 – Parallel Gateway, Remote Engine & External Task
 
 ## Ziel-Modell
 
-Hauptprozess mit dem neuen Message Throw Event `throw_notifyNewMember`:
+Hauptprozess mit einem **Parallel Gateway**: nach der Bestätigung laufen *Send Welcome Mail* und die
+neue *Notify community*-Aufgabe **gleichzeitig**; ein zweites Parallel Gateway führt beide wieder zusammen.
 
 ![BPMN Hauptprozess](assets/exercise-06.svg)
 
-Der zweite Prozess `employeeNotification` mit dem External Service Task:
-
-![BPMN Benachrichtigungs-Prozess](assets/exercise-06-notification.svg)
-
-Referenz-Modelle: `../models/exercise-06/newsletter.bpmn` (Hauptprozess) und
-`../models/exercise-06/employee-notification.bpmn` (Benachrichtigungs-Prozess).
+Referenz-Modell: `../models/exercise-06/newsletter.bpmn`.
 
 ## Lernziele
 
-- Message **Throw Event** (per Delegate) einsetzen, um einen **zweiten Prozess** zu starten
+- Ein **Parallel Gateway** (Fork/Join) einsetzen, um zwei Zweige **echt parallel** auszuführen
 - **External Service Task** (`camunda:type="external"` + Topic) modellieren
 - Einen **External Task Worker** in einem **eigenen Service** (eigene JVM) bauen, der sich
   über die **REST-API** mit der Engine verbindet (Remote Engine)
@@ -24,15 +20,16 @@ Referenz-Modelle: `../models/exercise-06/newsletter.bpmn` (Hauptprozess) und
 ## Hintergrund
 
 Miravelo wächst – und jedes Mal, wenn jemand dem **Inner Circle** beitritt, sollen es *alle*
-mitbekommen. Bisher endet der Prozess still mit „Membership confirmed". Jetzt soll er, sobald ein
-Mitglied bestätigt ist, eine Nachricht **werfen**, die einen zweiten, eigenständigen
-**Benachrichtigungs-Prozess** startet. 
+mitbekommen. Bisher endet der Prozess still mit „Send Welcome Mail". Jetzt soll parallel zur
+Willkommens-Mail eine **Community-Benachrichtigung** rausgehen. Die beiden Dinge hängen nicht
+voneinander ab – also modellieren wir sie **parallel**: ein **Parallel Gateway** teilt den Fluss in
+zwei Zweige auf, ein zweites führt sie wieder zusammen, bevor die Membership aktiviert ist.
 
-Dessen einzige Aufgabe (ein External Service Task) wird nicht mehr von einem Delegate in der Engine erledigt, sondern von einem **separaten Worker-Service**, der die Engine nur über deren REST-API kennt – das klassische **External-Task-Pattern**.
-
-Der Worker postet jeden neuen Member als **Karte in einen gemeinsamen Microsoft-Teams-Kanal**,
-den das ganze Team mitliest. Jeder sieht die neuen Mitglieder in Echtzeit im Kanal auftauchen –
-unser öffentliches Erfolgserlebnis. 🎉
+Die Community-Benachrichtigung (`serviceTask_notifyCommunity`) erledigt **kein Delegate in der
+Engine**, sondern ein **separater Worker-Service**, der die Engine nur über deren REST-API kennt –
+das klassische **External-Task-Pattern**. Der Worker postet jeden neuen Member als **Karte in einen
+gemeinsamen Microsoft-Teams-Kanal**, den das ganze Team mitliest – unser öffentliches
+Erfolgserlebnis. 🎉
 
 ### Warum eine Remote Engine – und keine embedded?
 
@@ -58,76 +55,53 @@ Prozess-Anwendung; unser Worker redet nur höflich per REST mit ihr.
 
 ```
 Hauptprozess (subscribeNewsletter):
-  ... → [Send Welcome Mail] → (⨯ Throw: Notify new member) → [Membership confirmed]
-                                        │  #{notifyNewMemberDelegate}
-                                        ▼  startet
-Zweiter Prozess (employeeNotification):
-  (Start) → [Notify employees]   → (End)
-             external, topic="notifyEmployees"
-                     ▲
-                     │ fetch & lock, complete
-        Worker-Service (eigene JVM):  NotifyEmployeesHandler → RestClient → Teams-Kanal
+
+  ... → (Confirm) →╱[Send Welcome Mail]──────────────╲→ [Membership confirmed]
+                 ⬦                                    ⬦
+   Parallel-Fork  ╲[Notify community]────────────────╱  Parallel-Join
+                    external, topic="notifyCommunity"
+                              ▲
+                              │ fetch & lock, complete
+        Worker-Service (eigene JVM):  NotifyCommunityHandler → RestClient → Teams-Kanal
 ```
+
+Weil der Join **beide** Zweige abwartet, ist die Membership erst „confirmed", wenn sowohl die Mail
+raus ist **als auch** der Worker die Community-Benachrichtigung abgeschlossen hat.
 
 ## Architektur
 
 Es kommen **zwei Dinge** dazu:
 
-1. **Hauptservice** (das `services/process-application`-Modul): ein Message-Throw-Event + ein zweiter
-   Prozess (`employeeNotification`) mit einem External Service Task.
-2. **Worker-Service** (neues Modul `services/notification-service`): ein eigenständiger Spring-Boot-Prozess
+1. **Hauptservice** (das `services/process-application`-Modul): ein Parallel Gateway, das den Fluss
+   in `serviceTask_sendWelcomeMail` (bekannter Delegate) und den neuen **External Service Task**
+   `serviceTask_notifyCommunity` (Topic `notifyCommunity`) aufteilt, plus ein Join-Gateway.
+2. **Worker-Service** (Modul `services/notification-service`): ein eigenständiger Spring-Boot-Prozess
    **ohne eigene Engine**, der sich per External Task Client remote an `http://localhost:8080/engine-rest`
-   hängt und den Topic `notifyEmployees` abarbeitet. Über den Out-Port `NotificationPublisherOutPort`
+   hängt und den Topic `notifyCommunity` abarbeitet. Über den Out-Port `NotificationPublisherOutPort`
    postet der `MicrosoftTeamsMessagePublisher` eine **Adaptive Card** in einen Microsoft-Teams-Kanal.
 
 ## Aufgaben
 
 ### Teil A – Hauptservice
 
-#### 1. Zweiten Prozess `employee-notification.bpmn` anlegen
+#### 1. Parallel Gateway + `serviceTask_notifyCommunity` ergänzen
 
-Ein einfacher One-Tasker unter `src/main/resources/bpmn/employee-notification.bpmn`:
+Im `newsletter.bpmn` auf dem Confirmed-Pfad – zwischen dem Ende des Confirm-Schritts und dem
+Aktivierungs-End-Event – ein **Parallel Gateway (Fork)** einfügen, das zwei Zweige öffnet:
 
-- Prozess-ID `employeeNotification`, `isExecutable="true"`, `camunda:historyTimeToLive="180"`
-- `Start` → **Service Task** `serviceTask_notifyEmployees` → `End`
-- Der Service Task ist ein **External Task**:
+- Zweig A: das bestehende `serviceTask_sendWelcomeMail`
+- Zweig B: einen neuen **External Service Task**:
   ```xml
-  <bpmn:serviceTask id="serviceTask_notifyEmployees" name="Notify employees"
-                    camunda:type="external" camunda:topic="notifyEmployees" />
+  <bpmn:serviceTask id="serviceTask_notifyCommunity" name="Notify community"
+                    camunda:type="external" camunda:topic="notifyCommunity" />
   ```
 
-#### 2. Message Throw Event im Hauptprozess ergänzen
+Ein zweites **Parallel Gateway (Join)** führt beide Zweige wieder zusammen, bevor das End-Event
+erreicht wird.
 
-Im `newsletter.bpmn` auf dem Confirmed-Pfad – nach `serviceTask_sendWelcomeMail`, vor dem
-Confirmed-End-Event – ein **Message Intermediate Throw Event** einfügen, das per Delegate den
-zweiten Prozess startet:
-
-```xml
-<bpmn:intermediateThrowEvent id="throw_notifyNewMember" name="Notify new member">
-  <bpmn:messageEventDefinition messageRef="Message_NewMemberJoined"
-      camunda:delegateExpression="#{notifyNewMemberDelegate}" />
-</bpmn:intermediateThrowEvent>
-```
-
-(plus die `bpmn:message`-Deklaration `Message_NewMemberJoined`).
-
-#### 3. Delegate, Use Case, Service & Outbound-Adapter
-
-Nach dem bekannten Muster (Delegate → Use Case → Service → Outbound-Port → Adapter):
-
-- `adapter/inbound/cibseven/NotifyNewMemberDelegate` (extends `BaseDelegate`) – liest `name` und
-  `email` aus der Execution, ruft `StartEmployeeNotificationUseCase`.
-- `application/port/inbound/StartEmployeeNotificationUseCase` (+ `Command`-Record).
-- `application/service/StartEmployeeNotificationService`.
-- `application/port/outbound/EmployeeNotificationProcess`.
-- `adapter/outbound/cibseven/EmployeeNotificationProcessAdapter` – startet den zweiten Prozess:
-  ```java
-  runtimeService.startProcessInstanceByKey(
-      EmployeeNotificationProcessApi.PROCESS_ID.getValue(),
-      Map.of("name", memberName, "email", memberEmail));
-  ```
-
-> Die typsichere `EmployeeNotificationProcessApi` wird beim Build aus der neuen BPMN generiert
+> Für `serviceTask_notifyCommunity` brauchst du **keinen** Delegate, keinen Use Case und keinen
+> Outbound-Adapter im Hauptservice – die Arbeit erledigt der externe Worker (Teil B). Der
+> Task-Type-Konstante `ServiceTasks.NOTIFY_COMMUNITY` wird beim Build aus der BPMN generiert
 > (bpmn-to-code, siehe [Aufgabe 5 · Add-on](exercise-05-addon.md)).
 
 ### Teil B – Worker-Service (`services/notification-service`)
@@ -136,15 +110,15 @@ Im Worker-Modul `services/notification-service/` implementierst du nur den **Han
 des Workers) und den **Service**. Der Teams-Adapter `MicrosoftTeamsMessagePublisher` ist bereits
 **vorgegeben** – der Adaptive-Card-Aufbau und der REST-Call sind Infrastruktur, kein Lernziel.
 
-#### 4. External Task Handler abonnieren (der „Delegate")
+#### 2. External Task Handler abonnieren (der „Delegate")
 
-`adapter/inbound/cibseven/NotifyEmployeesHandler` implementiert `ExternalTaskHandler` und
+`adapter/inbound/cibseven/NotifyCommunityHandler` implementiert `ExternalTaskHandler` und
 abonniert den Topic:
 
 ```java
 @Component
-@ExternalTaskSubscription(topicName = "notifyEmployees")
-public class NotifyEmployeesHandler implements ExternalTaskHandler {
+@ExternalTaskSubscription(topicName = "notifyCommunity")
+public class NotifyCommunityHandler implements ExternalTaskHandler {
     public void execute(ExternalTask task, ExternalTaskService taskService) {
         String name = task.getVariable("name");
         publishNotification.publish(new Notification(
@@ -154,10 +128,12 @@ public class NotifyEmployeesHandler implements ExternalTaskHandler {
 }
 ```
 
-Der Handler übersetzt das External-Task-Event in ein Domain-Objekt **`Notification`** (Titel + Text)
-und gibt es an den Use Case `PublishNotificationUseCase` weiter – **nicht** den Member selbst.
+Der Task läuft jetzt **direkt in der Haupt-Prozessinstanz** – die Variable `name` (bei Prozessstart
+gesetzt) ist also in Reichweite. Der Handler übersetzt das External-Task-Event in ein Domain-Objekt
+**`Notification`** (Titel + Text) und gibt es an den Use Case `PublishNotificationUseCase` weiter –
+**nicht** den Member selbst.
 
-#### 5. Service implementieren
+#### 3. Service implementieren
 
 `application/service/PublishNotificationService` (implementiert `PublishNotificationUseCase`) reicht
 die `Notification` an den Out-Port weiter:
@@ -218,8 +194,9 @@ curl -X POST http://localhost:8080/api/memberships \
 ```
 
 **Beweis, dass der Worker wirklich remote & separat ist:** Worker **stoppen**, eine Membership
-durchführen → der `employeeNotification`-Prozess wartet im Cockpit am External Task. Worker
-**starten** → er holt den Task ab und postet. 🎉
+durchführen → der Prozess wartet im Cockpit am External Task `Notify community` (der Parallel-Join
+kann noch nicht feuern). Worker **starten** → er holt den Task ab und postet, der Join feuert, die
+Membership ist aktiviert. 🎉
 
 Automatisiert: `./mvnw -pl solutions/exercise-06/process-application test -Dtest=MembershipProcessTest`.
 

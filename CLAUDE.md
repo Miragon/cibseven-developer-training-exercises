@@ -17,7 +17,7 @@ cd services/process-application && ../../mvnw spring-boot:run
 # Run a specific solution
 cd solutions/exercise-01 && ../../mvnw spring-boot:run
 
-# Load a reference solution into the process-application module (catch-up; valid: 01-10, two-digit)
+# Load a reference solution into the process-application module (catch-up; valid: 01-09, two-digit)
 ./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=02
 
 # Run all tests
@@ -66,9 +66,9 @@ Multi-module Maven project:
   and the business-layer beans (`TODO Aufgabe 2`) are commented out. Exercise 1 = switch the
   engine on; Exercise 2 = uncomment the business layer + fill the TODOs.
 - `services/notification-service/` — External-task worker service (Aufgabe 6); connects remotely to the
-  engine REST API and processes the `notifyEmployees` topic. Ships with `TODO Aufgabe 6`.
-- `docs/` — Per-exercise instructions (`exercise-0.md … exercise-10.md`) + assets.
-- `solutions/exercise-{01-10}/` + `solutions/extra-task-1/` — Cumulative solutions, each building on the previous.
+  engine REST API and processes the `notifyCommunity` topic. Ships with `TODO Aufgabe 6`.
+- `docs/` — Per-exercise instructions (`exercise-00.md … exercise-09.md`) + assets.
+- `solutions/exercise-{01-09}/` + `solutions/extra-task-1/` — Cumulative solutions, each building on the previous.
   Exercise 6 is nested into two sub-services: `solutions/exercise-06/process-application/` (main) +
   `solutions/exercise-06/notification-service/` (the external-task worker)
 - `models/` — Reference BPMN/DMN models

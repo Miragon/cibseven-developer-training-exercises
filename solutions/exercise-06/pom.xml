@@ -17,10 +17,10 @@
 
     <!--
       Aufgabe 6 besteht aus ZWEI Services (jeder in einer eigenen JVM):
-        - process-application: der Hauptservice mit der embedded Engine (Message Throw +
-          zweiter Prozess employeeNotification mit External Service Task)
+        - process-application: der Hauptservice mit der embedded Engine (Parallel Gateway +
+          External Service Task serviceTask_notifyCommunity)
         - notification-service: der External-Task-Worker, der die Engine nur remote per
-          REST-API kennt und den Topic "notifyEmployees" abarbeitet
+          REST-API kennt und den Topic "notifyCommunity" abarbeitet
     -->
     <modules>
         <module>process-application</module>

@@ -2,14 +2,13 @@ package io.miragon.training.process;
 
 import io.miragon.training.adapter.process.SubscribeNewsletterProcessApi;
 import io.miragon.training.adapter.process.SubscribeNewsletterProcessApi.Elements;
+import io.miragon.training.adapter.process.SubscribeNewsletterProcessApi.ServiceTasks;
 import io.miragon.training.application.port.inbound.ClaimMembershipUseCase;
-import io.miragon.training.application.port.inbound.NotifyAboutSignedMembershipUseCase;
 import io.miragon.training.application.port.inbound.ReSendConfirmationMailUseCase;
 import io.miragon.training.application.port.inbound.RevokeClaimUseCase;
 import io.miragon.training.application.port.inbound.SendConfirmationMailUseCase;
 import io.miragon.training.application.port.inbound.SendRejectionMailUseCase;
 import io.miragon.training.application.port.inbound.SendWelcomeMailUseCase;
-import io.miragon.training.application.port.inbound.StartEmployeeNotificationUseCase;
 import io.miragon.training.application.port.outbound.MembershipProcess;
 import io.miragon.training.domain.Age;
 import io.miragon.training.domain.Email;
@@ -28,6 +27,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import static io.miragon.training.process.util.ProcessEngineTestUtils.completeExternalTask;
 import static io.miragon.training.process.util.ProcessEngineTestUtils.continueToNextWaitState;
 import static io.miragon.training.process.util.ProcessEngineTestUtils.findProcessInstance;
 import static io.miragon.training.process.util.ProcessEngineTestUtils.fireTimer;
@@ -40,13 +40,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Process test for the membership process at the "compensation" stage (exercise 8) — revokeClaim now runs as a compensation handler.
+ * Process test for the membership process at the "compensation" stage (exercise 8) — revokeClaim now
+ * runs as a compensation handler (SAGA-style rollback) instead of an explicit service task.
  *
- * <p>Reaching {@code endEvent_membershipActivated} now throws a signal that starts a second,
- * independent instance ({@code startEvent_membershipActivated} → {@code serviceTask_publishSignal})
- * for the forum notification. The tests drive only the originating instance (via the
- * instance-scoped {@code continueToNextWaitState}) and prove the broadcast by asserting that the
- * signal started exactly one additional instance.
+ * <p>On the happy path the flow forks after confirmation: the welcome mail (a delegate) runs in
+ * parallel with the "Notify community" external task; the parallel join only fires once a worker
+ * completes the external task, which the tests do via {@code completeExternalTask}.
  */
 @SpringBootTest
 @ActiveProfiles("test")
@@ -82,20 +81,14 @@ class MembershipProcessTest {
     @MockitoBean
     private RevokeClaimUseCase revokeClaimUseCase;
 
-    @MockitoBean
-    private NotifyAboutSignedMembershipUseCase notifyAboutSignedMembershipUseCase;
-
-    @MockitoBean
-    private StartEmployeeNotificationUseCase startEmployeeNotificationUseCase;
-
     @BeforeEach
     void setUp() {
         init(processEngine);
     }
 
     /**
-     * The signal broadcast starts a second instance that we deliberately do not drive to completion;
-     * clean up all running instances so counts stay isolated between test methods.
+     * Clean up any instances a test left running (e.g. one still parked at an external task), so the
+     * running-instance counts stay isolated between test methods.
      */
     @AfterEach
     void tearDown() {
@@ -119,6 +112,11 @@ class MembershipProcessTest {
                 .getId();
         taskService.complete(taskId);
         continueToNextWaitState(processEngine, instance.getProcessInstanceId());
+
+        // After confirmation the flow forks: Send Welcome Mail (delegate) runs in parallel with the
+        // "Notify community" external task. Stand in for the remote worker so the parallel join fires.
+        completeExternalTask(processEngine, ServiceTasks.NOTIFY_COMMUNITY);
+        continueToNextWaitState(processEngine, instance.getProcessInstanceId());
     }
 
     private long runningInstanceCount() {
@@ -128,7 +126,7 @@ class MembershipProcessTest {
     }
 
     @Test
-    void happyPath_membershipActivatedAndSignalBroadcast() {
+    void happyPath_membershipActivated() {
         MembershipId id = new MembershipId();
         ProcessInstance instance = startWaitingAtConfirmation(id, "jane@example.com", "Jane");
 
@@ -136,22 +134,26 @@ class MembershipProcessTest {
 
         assertThat(instance)
                 .isEnded()
+                // Deterministic backbone up to the fork and after the join. The two branch tasks run
+                // in parallel, so their relative order is not asserted here (see hasPassed below).
                 .hasPassedInOrder(
                         Elements.SERVICE_TASK_SEND_CONFIRMATION_MAIL.getValue(),
                         Elements.USER_TASK_CONFIRM_MEMBERSHIP.getValue(),
-                        Elements.SERVICE_TASK_SEND_WELCOME_MAIL.getValue(),
-                        Elements.THROW_NOTIFY_NEW_MEMBER.getValue(),
+                        Elements.GATEWAY_NOTIFY_FORK.getValue(),
+                        Elements.GATEWAY_NOTIFY_JOIN.getValue(),
                         Elements.END_EVENT_MEMBERSHIP_ACTIVATED.getValue())
+                .hasPassed(
+                        Elements.SERVICE_TASK_SEND_WELCOME_MAIL.getValue(),
+                        Elements.SERVICE_TASK_NOTIFY_COMMUNITY.getValue())
                 .hasNotPassed(Elements.SERVICE_TASK_REVOKE_CLAIM.getValue(), Elements.END_EVENT_MEMBERSHIP_DECLINED.getValue());
 
         verify(sendWelcomeMailUseCase, times(1)).sendWelcomeMail(id);
-        verify(startEmployeeNotificationUseCase, times(1)).startEmployeeNotification(any());
-        // the signal thrown at activation started exactly one forum-notification instance
-        org.assertj.core.api.Assertions.assertThat(runningInstanceCount()).isEqualTo(1L);
+        // the instance fully completed — nothing left running
+        org.assertj.core.api.Assertions.assertThat(runningInstanceCount()).isEqualTo(0L);
     }
 
     @Test
-    void noCapacity_membershipIsRejectedWithoutSignal() {
+    void noCapacity_membershipIsRejected() {
         when(claimMembershipUseCase.claimMembership(any())).thenReturn(false);
         MembershipId id = new MembershipId();
         membershipProcess.startProcess(new Membership(id, new Email("jack@example.com"), new Name("Jack"), new Age(40)));

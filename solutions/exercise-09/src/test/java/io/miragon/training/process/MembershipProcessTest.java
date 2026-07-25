@@ -2,14 +2,13 @@ package io.miragon.training.process;
 
 import io.miragon.training.adapter.process.HandleRejectionProcessApi;
 import io.miragon.training.adapter.process.SubscribeNewsletterProcessApi;
+import io.miragon.training.adapter.process.SubscribeNewsletterProcessApi.ServiceTasks;
 import io.miragon.training.application.port.inbound.ClaimMembershipUseCase;
-import io.miragon.training.application.port.inbound.NotifyAboutSignedMembershipUseCase;
 import io.miragon.training.application.port.inbound.ReSendConfirmationMailUseCase;
 import io.miragon.training.application.port.inbound.RevokeClaimUseCase;
 import io.miragon.training.application.port.inbound.SendConfirmationMailUseCase;
 import io.miragon.training.application.port.inbound.SendRejectionMailUseCase;
 import io.miragon.training.application.port.inbound.SendWelcomeMailUseCase;
-import io.miragon.training.application.port.inbound.StartEmployeeNotificationUseCase;
 import io.miragon.training.application.port.outbound.MembershipProcess;
 import io.miragon.training.domain.Age;
 import io.miragon.training.domain.Email;
@@ -28,6 +27,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import static io.miragon.training.process.util.ProcessEngineTestUtils.completeExternalTask;
 import static io.miragon.training.process.util.ProcessEngineTestUtils.continueToNextWaitState;
 import static io.miragon.training.process.util.ProcessEngineTestUtils.findProcessInstance;
 import static io.miragon.training.process.util.ProcessEngineTestUtils.fireTimer;
@@ -43,8 +43,8 @@ import static org.mockito.Mockito.when;
  *
  * <p>The decline handling is extracted into the {@code handleRejection} call activity, which uses
  * the {@code categorizeApplicant} DMN to route high-value applicants (age 21–29) through a
- * "write regret mail" user task before the claim is compensated. The happy path and signal broadcast
- * are unchanged from the previous stages.
+ * "write regret mail" user task before the claim is compensated. The happy path still forks into
+ * the welcome mail and the "Notify community" external task before activation.
  */
 @SpringBootTest
 @ActiveProfiles("test")
@@ -80,12 +80,6 @@ class MembershipProcessTest {
     @MockitoBean
     private RevokeClaimUseCase revokeClaimUseCase;
 
-    @MockitoBean
-    private NotifyAboutSignedMembershipUseCase notifyAboutSignedMembershipUseCase;
-
-    @MockitoBean
-    private StartEmployeeNotificationUseCase startEmployeeNotificationUseCase;
-
     @BeforeEach
     void setUp() {
         init(processEngine);
@@ -107,7 +101,7 @@ class MembershipProcessTest {
     }
 
     @Test
-    void happyPath_membershipActivatedAndSignalBroadcast() {
+    void happyPath_membershipActivated() {
         MembershipId id = new MembershipId();
         ProcessInstance instance = startWaitingAtConfirmation(id, 30);
 
@@ -116,15 +110,19 @@ class MembershipProcessTest {
         taskService.complete(taskId);
         continueToNextWaitState(processEngine, instance.getProcessInstanceId());
 
+        // After confirmation the flow forks: Send Welcome Mail (delegate) runs in parallel with the
+        // "Notify community" external task. Stand in for the remote worker so the parallel join fires.
+        completeExternalTask(processEngine, ServiceTasks.NOTIFY_COMMUNITY);
+        continueToNextWaitState(processEngine, instance.getProcessInstanceId());
+
         assertThat(instance)
                 .isEnded()
-                .hasPassed(SubscribeNewsletterProcessApi.Elements.SERVICE_TASK_SEND_WELCOME_MAIL.getValue(), SubscribeNewsletterProcessApi.Elements.THROW_NOTIFY_NEW_MEMBER.getValue(), SubscribeNewsletterProcessApi.Elements.END_EVENT_MEMBERSHIP_ACTIVATED.getValue())
+                .hasPassed(SubscribeNewsletterProcessApi.Elements.SERVICE_TASK_SEND_WELCOME_MAIL.getValue(), SubscribeNewsletterProcessApi.Elements.SERVICE_TASK_NOTIFY_COMMUNITY.getValue(), SubscribeNewsletterProcessApi.Elements.END_EVENT_MEMBERSHIP_ACTIVATED.getValue())
                 .hasNotPassed(SubscribeNewsletterProcessApi.Elements.CALL_ACTIVITY_HANDLE_REJECTION.getValue(), SubscribeNewsletterProcessApi.Elements.END_EVENT_MEMBERSHIP_DECLINED.getValue());
 
         verify(sendWelcomeMailUseCase, times(1)).sendWelcomeMail(id);
-        verify(startEmployeeNotificationUseCase, times(1)).startEmployeeNotification(any());
         org.assertj.core.api.Assertions.assertThat(runtimeService.createProcessInstanceQuery()
-                .processDefinitionKey(SubscribeNewsletterProcessApi.PROCESS_ID.getValue()).count()).isEqualTo(1L);
+                .processDefinitionKey(SubscribeNewsletterProcessApi.PROCESS_ID.getValue()).count()).isEqualTo(0L);
     }
 
     @Test
@@ -198,6 +196,9 @@ class MembershipProcessTest {
         String taskId = taskService.createTaskQuery()
                 .processInstanceId(instance.getProcessInstanceId()).singleResult().getId();
         taskService.complete(taskId);
+        continueToNextWaitState(processEngine, instance.getProcessInstanceId());
+
+        completeExternalTask(processEngine, ServiceTasks.NOTIFY_COMMUNITY);
         continueToNextWaitState(processEngine, instance.getProcessInstanceId());
         assertThat(instance).isEnded().hasPassed(SubscribeNewsletterProcessApi.Elements.END_EVENT_MEMBERSHIP_ACTIVATED.getValue());
     }

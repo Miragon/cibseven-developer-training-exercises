@@ -11,18 +11,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * Remote external-task worker: subscribes to the {@code notifyEmployees} topic, turns the locked
+ * Remote external-task worker: subscribes to the {@code notifyCommunity} topic, turns the locked
  * task into a {@link Notification}, publishes it, and completes the task.
  */
 @Component
-@ExternalTaskSubscription(topicName = "notifyEmployees")
-public class NotifyEmployeesHandler implements ExternalTaskHandler {
+@ExternalTaskSubscription(topicName = "notifyCommunity")
+public class NotifyCommunityHandler implements ExternalTaskHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(NotifyEmployeesHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(NotifyCommunityHandler.class);
 
     private final PublishNotificationUseCase publishNotification;
 
-    public NotifyEmployeesHandler(PublishNotificationUseCase publishNotification) {
+    public NotifyCommunityHandler(PublishNotificationUseCase publishNotification) {
         this.publishNotification = publishNotification;
     }
 

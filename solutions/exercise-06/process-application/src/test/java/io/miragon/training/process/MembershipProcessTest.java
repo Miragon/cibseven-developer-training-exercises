@@ -1,11 +1,11 @@
 package io.miragon.training.process;
 
 import io.miragon.training.adapter.process.SubscribeNewsletterProcessApi.Elements;
+import io.miragon.training.adapter.process.SubscribeNewsletterProcessApi.ServiceTasks;
 import io.miragon.training.application.port.inbound.ClaimMembershipUseCase;
 import io.miragon.training.application.port.inbound.SendConfirmationMailUseCase;
 import io.miragon.training.application.port.inbound.SendRejectionMailUseCase;
 import io.miragon.training.application.port.inbound.SendWelcomeMailUseCase;
-import io.miragon.training.application.port.inbound.StartEmployeeNotificationUseCase;
 import io.miragon.training.application.port.outbound.MembershipProcess;
 import io.miragon.training.domain.Age;
 import io.miragon.training.domain.Email;
@@ -23,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import static io.miragon.training.process.util.ProcessEngineTestUtils.completeExternalTask;
 import static io.miragon.training.process.util.ProcessEngineTestUtils.continueToNextWaitState;
 import static io.miragon.training.process.util.ProcessEngineTestUtils.findProcessInstance;
 import static org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat;
@@ -67,9 +68,6 @@ class MembershipProcessTest {
     @MockitoBean
     private SendWelcomeMailUseCase sendWelcomeMailUseCase;
 
-    @MockitoBean
-    private StartEmployeeNotificationUseCase startEmployeeNotificationUseCase;
-
     @BeforeEach
     void setUp() {
         init(processEngine);
@@ -95,17 +93,27 @@ class MembershipProcessTest {
         taskService.complete(taskId);
         continueToNextWaitState(processEngine);
 
+        // The "Notify community" branch is an external task (topic notifyCommunity). The parallel
+        // join only fires once a worker completes it, so we stand in for the remote worker here.
+        completeExternalTask(processEngine, ServiceTasks.NOTIFY_COMMUNITY);
+        continueToNextWaitState(processEngine);
+
         assertThat(instance)
                 .isEnded()
+                // Deterministic backbone up to the fork and after the join. The two branch tasks run
+                // in parallel, so their relative order is not asserted here (see hasPassed below).
                 .hasPassedInOrder(
                         Elements.START_EVENT_SUBMIT_REGISTRATION.getValue(),
                         Elements.SERVICE_TASK_CLAIM_MEMBERSHIP.getValue(),
                         Elements.GATEWAY_HAS_EMPTY_SPOTS.getValue(),
                         Elements.SERVICE_TASK_SEND_CONFIRMATION_MAIL.getValue(),
                         Elements.USER_TASK_CONFIRM_MEMBERSHIP.getValue(),
-                        Elements.SERVICE_TASK_SEND_WELCOME_MAIL.getValue(),
-                        Elements.THROW_NOTIFY_NEW_MEMBER.getValue(),
+                        Elements.GATEWAY_NOTIFY_FORK.getValue(),
+                        Elements.GATEWAY_NOTIFY_JOIN.getValue(),
                         Elements.END_EVENT_MEMBERSHIP_CONFIRMED.getValue())
+                .hasPassed(
+                        Elements.SERVICE_TASK_SEND_WELCOME_MAIL.getValue(),
+                        Elements.SERVICE_TASK_NOTIFY_COMMUNITY.getValue())
                 .hasNotPassed(
                         Elements.SERVICE_TASK_SEND_REJECTION_MAIL.getValue(),
                         Elements.END_EVENT_MEMBERSHIP_REJECTED.getValue());
@@ -113,7 +121,6 @@ class MembershipProcessTest {
         verify(claimMembershipUseCase).claimMembership(id);
         verify(sendConfirmationMailUseCase).sendConfirmationMail(id);
         verify(sendWelcomeMailUseCase).sendWelcomeMail(id);
-        verify(startEmployeeNotificationUseCase).startEmployeeNotification(any());
         verify(sendRejectionMailUseCase, never()).sendRejectionMail(any());
     }
 
@@ -143,6 +150,5 @@ class MembershipProcessTest {
 
         verify(sendRejectionMailUseCase).sendRejectionMail(id);
         verify(sendWelcomeMailUseCase, never()).sendWelcomeMail(any());
-        verify(startEmployeeNotificationUseCase, never()).startEmployeeNotification(any());
     }
 }

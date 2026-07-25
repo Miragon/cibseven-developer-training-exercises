@@ -1,42 +1,18 @@
-# Aufgabe 8 – Signal Events & Kompensation (SAGA-Muster)
+# Aufgabe 8 – Kompensation (SAGA-Muster)
 
 ## Ziel-Modell
 
-![BPMN Modell der Aufgabe](assets/exercise-09.svg)
+![BPMN Modell der Aufgabe](assets/exercise-08.svg)
+
+Referenz-Modell: `../models/exercise-08/newsletter.bpmn`.
 
 ## Lernziele
 
-- Signal End Events und Signal Start Events verstehen und einsetzen
-- Signale innerhalb eines Prozessmodells verwenden
-- Outbound Port für externe Kommunikation einführen
 - Abgeschlossene Aktionen bei Abbruch automatisch rückgängig machen (BPMN-Kompensation)
+- Compensation Boundary Event + Compensating End Event einsetzen
 - SAGA-Muster in Prozessmodellen anwenden
 
 ## Hintergrund
-
-### Signal Events
-
-Wenn jemand seine Membership erfolgreich aktiviert, dann ist das ein echtes Highlight! 🎉
-Wir haben jemanden auf seiner Reise durch die Quarterlife Crisis für Miravelo gewonnen – das verdient Aufmerksamkeit!
-
-Das Team will diese Erfolgsmomente feiern: Eine Nachricht im Community-Forum posten, eine Benachrichtigung an Slack senden, vielleicht sogar einen Webhook triggern. Denn jede aktivierte Membership ist ein Beweis, dass unser Konzept funktioniert.
-
-Technisch lösen wir das mit einem **Signal Event**: Sobald die Membership aktiviert wird, feuert ein Signal End Event. Dieses Signal wird im selben Prozessmodell durch einen separaten Prozess mit Signal Start Event aufgefangen – und dort starten wir die Benachrichtigungen.
-
-```
-...
-[Send Welcome Mail]
-        ↓
-[Membership activated]     ← Signal End Event (wirft: Signal_membershipActivated)
-
-                ↓ (wird empfangen durch)
-
-[Membership activated]     ← Signal Start Event (empfängt: Signal_membershipActivated)
-        ↓
-[Publish message in forum] ← Service Task
-        ↓
-[Done]
-```
 
 ### Kompensation
 
@@ -54,77 +30,22 @@ endEvent_membershipDeclined  →  [Compensating End Event]  →  Engine ruft rev
 
 ## Aufgaben
 
-### 1. BPMN erweitern – Signal Events
-
-Erweitere den Prozess nach `../models/exercise-08/newsletter.bpmn`.
-
-**Änderungen:**
-
-1. End Event `endEvent_membershipActivated` → **Signal End Event**
-   - Signal Name: `Signal_membershipActivated`
-
-2. Neuer **Top-Level Signal Start Event** (außerhalb des Hauptflusses, aber im selben Pool):
-   - ID: `startEvent_membershipActivated`
-   - Name: `Membership activated`
-   - Signal: `Signal_membershipActivated`
-
-3. Neuer Service Task nach dem Signal Start Event:
-   - ID: `serviceTask_publishSignal`
-   - Name: `Publish message in forum`
-   - Delegate Expression: `#{notifyAboutSignedMembershipDelegate}`
-
-### 2. Outbound Port erstellen
-
-**Neue Datei:** `application/port/outbound/MembershipEventPublisher.java`
-
-Erstelle ein Interface mit einer Methode `publishMembershipActivated(MembershipId membershipId)`.
-
-### 3. Use Case und Service
-
-**`NotifyAboutSignedMembershipUseCase`** / **`NotifyAboutSignedMembershipService`**:
-
-Lade die Membership aus dem Repository und publiziere das Event über den `MembershipEventPublisher`.
-
-### 4. Publisher-Adapter implementieren
-
-**Neue Datei:** `adapter/outbound/MembershipEventPublisherAdapter.java`
-
-Implementiere das `MembershipEventPublisher`-Interface. Für den Moment reicht ein einfaches Logging – z.B. `"EVENT: MembershipActivated(id=...)"`. Später könnte hier ein HTTP-Webhook oder Kafka-Event angebunden werden.
-
-### 5. `NotifyAboutSignedMembershipDelegate` erstellen
-
-Analog zu bisherigen Delegates, ruft `NotifyAboutSignedMembershipUseCase` auf.
-
-> Async-Continuations (siehe Aufgabe 3): Setze `asyncBefore` auch am neuen Signal-Start-Event `startEvent_membershipActivated` – Signal-Korrelation soll nicht im Caller-TX laufen.
-
-### 6. BPMN anpassen – Kompensation
+### 1. BPMN anpassen – Kompensation
 
 Ändere `newsletter.bpmn` im Miragon BPMN Modeler:
 
 - [ ] Compensation Boundary Event an `serviceTask_claimMembership` anhängen
 - [ ] `serviceTask_revokeClaim` mit `isForCompensation=true` markieren und per Association mit dem Boundary verknüpfen
-- [ ] Decline-Pfade direkt mit `endEvent_membershipDeclined` verbinden (kein `revokeClaim` im Pfad)
+- [ ] Decline-Pfade (Timer-Abbruch **und** Message-Ablehnung) direkt mit `endEvent_membershipDeclined` verbinden (kein `revokeClaim` im Pfad)
 - [ ] `endEvent_membershipDeclined` in Compensating End Event umwandeln
 
-Referenz-Modell für die Kompensation: `../models/exercise-09/newsletter.bpmn`
+Referenz-Modell: `../models/exercise-08/newsletter.bpmn`
 
 **Hinweis:** Der `RevokeClaimDelegate` bleibt unverändert – er wird jetzt nur anders aufgerufen (durch die BPMN-Engine statt via Sequenzfluss). Es muss kein Java-Code geändert werden.
 
 **Kontrollfrage:** Warum funktioniert `RevokeClaimDelegate` ohne Änderungen weiter, obwohl er nicht mehr im Sequenzfluss liegt?
 
 ## Testen
-
-**Signal Event prüfen:**
-
-```bash
-MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8080/api/memberships \
-  -d '{"email": "frank@miravelo.com", "name": "Frank", "age": 29}')
-```
-
-Im Cockpit:
-1. UserTask `Confirm membership` erscheint
-2. Task abschließen
-3. Im Log erscheint: `EVENT: MembershipActivated(id=...)`
 
 **Kompensation prüfen – Timer-Ablauf:**
 1. `POST /api/memberships` → Prozess startet, Claim wird gesetzt
@@ -139,7 +60,6 @@ Im Cockpit:
 
 ## Kontrolle
 
-- [ ] Im Log erscheint `EVENT: MembershipActivated(id=...)` nach erfolgreicher Membership
 - [ ] Log zeigt `"Revoking membership claim"` beim Timer-Ablauf (ohne expliziten Task im Pfad)
 - [ ] Log zeigt `"Revoking membership claim"` nach Ablehnung via Message
 - [ ] Cockpit: Kompensations-Handler wird in der Prozesshistorie sichtbar
@@ -147,17 +67,7 @@ Im Cockpit:
 
 ## Prozess-Test erweitern
 
-**Signal:** Der Happy Path endet jetzt an `endEvent_membershipActivated`, das ein Signal wirft und
-darüber eine zweite, unabhängige Instanz startet. Treibe im Happy Path nur die **ursprüngliche**
-Instanz weiter – nutze `continueToNextWaitState(processEngine, instance.getProcessInstanceId())`.
-Weise den Signal-Broadcast nach, indem du prüfst, dass nach Abschluss genau **eine** weitere
-Prozessinstanz läuft (`runtimeService.createProcessInstanceQuery()…count()`), und räume laufende
-Instanzen in `@AfterEach` auf.
-
-> **Hinweis:** Die Signal-Instanz trägt die `membershipId` nicht mit (globale Signale übertragen
-> keine Variablen). Deshalb wird sie im Test bewusst nicht bis zum `publishSignal`-Delegate getrieben.
-
-**Kompensation:** Fachlich ändert sich am Ergebnis der Decline-Pfade nichts – `serviceTask_revokeClaim`
+Fachlich ändert sich am Ergebnis der Decline-Pfade nichts – `serviceTask_revokeClaim`
 läuft weiterhin, nur jetzt als Kompensations-Handler. Deine bestehenden Assertions
 `hasPassed(Elements.SERVICE_TASK_REVOKE_CLAIM.getValue(), Elements.END_EVENT_MEMBERSHIP_DECLINED.getValue())`
 und `verify(revokeClaimUseCase).revokeClaim(id)` gelten unverändert.

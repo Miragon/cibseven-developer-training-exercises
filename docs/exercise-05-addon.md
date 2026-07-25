@@ -104,7 +104,7 @@ runtimeService.createMessageCorrelation(Messages.MESSAGE_SUBSCRIPTION_REQUESTED.
 ```
 
 Ab hier gilt: **Ab dieser Aufgabe nutzen alle Lösungen die generierte Process-API** – jede weitere Stufe
-(Boundary, Signal, Compensation, Call Activity) referenziert ihre neuen Elemente über Konstanten statt
+(Boundary, Compensation, Call Activity) referenziert ihre neuen Elemente über Konstanten statt
 über Strings.
 
 > Variablen-Namen wie `"membershipId"` oder `"hasEmptySpots"` lassen wir hier bewusst als Strings stehen –

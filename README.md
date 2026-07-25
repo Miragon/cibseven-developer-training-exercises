@@ -25,7 +25,7 @@ eine limitierte Membership für echte Fans der Marke. Gravel Bike in der Garage,
 Halbmarathon im Kalender – du weißt, wen wir meinen.
 
 Was folgt, ist eine Reise durch immer komplexere BPMN-Muster: Gateways, Boundary Events,
-Subprozesse, Signals, Call Activities, DMN-Entscheidungstabellen und Kompensation —
+Subprozesse, Parallel Gateways, Call Activities, DMN-Entscheidungstabellen und Kompensation —
 jede Aufgabe baut auf der vorherigen auf.
 
 ![Prozessmodell](docs/newsletter-subscription.png)
@@ -42,9 +42,9 @@ Detaillierte Aufgabenbeschreibungen befinden sich in [`docs/`](docs/).
 | [3](docs/exercise-03.md) | Bestätigungs-Mail | Double-Opt-In-Pattern, weitere Service Tasks |
 | [4](docs/exercise-04.md) | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung, Domain-Refactoring |
 | [5](docs/exercise-05.md) | Prozess-Tests | Prozess-Unit-Test mit In-Memory-Engine, gemockten Use Cases, ohne PostgreSQL |
-| [6](docs/exercise-06.md) | Remote Engine & External Task | Message Throw Event, zweiter Prozess, External Task Worker in eigenem Service, Benachrichtigung in einen Teams-Kanal |
+| [6](docs/exercise-06.md) | Parallel Gateway, Remote Engine & External Task | Parallel Gateway, External Task (`notifyCommunity`), Worker in eigenem Service, Benachrichtigung in einen Teams-Kanal |
 | [7](docs/exercise-07.md) | Boundary Events & Subprozesse | Timer, Message Boundary Events, Subprocess |
-| [8](docs/exercise-08.md) | Signal Events & Kompensation (SAGA) | Signal End/Start Events, Event-Publishing, Compensation Boundary Events, automatisches Rollback |
+| [8](docs/exercise-08.md) | Kompensation (SAGA) | Compensation Boundary Events, Compensating End Event, automatisches Rollback |
 | [9](docs/exercise-09.md) | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
 | [Extra 1](docs/extra-task-1.md) | Process-Engine-API | Aufgabe 9 engine-neutral umbauen: Worker statt JavaDelegate, Adapter-Tausch statt Engine-Lock-in |
 
@@ -71,7 +71,7 @@ eine Aufgabe nicht ganz fertig bekommst, kannst du die Referenzlösung in dein `
 kopieren und mit ihr weiterarbeiten:
 
 ```bash
-# solutions/exercise-02 in das process-application-Modul kopieren (gültige Werte: 01–10, zweistellig)
+# solutions/exercise-02 in das process-application-Modul kopieren (gültige Werte: 01–09, zweistellig)
 ./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=02
 ```
 
@@ -85,7 +85,7 @@ eine Lösung ab `exercise-2` daher erst, nachdem Aufgabe 1 abgeschlossen ist.
 
 ```
 cibseven-developer-training-exercises/
-├── docs/                             # Aufgabenbeschreibungen (exercise-00.md … exercise-10.md) + Assets
+├── docs/                             # Aufgabenbeschreibungen (exercise-00.md … exercise-09.md) + Assets
 ├── services/                         # Die Services, an denen du arbeitest
 │   ├── process-application/          # Prozess-Anwendung (startet im Zustand von Aufgabe 1)
 │   │   └── src/main/java/io/miragon/training/
@@ -103,8 +103,8 @@ cibseven-developer-training-exercises/
 │   │       │   └── service/          # Use-Case-Implementierungen
 │   │       └── domain/               # Domain-Modell (reines Java, keine Framework-Abhängigkeiten)
 │   └── notification-service/         # External-Task-Worker-Service (Aufgabe 6)
-├── solutions/                        # Kumulative Lösungen pro Aufgabe (exercise-01 … exercise-10, extra-task-1)
-│   ├── exercise-{01-10}/             # exercise-06/ ist verschachtelt: process-application/ + notification-service/
+├── solutions/                        # Kumulative Lösungen pro Aufgabe (exercise-01 … exercise-09, extra-task-1)
+│   ├── exercise-{01-09}/             # exercise-06/ ist verschachtelt: process-application/ + notification-service/
 │   └── extra-task-1/
 ├── models/                           # Referenz-BPMN-/DMN-Modelle
 ├── stack/
