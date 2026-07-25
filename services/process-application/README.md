@@ -6,18 +6,18 @@ Willkommen zum CIB Seven Developer Training!
 Laufausrüstung, Gravel Bikes, Rennräder. Das Unternehmen wächst, die Kundenbasis wächst,
 und die Prozesse müssen mithalten.
 
-In diesem Modul arbeitest du dich Schritt für Schritt durch 10 Aufgaben, die ein vollständiges
+In diesem Modul arbeitest du dich Schritt für Schritt durch 9 Aufgaben, die ein vollständiges
 Newsletter- und Membership-System auf Basis von CIB Seven (Camunda Platform 7) aufbauen.
 
 ## Der vollständige Zielprozess
 
-So sieht der Prozess am Ende von Aufgabe 10 aus – mit allen Konzepten, die du Schritt für Schritt aufbaust:
+So sieht der Prozess am Ende von Aufgabe 9 aus – mit allen Konzepten, die du Schritt für Schritt aufbaust:
 
-![Vollständiger Membership-Prozess](../../docs/assets/exercise-10-main.svg)
+![Vollständiger Membership-Prozess](../../docs/assets/exercise-09-main.svg)
 
 Der ausgelagerte Sub-Prozess für die Ablehnung (Call Activity + DMN):
 
-![Membership-Rejection Sub-Prozess](../../docs/assets/exercise-10-sub.svg)
+![Membership-Rejection Sub-Prozess](../../docs/assets/exercise-09-sub.svg)
 
 ## Voraussetzungen
 
@@ -46,11 +46,10 @@ http://localhost:8080/camunda  (admin / admin)
 | [4](../../docs/exercise-04.md) | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung |
 | [5](../../docs/exercise-05.md) | Prozess-Tests | Prozess-Unit-Test: In-Memory-Engine, gemockte Use Cases, ohne PostgreSQL |
 | [5 · Add-on](../../docs/exercise-05-addon.md) | bpmn-to-code | Typsichere Process-API aus dem BPMN generieren – Strings raus, Konstanten rein |
-| [6](../../docs/exercise-06.md) | Remote Engine & External Task | Message Throw Event, zweiter Prozess, External Task Worker im eigenen Service, Benachrichtigung in einen Teams-Kanal |
+| [6](../../docs/exercise-06.md) | Parallel Gateway, Remote Engine & External Task | Parallel Gateway, External Task Worker im eigenen Service, Benachrichtigung in einen Teams-Kanal |
 | [7](../../docs/exercise-07.md) | Boundary Events | Timer- und Message-Boundary-Events, Subprozesse |
-| [8](../../docs/exercise-08.md) | Signal Events | Signal-Events für Systemkommunikation |
-| [9](../../docs/exercise-09.md) | Compensation | Automatisches Rollback via BPMN-Kompensation |
-| [10](../../docs/exercise-10.md) | Call Activity & DMN | Prozess-Modularisierung mit Entscheidungstabellen |
+| [8](../../docs/exercise-08.md) | Kompensation (SAGA) | Automatisches Rollback via BPMN-Kompensation |
+| [9](../../docs/exercise-09.md) | Call Activity & DMN | Prozess-Modularisierung mit Entscheidungstabellen |
 | [Extra 1](../../docs/extra-task-1.md) | Process-Engine-API | Engine-Lock-in lösen: Worker statt Delegates, engine-neutraler Adapter-Layer |
 
 ## Architektur
@@ -90,7 +89,7 @@ Für jede Aufgabe gibt es eine Referenzlösung unter `../../solutions/exercise-X
 Jede Lösung ist eine eigenständige, lauffähige Spring Boot Anwendung.
 
 Wenn du eine Aufgabe nicht ganz fertig bekommst, kannst du die Referenzlösung direkt in
-dieses Modul kopieren und mit ihr weiterarbeiten (gültige Werte: 1–10):
+dieses Modul kopieren und mit ihr weiterarbeiten (gültige Werte: 1–9):
 
 ```bash
 ../../mvnw antrun:run@load-solution -Dsolution=02

@@ -1,16 +1,16 @@
 # Aufgabe 9 – Call Activity & DMN
 
-> **Voraussetzung:** Aufgabe 8 (Signal Events & Kompensation) ist abgeschlossen. Der Hauptprozess kennt bereits die Compensation-Boundary auf `serviceTask_claimMembership`.
+> **Voraussetzung:** Aufgabe 8 (Kompensation) ist abgeschlossen. Der Hauptprozess kennt bereits die Compensation-Boundary auf `serviceTask_claimMembership`.
 
 ## Ziel-Modell
 
 Hauptprozess:
 
-![BPMN Hauptprozess](assets/exercise-10-main.svg)
+![BPMN Hauptprozess](assets/exercise-09-main.svg)
 
 Sub-Prozess `handleRejection`:
 
-![BPMN Sub-Prozess](assets/exercise-10-sub.svg)
+![BPMN Sub-Prozess](assets/exercise-09-sub.svg)
 
 ## Lernziele
 
@@ -61,7 +61,7 @@ Subprozess (membership-rejection.bpmn):
 
 Neue Datei: `src/main/resources/bpmn/membership-rejection.bpmn`
 
-Referenz: `../models/exercise-10/membership-rejection.bpmn`
+Referenz: `../models/exercise-09/membership-rejection.bpmn`
 
 Struktur:
 - Process ID: `handleRejection`
@@ -81,7 +81,7 @@ Ersetze die direkten Decline-Pfade aus Aufgabe 8 durch eine **Call Activity**:
 
 Die Compensation aus Aufgabe 8 bleibt unangetastet. Nach Rückkehr aus der Call Activity feuert das Compensating End Event und die Engine ruft `serviceTask_revokeClaim` auf.
 
-Referenz: `../models/exercise-10/newsletter.bpmn`
+Referenz: `../models/exercise-09/newsletter.bpmn`
 
 ### 3. Variablen-Übergabe konfigurieren
 
@@ -98,7 +98,7 @@ In der Call Activity müssen Variablen übergeben werden:
 Kopiere die Referenz-DMN ins Projekt:
 
 ```bash
-cp ../models/exercise-10/categorize-applicant.dmn src/main/resources/dmn/categorize-applicant.dmn
+cp ../models/exercise-09/categorize-applicant.dmn src/main/resources/dmn/categorize-applicant.dmn
 ```
 
 Inhalt der DMN-Tabelle:
@@ -181,4 +181,4 @@ Die Decline-Behandlung liegt jetzt in der Call Activity `callActivity_handleReje
 
 ---
 
-🎉 **Glückwunsch!** Du hast alle Aufgaben durchgearbeitet und einen vollständigen, produktionsreifen Prozess mit Service Tasks, User Tasks, Gateways, Boundary Events, Sub-Prozessen, Signal Events, Kompensation, Call Activity und DMN aufgebaut.
+🎉 **Glückwunsch!** Du hast alle Aufgaben durchgearbeitet und einen vollständigen, produktionsreifen Prozess mit Service Tasks, User Tasks, Gateways, Boundary Events, Sub-Prozessen, Kompensation, Call Activity und DMN aufgebaut.

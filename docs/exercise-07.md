@@ -33,7 +33,8 @@ Das kostet wertvolle Plätze! Neue Anforderungen:
                       ↑ Timer (3.5 Tage): Abbruch
                       ↑ Message: Ablehnung durch Nutzer
                             ↓ Confirmed
-              [Send Welcome Mail] → [Membership confirmed]
+              ⬦ ─╱ [Send Welcome Mail] ╲─ ⬦ → [Membership activated]
+              Fork ╲ [Notify community] ╱ Join   (Parallel Gateway aus Aufgabe 6)
 ```
 
 ## Aufgaben

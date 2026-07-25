@@ -7,17 +7,17 @@ import org.cibseven.bpm.client.task.ExternalTaskService;
 import org.springframework.stereotype.Component;
 
 /**
- * Remote external-task worker: subscribes to the {@code notifyEmployees} topic, turns the locked
+ * Remote external-task worker: subscribes to the {@code notifyCommunity} topic, turns the locked
  * task into a {@link io.miragon.training.domain.Notification}, publishes it, and completes the task.
  */
 @Component
-// TODO Aufgabe 6: subscribe to the topic — @ExternalTaskSubscription(topicName = "notifyEmployees")
+// TODO Aufgabe 6: subscribe to the topic — @ExternalTaskSubscription(topicName = "notifyCommunity")
 //                 (org.cibseven.bpm.client.spring.annotation.ExternalTaskSubscription)
-public class NotifyEmployeesHandler implements ExternalTaskHandler {
+public class NotifyCommunityHandler implements ExternalTaskHandler {
 
     private final PublishNotificationUseCase publishNotification;
 
-    public NotifyEmployeesHandler(PublishNotificationUseCase publishNotification) {
+    public NotifyCommunityHandler(PublishNotificationUseCase publishNotification) {
         this.publishNotification = publishNotification;
     }
 

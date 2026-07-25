@@ -85,26 +85,26 @@ public final class SubscribeNewsletterProcessApi {
   }
 
   /**
-   * Per-element graph metadata (previousElements / followingElements / parentId / boundary attachments).
+   * Per-element graph metadata (elementType / previousElements / followingElements / parentId / boundary attachments).
    * Intended for tooling and tests, not worker runtime code.
    */
   public static final class Relations {
-    public static final BpmnRelations END_EVENT_MEMBERSHIP_CONFIRMED = new BpmnRelations("Membership confirmed", List.of("serviceTask_sendWelcomeMail"), List.of(), null, null, List.of());
+    public static final BpmnRelations END_EVENT_MEMBERSHIP_CONFIRMED = new BpmnRelations("Membership confirmed", List.of("serviceTask_sendWelcomeMail"), List.of(), null, null, List.of(), "END_EVENT");
 
-    public static final BpmnRelations END_EVENT_MEMBERSHIP_REJECTED = new BpmnRelations("Membership rejected", List.of("serviceTask_sendRejectionMail"), List.of(), null, null, List.of());
+    public static final BpmnRelations END_EVENT_MEMBERSHIP_REJECTED = new BpmnRelations("Membership rejected", List.of("serviceTask_sendRejectionMail"), List.of(), null, null, List.of(), "END_EVENT");
 
-    public static final BpmnRelations GATEWAY_HAS_EMPTY_SPOTS = new BpmnRelations("Has empty spots", List.of("serviceTask_claimMembership"), List.of("serviceTask_sendConfirmationMail", "serviceTask_sendRejectionMail"), null, null, List.of());
+    public static final BpmnRelations GATEWAY_HAS_EMPTY_SPOTS = new BpmnRelations("Has empty spots", List.of("serviceTask_claimMembership"), List.of("serviceTask_sendConfirmationMail", "serviceTask_sendRejectionMail"), null, null, List.of(), "EXCLUSIVE_GATEWAY");
 
-    public static final BpmnRelations SERVICE_TASK_CLAIM_MEMBERSHIP = new BpmnRelations("Claim membership", List.of("startEvent_submitRegistration"), List.of("gateway_hasEmptySpots"), null, null, List.of());
+    public static final BpmnRelations SERVICE_TASK_CLAIM_MEMBERSHIP = new BpmnRelations("Claim membership", List.of("startEvent_submitRegistration"), List.of("gateway_hasEmptySpots"), null, null, List.of(), "SERVICE_TASK");
 
-    public static final BpmnRelations SERVICE_TASK_SEND_CONFIRMATION_MAIL = new BpmnRelations("Send confirmation mail", List.of("gateway_hasEmptySpots"), List.of("userTask_confirmMembership"), null, null, List.of());
+    public static final BpmnRelations SERVICE_TASK_SEND_CONFIRMATION_MAIL = new BpmnRelations("Send confirmation mail", List.of("gateway_hasEmptySpots"), List.of("userTask_confirmMembership"), null, null, List.of(), "SERVICE_TASK");
 
-    public static final BpmnRelations SERVICE_TASK_SEND_REJECTION_MAIL = new BpmnRelations("Send rejection mail", List.of("gateway_hasEmptySpots"), List.of("endEvent_membershipRejected"), null, null, List.of());
+    public static final BpmnRelations SERVICE_TASK_SEND_REJECTION_MAIL = new BpmnRelations("Send rejection mail", List.of("gateway_hasEmptySpots"), List.of("endEvent_membershipRejected"), null, null, List.of(), "SERVICE_TASK");
 
-    public static final BpmnRelations SERVICE_TASK_SEND_WELCOME_MAIL = new BpmnRelations("Send Welcome Mail", List.of("userTask_confirmMembership"), List.of("endEvent_membershipConfirmed"), null, null, List.of());
+    public static final BpmnRelations SERVICE_TASK_SEND_WELCOME_MAIL = new BpmnRelations("Send Welcome Mail", List.of("userTask_confirmMembership"), List.of("endEvent_membershipConfirmed"), null, null, List.of(), "SERVICE_TASK");
 
-    public static final BpmnRelations START_EVENT_SUBMIT_REGISTRATION = new BpmnRelations("Submit registration form", List.of(), List.of("serviceTask_claimMembership"), null, null, List.of());
+    public static final BpmnRelations START_EVENT_SUBMIT_REGISTRATION = new BpmnRelations("Submit registration form", List.of(), List.of("serviceTask_claimMembership"), null, null, List.of(), "MESSAGE_START_EVENT");
 
-    public static final BpmnRelations USER_TASK_CONFIRM_MEMBERSHIP = new BpmnRelations("Confirm membership", List.of("serviceTask_sendConfirmationMail"), List.of("serviceTask_sendWelcomeMail"), null, null, List.of());
+    public static final BpmnRelations USER_TASK_CONFIRM_MEMBERSHIP = new BpmnRelations("Confirm membership", List.of("serviceTask_sendConfirmationMail"), List.of("serviceTask_sendWelcomeMail"), null, null, List.of(), "USER_TASK");
   }
 }

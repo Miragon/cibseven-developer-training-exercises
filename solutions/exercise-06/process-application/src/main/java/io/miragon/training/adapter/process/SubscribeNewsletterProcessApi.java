@@ -27,7 +27,13 @@ public final class SubscribeNewsletterProcessApi {
 
     public static final ElementId GATEWAY_HAS_EMPTY_SPOTS = new ElementId("gateway_hasEmptySpots");
 
+    public static final ElementId GATEWAY_NOTIFY_FORK = new ElementId("gateway_notifyFork");
+
+    public static final ElementId GATEWAY_NOTIFY_JOIN = new ElementId("gateway_notifyJoin");
+
     public static final ElementId SERVICE_TASK_CLAIM_MEMBERSHIP = new ElementId("serviceTask_claimMembership");
+
+    public static final ElementId SERVICE_TASK_NOTIFY_COMMUNITY = new ElementId("serviceTask_notifyCommunity");
 
     public static final ElementId SERVICE_TASK_SEND_CONFIRMATION_MAIL = new ElementId("serviceTask_sendConfirmationMail");
 
@@ -37,8 +43,6 @@ public final class SubscribeNewsletterProcessApi {
 
     public static final ElementId START_EVENT_SUBMIT_REGISTRATION = new ElementId("startEvent_submitRegistration");
 
-    public static final ElementId THROW_NOTIFY_NEW_MEMBER = new ElementId("throw_notifyNewMember");
-
     public static final ElementId USER_TASK_CONFIRM_MEMBERSHIP = new ElementId("userTask_confirmMembership");
   }
 
@@ -46,8 +50,6 @@ public final class SubscribeNewsletterProcessApi {
    * BPMN message names used to correlate messages to running process instances.
    */
   public static final class Messages {
-    public static final MessageName MESSAGE_NEW_MEMBER_JOINED = new MessageName("Message_NewMemberJoined");
-
     public static final MessageName MESSAGE_SUBSCRIPTION_REQUESTED = new MessageName("Message_SubscriptionRequested");
   }
 
@@ -58,13 +60,13 @@ public final class SubscribeNewsletterProcessApi {
   public static final class ServiceTasks {
     public static final String CLAIM_MEMBERSHIP_DELEGATE = "#{claimMembershipDelegate}";
 
-    public static final String NOTIFY_NEW_MEMBER_DELEGATE = "#{notifyNewMemberDelegate}";
-
     public static final String SEND_CONFIRMATION_MAIL_DELEGATE = "#{sendConfirmationMailDelegate}";
 
     public static final String SEND_REJECTION_MAIL_DELEGATE = "#{sendRejectionMailDelegate}";
 
     public static final String SEND_WELCOME_MAIL_DELEGATE = "#{sendWelcomeMailDelegate}";
+
+    public static final String NOTIFY_COMMUNITY = "notifyCommunity";
   }
 
   /**
@@ -79,42 +81,52 @@ public final class SubscribeNewsletterProcessApi {
 
     public static final BpmnFlow FLOW_0_P_7_KO_1_G = new BpmnFlow("Flow_0p7ko1g", null, "startEvent_submitRegistration", "serviceTask_claimMembership", null, false);
 
-    public static final BpmnFlow FLOW_0_YA_530_I = new BpmnFlow("Flow_0ya530i", null, "userTask_confirmMembership", "serviceTask_sendWelcomeMail", null, false);
+    public static final BpmnFlow FLOW_0_YA_530_I = new BpmnFlow("Flow_0ya530i", null, "userTask_confirmMembership", "gateway_notifyFork", null, false);
 
     public static final BpmnFlow FLOW_13584_XC = new BpmnFlow("Flow_13584xc", null, "serviceTask_sendConfirmationMail", "userTask_confirmMembership", null, false);
 
     public static final BpmnFlow FLOW_1_PL_6_NN_4 = new BpmnFlow("Flow_1pl6nn4", "Yes", "gateway_hasEmptySpots", "serviceTask_sendConfirmationMail", null, true);
 
-    public static final BpmnFlow FLOW_1_S_74_AZU = new BpmnFlow("Flow_1s74azu", null, "serviceTask_sendWelcomeMail", "throw_notifyNewMember", null, false);
-
     public static final BpmnFlow FLOW_1_SPTHMA = new BpmnFlow("Flow_1spthma", null, "serviceTask_claimMembership", "gateway_hasEmptySpots", null, false);
 
-    public static final BpmnFlow FLOW_NOTIFY_TO_END = new BpmnFlow("Flow_notifyToEnd", null, "throw_notifyNewMember", "endEvent_membershipConfirmed", null, false);
+    public static final BpmnFlow FLOW_FORK_TO_NOTIFY = new BpmnFlow("Flow_forkToNotify", null, "gateway_notifyFork", "serviceTask_notifyCommunity", null, false);
+
+    public static final BpmnFlow FLOW_FORK_TO_WELCOME = new BpmnFlow("Flow_forkToWelcome", null, "gateway_notifyFork", "serviceTask_sendWelcomeMail", null, false);
+
+    public static final BpmnFlow FLOW_JOIN_TO_END = new BpmnFlow("Flow_joinToEnd", null, "gateway_notifyJoin", "endEvent_membershipConfirmed", null, false);
+
+    public static final BpmnFlow FLOW_NOTIFY_TO_JOIN = new BpmnFlow("Flow_notifyToJoin", null, "serviceTask_notifyCommunity", "gateway_notifyJoin", null, false);
+
+    public static final BpmnFlow FLOW_WELCOME_TO_JOIN = new BpmnFlow("Flow_welcomeToJoin", null, "serviceTask_sendWelcomeMail", "gateway_notifyJoin", null, false);
   }
 
   /**
-   * Per-element graph metadata (previousElements / followingElements / parentId / boundary attachments).
+   * Per-element graph metadata (elementType / previousElements / followingElements / parentId / boundary attachments).
    * Intended for tooling and tests, not worker runtime code.
    */
   public static final class Relations {
-    public static final BpmnRelations END_EVENT_MEMBERSHIP_CONFIRMED = new BpmnRelations("Membership confirmed", List.of("throw_notifyNewMember"), List.of(), null, null, List.of());
+    public static final BpmnRelations END_EVENT_MEMBERSHIP_CONFIRMED = new BpmnRelations("Membership confirmed", List.of("gateway_notifyJoin"), List.of(), null, null, List.of(), "END_EVENT");
 
-    public static final BpmnRelations END_EVENT_MEMBERSHIP_REJECTED = new BpmnRelations("Membership rejected", List.of("serviceTask_sendRejectionMail"), List.of(), null, null, List.of());
+    public static final BpmnRelations END_EVENT_MEMBERSHIP_REJECTED = new BpmnRelations("Membership rejected", List.of("serviceTask_sendRejectionMail"), List.of(), null, null, List.of(), "END_EVENT");
 
-    public static final BpmnRelations GATEWAY_HAS_EMPTY_SPOTS = new BpmnRelations("Has empty spots", List.of("serviceTask_claimMembership"), List.of("serviceTask_sendConfirmationMail", "serviceTask_sendRejectionMail"), null, null, List.of());
+    public static final BpmnRelations GATEWAY_HAS_EMPTY_SPOTS = new BpmnRelations("Has empty spots", List.of("serviceTask_claimMembership"), List.of("serviceTask_sendConfirmationMail", "serviceTask_sendRejectionMail"), null, null, List.of(), "EXCLUSIVE_GATEWAY");
 
-    public static final BpmnRelations SERVICE_TASK_CLAIM_MEMBERSHIP = new BpmnRelations("Claim membership", List.of("startEvent_submitRegistration"), List.of("gateway_hasEmptySpots"), null, null, List.of());
+    public static final BpmnRelations GATEWAY_NOTIFY_FORK = new BpmnRelations(null, List.of("userTask_confirmMembership"), List.of("serviceTask_sendWelcomeMail", "serviceTask_notifyCommunity"), null, null, List.of(), "PARALLEL_GATEWAY");
 
-    public static final BpmnRelations SERVICE_TASK_SEND_CONFIRMATION_MAIL = new BpmnRelations("Send confirmation mail", List.of("gateway_hasEmptySpots"), List.of("userTask_confirmMembership"), null, null, List.of());
+    public static final BpmnRelations GATEWAY_NOTIFY_JOIN = new BpmnRelations(null, List.of("serviceTask_sendWelcomeMail", "serviceTask_notifyCommunity"), List.of("endEvent_membershipConfirmed"), null, null, List.of(), "PARALLEL_GATEWAY");
 
-    public static final BpmnRelations SERVICE_TASK_SEND_REJECTION_MAIL = new BpmnRelations("Send rejection mail", List.of("gateway_hasEmptySpots"), List.of("endEvent_membershipRejected"), null, null, List.of());
+    public static final BpmnRelations SERVICE_TASK_CLAIM_MEMBERSHIP = new BpmnRelations("Claim membership", List.of("startEvent_submitRegistration"), List.of("gateway_hasEmptySpots"), null, null, List.of(), "SERVICE_TASK");
 
-    public static final BpmnRelations SERVICE_TASK_SEND_WELCOME_MAIL = new BpmnRelations("Send Welcome Mail", List.of("userTask_confirmMembership"), List.of("throw_notifyNewMember"), null, null, List.of());
+    public static final BpmnRelations SERVICE_TASK_NOTIFY_COMMUNITY = new BpmnRelations("Notify community", List.of("gateway_notifyFork"), List.of("gateway_notifyJoin"), null, null, List.of(), "SERVICE_TASK");
 
-    public static final BpmnRelations START_EVENT_SUBMIT_REGISTRATION = new BpmnRelations("Submit registration form", List.of(), List.of("serviceTask_claimMembership"), null, null, List.of());
+    public static final BpmnRelations SERVICE_TASK_SEND_CONFIRMATION_MAIL = new BpmnRelations("Send confirmation mail", List.of("gateway_hasEmptySpots"), List.of("userTask_confirmMembership"), null, null, List.of(), "SERVICE_TASK");
 
-    public static final BpmnRelations THROW_NOTIFY_NEW_MEMBER = new BpmnRelations("Notify new member", List.of("serviceTask_sendWelcomeMail"), List.of("endEvent_membershipConfirmed"), null, null, List.of());
+    public static final BpmnRelations SERVICE_TASK_SEND_REJECTION_MAIL = new BpmnRelations("Send rejection mail", List.of("gateway_hasEmptySpots"), List.of("endEvent_membershipRejected"), null, null, List.of(), "SERVICE_TASK");
 
-    public static final BpmnRelations USER_TASK_CONFIRM_MEMBERSHIP = new BpmnRelations("Confirm membership", List.of("serviceTask_sendConfirmationMail"), List.of("serviceTask_sendWelcomeMail"), null, null, List.of());
+    public static final BpmnRelations SERVICE_TASK_SEND_WELCOME_MAIL = new BpmnRelations("Send Welcome Mail", List.of("gateway_notifyFork"), List.of("gateway_notifyJoin"), null, null, List.of(), "SERVICE_TASK");
+
+    public static final BpmnRelations START_EVENT_SUBMIT_REGISTRATION = new BpmnRelations("Submit registration form", List.of(), List.of("serviceTask_claimMembership"), null, null, List.of(), "MESSAGE_START_EVENT");
+
+    public static final BpmnRelations USER_TASK_CONFIRM_MEMBERSHIP = new BpmnRelations("Confirm membership", List.of("serviceTask_sendConfirmationMail"), List.of("gateway_notifyFork"), null, null, List.of(), "USER_TASK");
   }
 }

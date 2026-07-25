@@ -50,20 +50,20 @@ public final class HandleRejectionProcessApi {
   }
 
   /**
-   * Per-element graph metadata (previousElements / followingElements / parentId / boundary attachments).
+   * Per-element graph metadata (elementType / previousElements / followingElements / parentId / boundary attachments).
    * Intended for tooling and tests, not worker runtime code.
    */
   public static final class Relations {
-    public static final BpmnRelations END_EVENT_ACCEPT_REJECTION = new BpmnRelations("Accept rejection", List.of("gateway_highValue"), List.of(), null, null, List.of());
+    public static final BpmnRelations END_EVENT_ACCEPT_REJECTION = new BpmnRelations("Accept rejection", List.of("gateway_highValue"), List.of(), null, null, List.of(), "END_EVENT");
 
-    public static final BpmnRelations END_EVENT_TRIED_TO_REACQUIRE = new BpmnRelations("Tried to reaquire applicant", List.of("userTask_writeRegretMail"), List.of(), null, null, List.of());
+    public static final BpmnRelations END_EVENT_TRIED_TO_REACQUIRE = new BpmnRelations("Tried to reaquire applicant", List.of("userTask_writeRegretMail"), List.of(), null, null, List.of(), "END_EVENT");
 
-    public static final BpmnRelations GATEWAY_HIGH_VALUE = new BpmnRelations("High value?", List.of("serviceTask_categorizeApplicant"), List.of("userTask_writeRegretMail", "endEvent_acceptRejection"), null, null, List.of());
+    public static final BpmnRelations GATEWAY_HIGH_VALUE = new BpmnRelations("High value?", List.of("serviceTask_categorizeApplicant"), List.of("userTask_writeRegretMail", "endEvent_acceptRejection"), null, null, List.of(), "EXCLUSIVE_GATEWAY");
 
-    public static final BpmnRelations SERVICE_TASK_CATEGORIZE_APPLICANT = new BpmnRelations("Categorize applicant", List.of("startEvent_confirmationRejected"), List.of("gateway_highValue"), null, null, List.of());
+    public static final BpmnRelations SERVICE_TASK_CATEGORIZE_APPLICANT = new BpmnRelations("Categorize applicant", List.of("startEvent_confirmationRejected"), List.of("gateway_highValue"), null, null, List.of(), "BUSINESS_RULE_TASK");
 
-    public static final BpmnRelations START_EVENT_CONFIRMATION_REJECTED = new BpmnRelations("Confirmation rejected", List.of(), List.of("serviceTask_categorizeApplicant"), null, null, List.of());
+    public static final BpmnRelations START_EVENT_CONFIRMATION_REJECTED = new BpmnRelations("Confirmation rejected", List.of(), List.of("serviceTask_categorizeApplicant"), null, null, List.of(), "START_EVENT");
 
-    public static final BpmnRelations USER_TASK_WRITE_REGRET_MAIL = new BpmnRelations("Write an email expressing regret", List.of("gateway_highValue"), List.of("endEvent_triedToReacquire"), null, null, List.of());
+    public static final BpmnRelations USER_TASK_WRITE_REGRET_MAIL = new BpmnRelations("Write an email expressing regret", List.of("gateway_highValue"), List.of("endEvent_triedToReacquire"), null, null, List.of(), "USER_TASK");
   }
 }

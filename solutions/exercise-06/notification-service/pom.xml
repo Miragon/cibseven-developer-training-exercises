@@ -27,7 +27,7 @@
             <optional>true</optional>
         </dependency>
         <!-- CIB Seven External Task Client: connects remotely to the engine REST API and
-             polls the "notifyEmployees" topic (Version zentral gemanagt) -->
+             polls the "notifyCommunity" topic (Version zentral gemanagt) -->
         <dependency>
             <groupId>org.cibseven.bpm.springboot</groupId>
             <artifactId>cibseven-bpm-spring-boot-starter-external-task-client</artifactId>

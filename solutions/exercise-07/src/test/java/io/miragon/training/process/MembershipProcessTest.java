@@ -6,8 +6,8 @@ import io.miragon.training.application.port.inbound.RevokeClaimUseCase;
 import io.miragon.training.application.port.inbound.SendConfirmationMailUseCase;
 import io.miragon.training.application.port.inbound.SendRejectionMailUseCase;
 import io.miragon.training.application.port.inbound.SendWelcomeMailUseCase;
-import io.miragon.training.application.port.inbound.StartEmployeeNotificationUseCase;
 import io.miragon.training.adapter.process.SubscribeNewsletterProcessApi.Elements;
+import io.miragon.training.adapter.process.SubscribeNewsletterProcessApi.ServiceTasks;
 import io.miragon.training.application.port.outbound.MembershipProcess;
 import io.miragon.training.domain.Age;
 import io.miragon.training.domain.Email;
@@ -25,6 +25,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import static io.miragon.training.process.util.ProcessEngineTestUtils.completeExternalTask;
 import static io.miragon.training.process.util.ProcessEngineTestUtils.continueToNextWaitState;
 import static io.miragon.training.process.util.ProcessEngineTestUtils.findProcessInstance;
 import static io.miragon.training.process.util.ProcessEngineTestUtils.fireTimer;
@@ -77,9 +78,6 @@ class MembershipProcessTest {
     @MockitoBean
     private RevokeClaimUseCase revokeClaimUseCase;
 
-    @MockitoBean
-    private StartEmployeeNotificationUseCase startEmployeeNotificationUseCase;
-
     @BeforeEach
     void setUp() {
         init(processEngine);
@@ -101,6 +99,12 @@ class MembershipProcessTest {
                 .getId();
         taskService.complete(taskId);
         continueToNextWaitState(processEngine);
+
+        // After confirmation the flow forks: Send Welcome Mail (delegate) runs in parallel with the
+        // "Notify community" external task. The parallel join only fires once a worker completes it,
+        // so we stand in for the remote notification-service worker here.
+        completeExternalTask(processEngine, ServiceTasks.NOTIFY_COMMUNITY);
+        continueToNextWaitState(processEngine);
     }
 
     @Test
@@ -112,13 +116,18 @@ class MembershipProcessTest {
 
         assertThat(instance)
                 .isEnded()
+                // Deterministic backbone up to the fork and after the join. The two branch tasks run
+                // in parallel, so their relative order is not asserted here (see hasPassed below).
                 .hasPassedInOrder(
                         Elements.SERVICE_TASK_CLAIM_MEMBERSHIP.getValue(),
                         Elements.SERVICE_TASK_SEND_CONFIRMATION_MAIL.getValue(),
                         Elements.USER_TASK_CONFIRM_MEMBERSHIP.getValue(),
-                        Elements.SERVICE_TASK_SEND_WELCOME_MAIL.getValue(),
-                        Elements.THROW_NOTIFY_NEW_MEMBER.getValue(),
+                        Elements.GATEWAY_NOTIFY_FORK.getValue(),
+                        Elements.GATEWAY_NOTIFY_JOIN.getValue(),
                         Elements.END_EVENT_MEMBERSHIP_ACTIVATED.getValue())
+                .hasPassed(
+                        Elements.SERVICE_TASK_SEND_WELCOME_MAIL.getValue(),
+                        Elements.SERVICE_TASK_NOTIFY_COMMUNITY.getValue())
                 .hasNotPassed(
                         Elements.SERVICE_TASK_REVOKE_CLAIM.getValue(),
                         Elements.END_EVENT_MEMBERSHIP_DECLINED.getValue(),
@@ -127,7 +136,6 @@ class MembershipProcessTest {
 
         verify(sendConfirmationMailUseCase, times(1)).sendConfirmationMail(id);
         verify(sendWelcomeMailUseCase, times(1)).sendWelcomeMail(id);
-        verify(startEmployeeNotificationUseCase, times(1)).startEmployeeNotification(any());
         verify(revokeClaimUseCase, never()).revokeClaim(any());
     }
 
