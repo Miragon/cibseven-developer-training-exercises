@@ -46,10 +46,10 @@ http://localhost:8080/camunda  (admin / admin)
 | [4](../../docs/exercise-04.md) | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung |
 | [5](../../docs/exercise-05.md) | Prozess-Tests | Prozess-Unit-Test: In-Memory-Engine, gemockte Use Cases, ohne PostgreSQL |
 | [5 · Add-on](../../docs/exercise-05-addon.md) | bpmn-to-code | Typsichere Process-API aus dem BPMN generieren – Strings raus, Konstanten rein |
-| [6](../../docs/exercise-06.md) | Parallel Gateway, Remote Engine & External Task | Parallel Gateway, External Task Worker im eigenen Service, Benachrichtigung in einen Teams-Kanal |
-| [7](../../docs/exercise-07.md) | Boundary Events | Timer- und Message-Boundary-Events, Subprozesse |
-| [8](../../docs/exercise-08.md) | Kompensation (SAGA) | Automatisches Rollback via BPMN-Kompensation |
-| [9](../../docs/exercise-09.md) | Call Activity & DMN | Prozess-Modularisierung mit Entscheidungstabellen |
+| [6](../../docs/exercise-06.md) | Boundary Events & Subprozesse | Parallel Gateway, Timer- und Message-Boundary-Events, Subprozesse |
+| [7](../../docs/exercise-07.md) | Kompensation (SAGA) | Automatisches Rollback via BPMN-Kompensation |
+| [8](../../docs/exercise-08.md) | Call Activity & DMN | Prozess-Modularisierung mit Entscheidungstabellen |
+| [9](../../docs/exercise-09.md) | Remote Engine & External Task | Notify-Community-Delegate als External Task in einen eigenen Remote-Worker auslagern, Benachrichtigung in einen Teams-Kanal |
 | [Extra 1](../../docs/extra-task-1.md) | Process-Engine-API | Engine-Lock-in lösen: Worker statt Delegates, engine-neutraler Adapter-Layer |
 
 ## Architektur

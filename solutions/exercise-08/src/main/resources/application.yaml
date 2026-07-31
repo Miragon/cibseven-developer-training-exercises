@@ -30,3 +30,11 @@ cibseven:
       basePath: services/v1
     engineRest:
       url: http://localhost:8080
+
+# In-Engine "Notify community": announce new members in a Microsoft Teams channel via a Power
+# Automate "Workflows" webhook. Ab Aufgabe 9 wird dieser Aufruf in einen eigenen Worker-Service
+# ausgelagert (Wiederverwendung + Isolation des Secrets).
+notification:
+  teams:
+    # Supply the real webhook URL via the TEAMS_WEBHOOK_URL env var — do NOT commit the secret.
+    webhook-url: ${TEAMS_WEBHOOK_URL:https://CHANGE-ME}

@@ -9,13 +9,13 @@
         <module name="solution-exercise-04" />
         <module name="solution-exercise-03" />
         <module name="solution-exercise-02" />
-        <module name="solution-exercise-06-notification-service" />
+        <module name="solution-exercise-09-notification-service" />
         <module name="solution-exercise-01" />
         <module name="solution-exercise-08" />
         <module name="solution-exercise-07" />
-        <module name="solution-exercise-06-process-application" />
+        <module name="solution-exercise-09-process-application" />
         <module name="solution-exercise-05" />
-        <module name="solution-exercise-09" />
+        <module name="solution-exercise-06" />
         <module name="process-application" />
         <module name="notification-service" />
         <module name="solution-exercise-10" />
@@ -33,12 +33,12 @@
       <module name="solution-exercise-03" options="-parameters" />
       <module name="solution-exercise-04" options="-parameters" />
       <module name="solution-exercise-05" options="-parameters" />
-      <module name="solution-exercise-06-process-application" options="-parameters" />
+      <module name="solution-exercise-09-process-application" options="-parameters" />
       <module name="solution-exercise-07" options="-parameters" />
       <module name="solution-exercise-08" options="-parameters" />
-      <module name="solution-exercise-09" options="-parameters" />
+      <module name="solution-exercise-06" options="-parameters" />
       <module name="solution-extra-task-1" options="-parameters" />
-      <module name="solution-exercise-06-notification-service" options="-parameters" />
+      <module name="solution-exercise-09-notification-service" options="-parameters" />
     </option>
   </component>
 </project>

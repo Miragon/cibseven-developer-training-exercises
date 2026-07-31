@@ -86,9 +86,9 @@
               Ersetzt komplett src/main (Java + Ressourcen inkl. application.yaml + BPMN/DMN).
               Alle Module teilen sich denselben Port (8080) und dasselbe DB-Schema (exercise),
               daher kann die application.yaml einfach mitkopiert werden. src/test bleibt
-              unberührt. Gültige Werte: 01–09 (zweistellig). Hinweis: Aufgabe 6 besteht aus zwei
-              Services – geladen wird der Hauptservice solutions/exercise-06/process-application/;
-              der Worker-Service solutions/exercise-06/notification-service/ läuft separat
+              unberührt. Gültige Werte: 01–09 (zweistellig). Hinweis: Aufgabe 9 besteht aus zwei
+              Services – geladen wird der Hauptservice solutions/exercise-09/process-application/;
+              der Worker-Service solutions/exercise-09/notification-service/ läuft separat
               (Arbeitsmodul services/notification-service/) und wird von diesem Task nicht mitkopiert.
             -->
             <plugin>
@@ -105,9 +105,9 @@
                             <target>
                                 <fail unless="solution"
                                       message="Bitte die Solution-Nummer zweistellig angeben, z.B.: mvn -pl services/process-application antrun:run@load-solution -Dsolution=02"/>
-                                <!-- Aufgabe 6 ist verschachtelt (zwei Services): der ladbare Hauptservice liegt unter process-application/ -->
-                                <condition property="solutionModuleDir" value="exercise-06/process-application">
-                                    <equals arg1="${solution}" arg2="06"/>
+                                <!-- Aufgabe 9 ist verschachtelt (zwei Services): der ladbare Hauptservice liegt unter process-application/ -->
+                                <condition property="solutionModuleDir" value="exercise-09/process-application">
+                                    <equals arg1="${solution}" arg2="09"/>
                                 </condition>
                                 <!-- Alle übrigen Aufgaben: solutions/exercise-<NN> (Property ist immutable, greift nur wenn oben nicht gesetzt) -->
                                 <property name="solutionModuleDir" value="exercise-${solution}"/>

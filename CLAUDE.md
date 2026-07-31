@@ -65,12 +65,12 @@ Multi-module Maven project:
   full hexagonal skeleton present, but CIB deps/config/`@SpringBootApplication` (`TODO Aufgabe 1`)
   and the business-layer beans (`TODO Aufgabe 2`) are commented out. Exercise 1 = switch the
   engine on; Exercise 2 = uncomment the business layer + fill the TODOs.
-- `services/notification-service/` — External-task worker service (Aufgabe 6); connects remotely to the
-  engine REST API and processes the `notifyCommunity` topic. Ships with `TODO Aufgabe 6`.
+- `services/notification-service/` — External-task worker service (Aufgabe 9); connects remotely to the
+  engine REST API and processes the `notifyCommunity` topic. Ships with `TODO Aufgabe 9`.
 - `docs/` — Per-exercise instructions (`exercise-00.md … exercise-09.md`) + assets.
 - `solutions/exercise-{01-09}/` + `solutions/extra-task-1/` — Cumulative solutions, each building on the previous.
-  Exercise 6 is nested into two sub-services: `solutions/exercise-06/process-application/` (main) +
-  `solutions/exercise-06/notification-service/` (the external-task worker)
+  Exercise 9 is nested into two sub-services: `solutions/exercise-09/process-application/` (main) +
+  `solutions/exercise-09/notification-service/` (the external-task worker)
 - `models/` — Reference BPMN/DMN models
 - All modules (process-application + every solution) run on the same port (`8080`) and DB schema (`exercise`) —
   one module at a time. `stack/init-schemas.sql` creates just that one schema.
