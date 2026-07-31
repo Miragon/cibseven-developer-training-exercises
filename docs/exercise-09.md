@@ -30,9 +30,10 @@ eine Karte in einen Teams-Kanal postet. Das funktioniert – aber es sitzt am fa
 - **Wiederverwendung:** Nicht nur neue Members sollen gemeldet werden. Demnächst soll z. B. auch **jedes
   Leasing** eine Nachricht in denselben Kanal schicken. Die Benachrichtigung ist eine **eigenständige
   Fähigkeit**, die mehrere Prozesse nutzen – kein Detail des Membership-Prozesses.
-- **Security:** In diesem Aufruf steckt eine **Webhook-URL mit Secret** (die Signatur ist quasi ein
-  Passwort). Solche Geheimnisse **isoliert** man lieber in einem kleinen, streng abgesicherten Service –
-  nicht in der breit ausgerollten Prozess-Anwendung, wo die Angriffsfläche riesig ist.
+- **Secret-Management:** In der Webhook-URL steckt eine **Signatur** – im Grunde ein Passwort für den
+  Teams-Kanal. Und Miravelo findet: So ein Geheimnis hat in der großen, ständig umgebauten
+  Prozess-Anwendung eigentlich nichts verloren. Also packen wir es dorthin, wo es hingehört – in einen
+  kleinen, ruhigen Worker, der genau **eine** Sache tut und das Secret schön für sich behält. 🤫
 
 Deshalb schneiden wir die Benachrichtigung heraus: `serviceTask_notifyCommunity` wird ein **External
 Service Task**, und ein **separater Worker-Service** erledigt die Arbeit. Er kennt die Engine nur über
