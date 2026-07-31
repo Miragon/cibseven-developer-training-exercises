@@ -111,7 +111,7 @@ cibseven:
 **Neue Datei:** `src/test/java/io/miragon/training/process/util/ProcessEngineTestUtils.java`
 
 Zwei kleine Helfer reichen für diese Aufgabe (den `fireTimer`-Helfer brauchst du erst mit den
-Boundary Events in Aufgabe 7):
+Boundary Events in Aufgabe 6):
 
 - `continueToNextWaitState(processEngine)` – führt die offenen Async-Jobs nacheinander aus, bis der
   Prozess seinen nächsten Wait State (User Task oder Ende) erreicht.

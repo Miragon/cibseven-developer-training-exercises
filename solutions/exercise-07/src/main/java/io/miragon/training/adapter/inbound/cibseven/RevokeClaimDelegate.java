@@ -19,7 +19,7 @@ public class RevokeClaimDelegate extends BaseDelegate {
     @Override
     protected void executeTask(DelegateExecution execution) {
         var membershipId = (String) execution.getVariable("membershipId");
-        log.debug("Received task to revoke claim for membership: {}", membershipId);
+        log.debug("Received task to revoke membership claim: {}", membershipId);
         useCase.revokeClaim(new MembershipId(UUID.fromString(membershipId)));
     }
 }

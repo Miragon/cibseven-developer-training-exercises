@@ -16,8 +16,8 @@ public class PublishNotificationService implements PublishNotificationUseCase {
 
     @Override
     public void publish(Notification notification) {
-        // TODO Aufgabe 6: die Notification über den (bereits vorgegebenen) Out-Port veröffentlichen
+        // TODO Aufgabe 9: die Notification über den (bereits vorgegebenen) Out-Port veröffentlichen
         //   -> notificationPublisher.publish(notification);
-        throw new UnsupportedOperationException("TODO Aufgabe 6: implement the service");
+        throw new UnsupportedOperationException("TODO Aufgabe 9: implement the service");
     }
 }

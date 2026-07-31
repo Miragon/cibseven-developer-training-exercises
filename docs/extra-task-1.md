@@ -1,18 +1,18 @@
 # Extra-Aufgabe 1 – Raus aus dem Engine-Lock-in: die Process-Engine-API
 
-> **Voraussetzung:** Aufgabe 9 ist abgeschlossen. Der Prozess läuft vollständig – mit Service Tasks, User Tasks, Gateways, Boundary Events, Subprozess, Call Activity, DMN und Kompensation.
+> **Voraussetzung:** Aufgabe 8 ist abgeschlossen. Der Prozess läuft vollständig – mit Service Tasks, User Tasks, Gateways, Boundary Events, Subprozess, Call Activity, DMN und Kompensation.
 
 ## Ziel-Modell
 
-Das Prozessmodell ändert sich **fachlich nicht**. Es ist exakt der Prozess aus Aufgabe 9 – nur die technische Anbindung der Service Tasks wechselt.
+Das Prozessmodell ändert sich **fachlich nicht**. Es ist exakt der Prozess aus Aufgabe 8 – nur die technische Anbindung der Service Tasks wechselt.
 
 Hauptprozess:
 
-![BPMN Hauptprozess](assets/exercise-09-main.svg)
+![BPMN Hauptprozess](assets/exercise-08-main.svg)
 
 Sub-Prozess `handleRejection`:
 
-![BPMN Sub-Prozess](assets/exercise-09-sub.svg)
+![BPMN Sub-Prozess](assets/exercise-08-sub.svg)
 
 ## Lernziele
 
@@ -40,7 +40,7 @@ Das Beste daran: **Domain, Application-Services und Ports bleiben unangetastet.*
 
 ## Was sich ändert (und was nicht)
 
-| Schicht | Aufgabe 9 (nativ CIB7) | Extra-Aufgabe 1 (Process-Engine-API) |
+| Schicht | Aufgabe 8 (nativ CIB7) | Extra-Aufgabe 1 (Process-Engine-API) |
 |---|---|---|
 | `domain/`, `application/` | unverändert | **unverändert** |
 | Inbound Service Tasks | `JavaDelegate` + `DelegateExecution` | `@ProcessEngineWorker`-Worker |
@@ -211,7 +211,7 @@ Wenn dieser Test grün ist, lebt die Engine nur noch in `pom.xml` und `applicati
 
 ## Testen
 
-Die REST-Schnittstelle und das Verhalten sind identisch zu Aufgabe 9 (Port `8080`). Service Tasks werden jetzt per Polling (~5 s) abgearbeitet, es kann also einen Moment dauern.
+Die REST-Schnittstelle und das Verhalten sind identisch zu Aufgabe 8 (Port `8080`). Service Tasks werden jetzt per Polling (~5 s) abgearbeitet, es kann also einen Moment dauern.
 
 **Einfache Ablehnung (Alter außerhalb 21–29):**
 ```bash
@@ -240,7 +240,7 @@ curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
 - [ ] Der Outbound-Adapter nutzt `StartProcessApi` / `CorrelationApi` statt `RuntimeService`
 - [ ] `@EnableProcessApplication` ist entfernt, der `EngineCommandExecutor`-Bean ist gesetzt
 - [ ] Der ArchUnit-Test bestätigt: **0** `org.cibseven.bpm`-Abhängigkeiten im Code
-- [ ] Fachliches Verhalten ist identisch zu Aufgabe 9
+- [ ] Fachliches Verhalten ist identisch zu Aufgabe 8
 
 ## Referenzlösung
 

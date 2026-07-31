@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1d2hcmz" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.24.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1d2hcmz" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.24.0">
   <bpmn:process id="subscribeNewsletter" isExecutable="true" camunda:historyTimeToLive="180">
-    <bpmn:endEvent id="endEvent_membershipActivated" name="Membership activated">
-      <bpmn:incoming>Flow_joinToEnd</bpmn:incoming>
-    </bpmn:endEvent>
     <bpmn:startEvent id="startEvent_submitRegistration" name="Submit registration form" camunda:asyncBefore="true">
       <bpmn:outgoing>Flow_0p7ko1g</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_0rxlo7x" messageRef="Message_3p5jpc1" />
@@ -30,12 +27,12 @@
         <bpmn:incoming>Flow_1wb7scj</bpmn:incoming>
         <bpmn:outgoing>Flow_0w9368p</bpmn:outgoing>
       </bpmn:userTask>
-      <bpmn:sequenceFlow id="Flow_1y9mu7r" sourceRef="startEvent_confirmationRequired" targetRef="serviceTask_sendConfirmationMail" />
-      <bpmn:sequenceFlow id="Flow_1wb7scj" sourceRef="serviceTask_sendConfirmationMail" targetRef="userTask_confirmMembership" />
-      <bpmn:sequenceFlow id="Flow_0w9368p" sourceRef="userTask_confirmMembership" targetRef="endEvent_membershipConfirmed" />
       <bpmn:endEvent id="endEvent_membershipConfirmed" name="Membership confirmed">
         <bpmn:incoming>Flow_0w9368p</bpmn:incoming>
       </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_1y9mu7r" sourceRef="startEvent_confirmationRequired" targetRef="serviceTask_sendConfirmationMail" />
+      <bpmn:sequenceFlow id="Flow_1wb7scj" sourceRef="serviceTask_sendConfirmationMail" targetRef="userTask_confirmMembership" />
+      <bpmn:sequenceFlow id="Flow_0w9368p" sourceRef="userTask_confirmMembership" targetRef="endEvent_membershipConfirmed" />
     </bpmn:subProcess>
     <bpmn:parallelGateway id="gateway_notifyFork">
       <bpmn:incoming>Flow_1j9l21y</bpmn:incoming>
@@ -46,7 +43,7 @@
       <bpmn:incoming>Flow_forkToWelcome</bpmn:incoming>
       <bpmn:outgoing>Flow_welcomeToJoin</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="serviceTask_notifyCommunity" name="Notify community" camunda:type="external" camunda:topic="notifyCommunity">
+    <bpmn:serviceTask id="serviceTask_notifyCommunity" name="Notify community" camunda:delegateExpression="#{notifyCommunityDelegate}">
       <bpmn:incoming>Flow_forkToNotify</bpmn:incoming>
       <bpmn:outgoing>Flow_notifyToJoin</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -55,14 +52,9 @@
       <bpmn:incoming>Flow_notifyToJoin</bpmn:incoming>
       <bpmn:outgoing>Flow_joinToEnd</bpmn:outgoing>
     </bpmn:parallelGateway>
-    <bpmn:endEvent id="endEvent_membershipDeclined" name="Membership declined">
-      <bpmn:incoming>Flow_14y1unw</bpmn:incoming>
+    <bpmn:endEvent id="endEvent_membershipActivated" name="Membership activated">
+      <bpmn:incoming>Flow_joinToEnd</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:serviceTask id="serviceTask_revokeClaim" name="Revoke claim" camunda:delegateExpression="#{revokeClaimDelegate}">
-      <bpmn:incoming>Flow_153mcrs</bpmn:incoming>
-      <bpmn:incoming>Flow_0ho2dhw</bpmn:incoming>
-      <bpmn:outgoing>Flow_14y1unw</bpmn:outgoing>
-    </bpmn:serviceTask>
     <bpmn:serviceTask id="serviceTask_claimMembership" name="Claim membership" camunda:delegateExpression="#{claimMembershipDelegate}">
       <bpmn:incoming>Flow_0p7ko1g</bpmn:incoming>
       <bpmn:outgoing>Flow_0hlnr3k</bpmn:outgoing>
@@ -86,6 +78,33 @@
     <bpmn:endEvent id="endEvent_mailSentAgain" name="Mail sent again">
       <bpmn:incoming>Flow_03vzvil</bpmn:incoming>
     </bpmn:endEvent>
+    <bpmn:serviceTask id="serviceTask_revokeClaim" name="Revoke claim" isForCompensation="true" camunda:delegateExpression="#{revokeClaimDelegate}" />
+    <bpmn:boundaryEvent id="boundary_compensateClaim" attachedToRef="serviceTask_claimMembership">
+      <bpmn:compensateEventDefinition id="CompensateEventDefinition_claim" />
+    </bpmn:boundaryEvent>
+    <bpmn:endEvent id="endEvent_membershipDeclined" name="Membership declined">
+      <bpmn:incoming>Flow_0ho2dhw</bpmn:incoming>
+      <bpmn:incoming>Flow_153mcrs</bpmn:incoming>
+      <bpmn:compensateEventDefinition id="CompensateEventDefinition_declined" />
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0ho2dhw" sourceRef="timer_abortAfter3HalfDays" targetRef="endEvent_membershipDeclined" />
+    <bpmn:sequenceFlow id="Flow_153mcrs" sourceRef="event_confirmationRejected" targetRef="endEvent_membershipDeclined" />
+    <bpmn:boundaryEvent id="timer_abortAfter3HalfDays" name="After 3&#10;1/2 days" attachedToRef="subProcess_confirmMembership" camunda:asyncAfter="true">
+      <bpmn:outgoing>Flow_0ho2dhw</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_1ipk14c">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">P3DT12H</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="event_confirmationRejected" name="Confirmation rejected" attachedToRef="subProcess_confirmMembership" camunda:asyncAfter="true">
+      <bpmn:outgoing>Flow_153mcrs</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0po7vrz" messageRef="Message_ConfirmationRejected" />
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="timer_resendEveryDay" name="Every day" cancelActivity="false" attachedToRef="subProcess_confirmMembership" camunda:asyncAfter="true">
+      <bpmn:outgoing>Flow_1unns5i</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_1f4kmf0">
+        <bpmn:timeCycle xsi:type="bpmn:tFormalExpression">R/P1D</bpmn:timeCycle>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
     <bpmn:sequenceFlow id="Flow_forkToWelcome" sourceRef="gateway_notifyFork" targetRef="serviceTask_sendWelcomeMail" />
     <bpmn:sequenceFlow id="Flow_forkToNotify" sourceRef="gateway_notifyFork" targetRef="serviceTask_notifyCommunity" />
     <bpmn:sequenceFlow id="Flow_welcomeToJoin" sourceRef="serviceTask_sendWelcomeMail" targetRef="gateway_notifyJoin" />
@@ -94,8 +113,6 @@
     <bpmn:sequenceFlow id="Flow_0p7ko1g" sourceRef="startEvent_submitRegistration" targetRef="serviceTask_claimMembership" />
     <bpmn:sequenceFlow id="Flow_0camehw" name="Yes" sourceRef="gateway_hasEmptySpots" targetRef="subProcess_confirmMembership" />
     <bpmn:sequenceFlow id="Flow_1j9l21y" sourceRef="subProcess_confirmMembership" targetRef="gateway_notifyFork" />
-    <bpmn:sequenceFlow id="Flow_14y1unw" sourceRef="serviceTask_revokeClaim" targetRef="endEvent_membershipDeclined" />
-    <bpmn:sequenceFlow id="Flow_153mcrs" sourceRef="event_confirmationRejected" targetRef="serviceTask_revokeClaim" />
     <bpmn:sequenceFlow id="Flow_0hlnr3k" sourceRef="serviceTask_claimMembership" targetRef="gateway_hasEmptySpots" />
     <bpmn:sequenceFlow id="Flow_0bt3531" name="No" sourceRef="gateway_hasEmptySpots" targetRef="serviceTask_sendRejectionMail">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${!hasEmptySpots}</bpmn:conditionExpression>
@@ -103,221 +120,208 @@
     <bpmn:sequenceFlow id="Flow_10ryvaz" sourceRef="serviceTask_sendRejectionMail" targetRef="endEvent_membershipRejected" />
     <bpmn:sequenceFlow id="Flow_1unns5i" sourceRef="timer_resendEveryDay" targetRef="serviceTask_reSendConfirmationMail" />
     <bpmn:sequenceFlow id="Flow_03vzvil" sourceRef="serviceTask_reSendConfirmationMail" targetRef="endEvent_mailSentAgain" />
-    <bpmn:boundaryEvent id="timer_resendEveryDay" name="Every day" cancelActivity="false" attachedToRef="subProcess_confirmMembership" camunda:asyncAfter="true">
-      <bpmn:outgoing>Flow_1unns5i</bpmn:outgoing>
-      <bpmn:timerEventDefinition id="TimerEventDefinition_1f4kmf0">
-        <bpmn:timeCycle xsi:type="bpmn:tFormalExpression">R/P1D</bpmn:timeCycle>
-      </bpmn:timerEventDefinition>
-    </bpmn:boundaryEvent>
-    <bpmn:sequenceFlow id="Flow_0ho2dhw" sourceRef="timer_abortAfter3HalfDays" targetRef="serviceTask_revokeClaim" />
-    <bpmn:boundaryEvent id="timer_abortAfter3HalfDays" name="After 3&#10;1/2 days" attachedToRef="subProcess_confirmMembership" camunda:asyncAfter="true">
-      <bpmn:outgoing>Flow_0ho2dhw</bpmn:outgoing>
-      <bpmn:timerEventDefinition id="TimerEventDefinition_1u5smk2">
-        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">P3DT12H</bpmn:timeDuration>
-      </bpmn:timerEventDefinition>
-    </bpmn:boundaryEvent>
-    <bpmn:boundaryEvent id="event_confirmationRejected" name="Confirmation rejected" attachedToRef="subProcess_confirmMembership" camunda:asyncAfter="true">
-      <bpmn:outgoing>Flow_153mcrs</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="MessageEventDefinition_09neu9p" messageRef="Message_ConfirmationRejected" />
-    </bpmn:boundaryEvent>
+    <bpmn:association id="association_compensateClaim" associationDirection="One" sourceRef="boundary_compensateClaim" targetRef="serviceTask_revokeClaim" />
   </bpmn:process>
   <bpmn:message id="Message_3p5jpc1" name="Message_SubscriptionRequested" />
   <bpmn:message id="Message_ConfirmationRejected" name="Message_ConfirmationRejected" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="subscribeNewsletter">
-      <bpmndi:BPMNShape id="Event_0hfeh3b_di" bpmnElement="endEvent_membershipActivated">
-        <dc:Bounds x="1092" y="432" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1080" y="483" width="61" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_11n7oe2_di" bpmnElement="startEvent_submitRegistration">
-        <dc:Bounds x="-158" y="432" width="36" height="36" />
+        <dc:Bounds x="-1038" y="-738" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="-179" y="475" width="80" height="27" />
+          <dc:Bounds x="-1059" y="-695" width="80" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0h6nlhr_di" bpmnElement="subProcess_confirmMembership" isExpanded="true">
-        <dc:Bounds x="210" y="350" width="520" height="210" />
+        <dc:Bounds x="-670" y="-820" width="520" height="210" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_1u69jx7_di" bpmnElement="startEvent_confirmationRequired">
-        <dc:Bounds x="252" y="435" width="36" height="36" />
+        <dc:Bounds x="-628" y="-735" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="239" y="478" width="63" height="27" />
+          <dc:Bounds x="-641" y="-692" width="63" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_16u7iio_di" bpmnElement="serviceTask_sendConfirmationMail">
-        <dc:Bounds x="340" y="413" width="100" height="80" />
+        <dc:Bounds x="-540" y="-757" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_015b0ih_di" bpmnElement="userTask_confirmMembership">
-        <dc:Bounds x="480" y="413" width="100" height="80" />
+        <dc:Bounds x="-400" y="-757" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_031g1hy_di" bpmnElement="endEvent_membershipConfirmed">
-        <dc:Bounds x="642" y="435" width="36" height="36" />
+        <dc:Bounds x="-238" y="-735" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="630" y="478" width="61" height="27" />
+          <dc:Bounds x="-250" y="-692" width="61" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1y9mu7r_di" bpmnElement="Flow_1y9mu7r">
-        <di:waypoint x="288" y="453" />
-        <di:waypoint x="340" y="453" />
+        <di:waypoint x="-592" y="-717" />
+        <di:waypoint x="-540" y="-717" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1wb7scj_di" bpmnElement="Flow_1wb7scj">
-        <di:waypoint x="440" y="453" />
-        <di:waypoint x="480" y="453" />
+        <di:waypoint x="-440" y="-717" />
+        <di:waypoint x="-400" y="-717" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0w9368p_di" bpmnElement="Flow_0w9368p">
-        <di:waypoint x="580" y="453" />
-        <di:waypoint x="642" y="453" />
+        <di:waypoint x="-300" y="-717" />
+        <di:waypoint x="-238" y="-717" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="Gateway_notifyFork_di" bpmnElement="gateway_notifyFork">
-        <dc:Bounds x="745" y="425" width="50" height="50" />
+        <dc:Bounds x="-135" y="-745" width="50" height="50" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0h80alm_di" bpmnElement="serviceTask_sendWelcomeMail">
-        <dc:Bounds x="830" y="350" width="100" height="80" />
+        <dc:Bounds x="-40" y="-800" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_notifyCommunity_di" bpmnElement="serviceTask_notifyCommunity">
-        <dc:Bounds x="830" y="470" width="100" height="80" />
+        <dc:Bounds x="-40" y="-680" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_notifyJoin_di" bpmnElement="gateway_notifyJoin">
-        <dc:Bounds x="980" y="425" width="50" height="50" />
+        <dc:Bounds x="110" y="-745" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1n11h63_di" bpmnElement="endEvent_membershipDeclined">
-        <dc:Bounds x="932" y="225" width="36" height="36" />
+      <bpmndi:BPMNShape id="Event_11di40p_di" bpmnElement="endEvent_membershipActivated">
+        <dc:Bounds x="222" y="-738" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="920" y="268" width="61" height="27" />
+          <dc:Bounds x="210" y="-687" width="61" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0184hxo_di" bpmnElement="serviceTask_revokeClaim">
-        <dc:Bounds x="780" y="203" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_1fodv6z" bpmnElement="serviceTask_claimMembership">
-        <dc:Bounds x="-60" y="410" width="100" height="80" />
+        <dc:Bounds x="-940" y="-760" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_1lse2rm" bpmnElement="gateway_hasEmptySpots" isMarkerVisible="true">
-        <dc:Bounds x="95" y="425" width="50" height="50" />
+        <dc:Bounds x="-785" y="-745" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="79" y="401" width="82" height="14" />
+          <dc:Bounds x="-801" y="-769" width="82" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_1s7tsuf" bpmnElement="endEvent_membershipRejected">
-        <dc:Bounds x="372" y="652" width="36" height="36" />
+        <dc:Bounds x="-508" y="-518" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="360" y="695" width="61" height="27" />
+          <dc:Bounds x="-520" y="-475" width="61" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_0l9lfjn" bpmnElement="serviceTask_sendRejectionMail">
-        <dc:Bounds x="210" y="630" width="100" height="80" />
+        <dc:Bounds x="-670" y="-540" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_0h0uaib" bpmnElement="serviceTask_reSendConfirmationMail">
-        <dc:Bounds x="780" y="630" width="100" height="80" />
+        <dc:Bounds x="-100" y="-540" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_12gjbia_di" bpmnElement="endEvent_mailSentAgain">
-        <dc:Bounds x="932" y="652" width="36" height="36" />
+        <dc:Bounds x="52" y="-518" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="913" y="695" width="74" height="14" />
+          <dc:Bounds x="33" y="-475" width="74" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_125tc29" bpmnElement="serviceTask_revokeClaim">
+        <dc:Bounds x="-820" y="-880" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_boundaryCompensateClaim_di" bpmnElement="boundary_compensateClaim">
+        <dc:Bounds x="-908" y="-700" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_1rl3e7i" bpmnElement="endEvent_membershipDeclined">
+        <dc:Bounds x="62" y="-948" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="50" y="-905" width="61" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_08wx372_di" bpmnElement="timer_resendEveryDay">
-        <dc:Bounds x="642" y="542" width="36" height="36" />
+        <dc:Bounds x="-238" y="-628" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="675" y="585" width="49" height="14" />
+          <dc:Bounds x="-205" y="-585" width="49" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0mykr4o_di" bpmnElement="timer_abortAfter3HalfDays">
-        <dc:Bounds x="652" y="332" width="36" height="36" />
+      <bpmndi:BPMNShape id="Event_15v89ov_di" bpmnElement="event_confirmationRejected">
+        <dc:Bounds x="-288" y="-838" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="689" y="306" width="42" height="27" />
+          <dc:Bounds x="-342" y="-864" width="63" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0b07t1d_di" bpmnElement="event_confirmationRejected">
-        <dc:Bounds x="582" y="332" width="36" height="36" />
+      <bpmndi:BPMNShape id="Event_02bjbdp_di" bpmnElement="timer_abortAfter3HalfDays">
+        <dc:Bounds x="-218" y="-838" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="528" y="306" width="63" height="27" />
+          <dc:Bounds x="-181" y="-864" width="42" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_forkToWelcome_di" bpmnElement="Flow_forkToWelcome">
-        <di:waypoint x="770" y="425" />
-        <di:waypoint x="770" y="390" />
-        <di:waypoint x="830" y="390" />
+      <bpmndi:BPMNEdge id="BPMNEdge_01oybl0" bpmnElement="Flow_0ho2dhw">
+        <di:waypoint x="-200" y="-838" />
+        <di:waypoint x="-200" y="-930" />
+        <di:waypoint x="62" y="-930" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_forkToNotify_di" bpmnElement="Flow_forkToNotify">
-        <di:waypoint x="770" y="475" />
-        <di:waypoint x="770" y="510" />
-        <di:waypoint x="830" y="510" />
+      <bpmndi:BPMNEdge id="BPMNEdge_1mexfn5" bpmnElement="Flow_153mcrs">
+        <di:waypoint x="-270" y="-838" />
+        <di:waypoint x="-270" y="-948" />
+        <di:waypoint x="62" y="-948" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_welcomeToJoin_di" bpmnElement="Flow_welcomeToJoin">
-        <di:waypoint x="930" y="390" />
-        <di:waypoint x="1005" y="390" />
-        <di:waypoint x="1005" y="425" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_notifyToJoin_di" bpmnElement="Flow_notifyToJoin">
-        <di:waypoint x="930" y="510" />
-        <di:waypoint x="1005" y="510" />
-        <di:waypoint x="1005" y="475" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_joinToEnd_di" bpmnElement="Flow_joinToEnd">
-        <di:waypoint x="1030" y="450" />
-        <di:waypoint x="1092" y="450" />
+      <bpmndi:BPMNEdge id="BPMNEdge_associationCompensateClaim" bpmnElement="association_compensateClaim">
+        <di:waypoint x="-890" y="-700" />
+        <di:waypoint x="-820" y="-840" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0p7ko1g_di" bpmnElement="Flow_0p7ko1g">
-        <di:waypoint x="-122" y="450" />
-        <di:waypoint x="-60" y="450" />
+        <di:waypoint x="-1002" y="-720" />
+        <di:waypoint x="-940" y="-720" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0camehw_di" bpmnElement="Flow_0camehw">
-        <di:waypoint x="145" y="450" />
-        <di:waypoint x="210" y="450" />
+        <di:waypoint x="-735" y="-720" />
+        <di:waypoint x="-670" y="-720" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="169" y="432" width="18" height="14" />
+          <dc:Bounds x="-711" y="-738" width="18" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1j9l21y_di" bpmnElement="Flow_1j9l21y">
-        <di:waypoint x="730" y="450" />
-        <di:waypoint x="745" y="450" />
+        <di:waypoint x="-150" y="-720" />
+        <di:waypoint x="-135" y="-720" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_14y1unw_di" bpmnElement="Flow_14y1unw">
-        <di:waypoint x="880" y="243" />
-        <di:waypoint x="932" y="243" />
+      <bpmndi:BPMNEdge id="Flow_forkToWelcome_di" bpmnElement="Flow_forkToWelcome">
+        <di:waypoint x="-110" y="-745" />
+        <di:waypoint x="-110" y="-760" />
+        <di:waypoint x="-40" y="-760" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_153mcrs_di" bpmnElement="Flow_153mcrs">
-        <di:waypoint x="600" y="332" />
-        <di:waypoint x="600" y="243" />
-        <di:waypoint x="780" y="243" />
+      <bpmndi:BPMNEdge id="Flow_forkToNotify_di" bpmnElement="Flow_forkToNotify">
+        <di:waypoint x="-110" y="-695" />
+        <di:waypoint x="-110" y="-640" />
+        <di:waypoint x="-40" y="-640" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_welcomeToJoin_di" bpmnElement="Flow_welcomeToJoin">
+        <di:waypoint x="60" y="-760" />
+        <di:waypoint x="135" y="-760" />
+        <di:waypoint x="135" y="-745" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_notifyToJoin_di" bpmnElement="Flow_notifyToJoin">
+        <di:waypoint x="60" y="-640" />
+        <di:waypoint x="135" y="-640" />
+        <di:waypoint x="135" y="-695" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_joinToEnd_di" bpmnElement="Flow_joinToEnd">
+        <di:waypoint x="160" y="-720" />
+        <di:waypoint x="222" y="-720" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0hlnr3k_di" bpmnElement="Flow_0hlnr3k">
-        <di:waypoint x="40" y="450" />
-        <di:waypoint x="95" y="450" />
+        <di:waypoint x="-840" y="-720" />
+        <di:waypoint x="-785" y="-720" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_1yque4t" bpmnElement="Flow_0bt3531">
-        <di:waypoint x="120" y="475" />
-        <di:waypoint x="120" y="670" />
-        <di:waypoint x="210" y="670" />
+        <di:waypoint x="-760" y="-695" />
+        <di:waypoint x="-760" y="-500" />
+        <di:waypoint x="-670" y="-500" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="128" y="511" width="15" height="14" />
+          <dc:Bounds x="-752" y="-659" width="15" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_00t08t7" bpmnElement="Flow_10ryvaz">
-        <di:waypoint x="310" y="670" />
-        <di:waypoint x="372" y="670" />
+        <di:waypoint x="-570" y="-500" />
+        <di:waypoint x="-508" y="-500" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1unns5i_di" bpmnElement="Flow_1unns5i">
-        <di:waypoint x="660" y="578" />
-        <di:waypoint x="660" y="670" />
-        <di:waypoint x="780" y="670" />
+        <di:waypoint x="-220" y="-592" />
+        <di:waypoint x="-220" y="-500" />
+        <di:waypoint x="-100" y="-500" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_03vzvil_di" bpmnElement="Flow_03vzvil">
-        <di:waypoint x="880" y="670" />
-        <di:waypoint x="932" y="670" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0ho2dhw_di" bpmnElement="Flow_0ho2dhw">
-        <di:waypoint x="670" y="332" />
-        <di:waypoint x="670" y="243" />
-        <di:waypoint x="780" y="243" />
+        <di:waypoint x="0" y="-500" />
+        <di:waypoint x="52" y="-500" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

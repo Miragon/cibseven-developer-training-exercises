@@ -42,11 +42,11 @@ Detaillierte Aufgabenbeschreibungen befinden sich in [`docs/`](docs/).
 | [3](docs/exercise-03.md) | Bestätigungs-Mail | Double-Opt-In-Pattern, weitere Service Tasks |
 | [4](docs/exercise-04.md) | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung, Domain-Refactoring |
 | [5](docs/exercise-05.md) | Prozess-Tests | Prozess-Unit-Test mit In-Memory-Engine, gemockten Use Cases, ohne PostgreSQL |
-| [6](docs/exercise-06.md) | Parallel Gateway, Remote Engine & External Task | Parallel Gateway, External Task (`notifyCommunity`), Worker in eigenem Service, Benachrichtigung in einen Teams-Kanal |
-| [7](docs/exercise-07.md) | Boundary Events & Subprozesse | Timer, Message Boundary Events, Subprocess |
-| [8](docs/exercise-08.md) | Kompensation (SAGA) | Compensation Boundary Events, Compensating End Event, automatisches Rollback |
-| [9](docs/exercise-09.md) | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
-| [Extra 1](docs/extra-task-1.md) | Process-Engine-API | Aufgabe 9 engine-neutral umbauen: Worker statt JavaDelegate, Adapter-Tausch statt Engine-Lock-in |
+| [6](docs/exercise-06.md) | Boundary Events & Subprozesse | Parallel Gateway, Timer- & Message-Boundary-Events, Subprocess |
+| [7](docs/exercise-07.md) | Kompensation (SAGA) | Compensation Boundary Events, Compensating End Event, automatisches Rollback |
+| [8](docs/exercise-08.md) | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
+| [9](docs/exercise-09.md) | Remote Engine & External Task | Notify-Community-Delegate als External Task (`notifyCommunity`) in einen eigenen Remote-Worker auslagern, Benachrichtigung in einen Teams-Kanal |
+| [Extra 1](docs/extra-task-1.md) | Process-Engine-API | Aufgabe 8 engine-neutral umbauen: Worker statt JavaDelegate, Adapter-Tausch statt Engine-Lock-in |
 
 ## Quick Start
 
@@ -102,9 +102,9 @@ cibseven-developer-training-exercises/
 │   │       │   │   └── outbound/     # Repository- und Prozess-Port-Interfaces
 │   │       │   └── service/          # Use-Case-Implementierungen
 │   │       └── domain/               # Domain-Modell (reines Java, keine Framework-Abhängigkeiten)
-│   └── notification-service/         # External-Task-Worker-Service (Aufgabe 6)
+│   └── notification-service/         # External-Task-Worker-Service (Aufgabe 9)
 ├── solutions/                        # Kumulative Lösungen pro Aufgabe (exercise-01 … exercise-09, extra-task-1)
-│   ├── exercise-{01-09}/             # exercise-06/ ist verschachtelt: process-application/ + notification-service/
+│   ├── exercise-{01-09}/             # exercise-09/ ist verschachtelt: process-application/ + notification-service/
 │   └── extra-task-1/
 ├── models/                           # Referenz-BPMN-/DMN-Modelle
 ├── stack/

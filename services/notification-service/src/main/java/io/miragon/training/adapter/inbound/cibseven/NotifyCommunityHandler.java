@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * task into a {@link io.miragon.training.domain.Notification}, publishes it, and completes the task.
  */
 @Component
-// TODO Aufgabe 6: subscribe to the topic — @ExternalTaskSubscription(topicName = "notifyCommunity")
+// TODO Aufgabe 9: subscribe to the topic — @ExternalTaskSubscription(topicName = "notifyCommunity")
 //                 (org.cibseven.bpm.client.spring.annotation.ExternalTaskSubscription)
 public class NotifyCommunityHandler implements ExternalTaskHandler {
 
@@ -23,11 +23,11 @@ public class NotifyCommunityHandler implements ExternalTaskHandler {
 
     @Override
     public void execute(ExternalTask task, ExternalTaskService taskService) {
-        // TODO Aufgabe 6:
+        // TODO Aufgabe 9:
         //   1. read the "name" task variable       -> task.getVariable("name")
         //   2. build a Notification                -> new Notification("Miravelo Inner Circle", "🎉 New Inner Circle member: " + name + "!")
         //   3. publish it                          -> publishNotification.publish(notification)
         //   4. complete the task                   -> taskService.complete(task)
-        throw new UnsupportedOperationException("TODO Aufgabe 6: implement the external task handler");
+        throw new UnsupportedOperationException("TODO Aufgabe 9: implement the external task handler");
     }
 }

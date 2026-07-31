@@ -1,133 +1,78 @@
-# Aufgabe 7 – Boundary Events & Subprozesse
+# Aufgabe 7 – Kompensation (SAGA-Muster)
 
 ## Ziel-Modell
 
 ![BPMN Modell der Aufgabe](assets/exercise-07.svg)
 
+Referenz-Modell: `../models/exercise-07/newsletter.bpmn`.
+
 ## Lernziele
 
-- Subprozesse (Subprocesses) modellieren
-- Non-interrupting Timer Boundary Events (täglich wiederholen)
-- Interrupting Timer Boundary Events (Timeout → Abbruch)
-- Message Boundary Events (nutzerinitiierter Abbruch)
+- Abgeschlossene Aktionen bei Abbruch automatisch rückgängig machen (BPMN-Kompensation)
+- Compensation Boundary Event + Compensating End Event einsetzen
+- SAGA-Muster in Prozessmodellen anwenden
 
 ## Hintergrund
 
-Miravelo stellt fest: Viele Bewerber bestätigen ihre Membership nie.
-Das kostet wertvolle Plätze! Neue Anforderungen:
+### Kompensation
 
-1. **Täglich** eine Erinnerungsmail senden (non-interrupting Timer)
-2. Nach **3,5 Tagen** ohne Bestätigung → Membership automatisch abbrechen (interrupting Timer)
-3. Nutzer kann Bewerbung selbst **ablehnen** (Message Boundary)
+Erinnerst du dich an `revokeClaim`? In Aufgabe 6 haben wir den Service Task eingeführt, um den Membership-Platz bei Ablehnung oder Timeout wieder freizugeben – als expliziter Knoten direkt im Sequenzfluss. Damals: pragmatisch. Heute: nicht mehr zeitgemäß.
 
-### Neuer Prozessablauf
+Statt den `revokeClaim` weiterhin als expliziten Service Task an jeden Decline-Pfad zu hängen, nutzen wir **BPMN-Kompensation**. Der Prozess deklariert einmal, *welche Aktion* (`revokeClaim`) *welche andere Aktion* (`claimMembership`) rückgängig macht. Sobald ein Compensating End Event erreicht wird, kümmert sich die Engine um den Rest.
+
+**Warum ist das besser?** Bei mehreren abzusichernden Aktionen (z.B. claimMembership + sendConfirmationMail + Drittdienste) wächst der manuelle Kompensierungspfad schnell und wird schwer wartbar. Mit BPMN-Kompensation deklariert man die Zuordnung einmal – und die Engine übernimmt die Ausführung automatisch.
 
 ```
-[Claim membership] → [Has empty spots?]
-                            ↓ Yes
-              ┌─────────────────────────────┐
-              │  Confirm Membership         │
-              │  [Send confirmation mail]   │
-              │  [Confirm membership]       │ ←── Timer (täglich): Erinnerungsmail
-              └─────────────────────────────┘
-                      ↑ Timer (3.5 Tage): Abbruch
-                      ↑ Message: Ablehnung durch Nutzer
-                            ↓ Confirmed
-              ⬦ ─╱ [Send Welcome Mail] ╲─ ⬦ → [Membership activated]
-              Fork ╲ [Notify community] ╱ Join   (Parallel Gateway aus Aufgabe 6)
+serviceTask_claimMembership ──── [Kompensations-Boundary] ──── serviceTask_revokeClaim
+                                                                (isForCompensation=true)
+endEvent_membershipDeclined  →  [Compensating End Event]  →  Engine ruft revokeClaim auf
 ```
 
 ## Aufgaben
 
-### 1. BPMN erweitern
+### 1. BPMN anpassen – Kompensation
 
-Erstelle den Prozess nach `../models/exercise-07/newsletter.bpmn`.
+Ändere `newsletter.bpmn` im Miragon BPMN Modeler:
 
-**Neuer Subprozess** `subProcess_confirmMembership`:
-- Enthält: `serviceTask_sendConfirmationMail` + `userTask_confirmMembership`
+- [ ] Compensation Boundary Event an `serviceTask_claimMembership` anhängen
+- [ ] `serviceTask_revokeClaim` mit `isForCompensation=true` markieren und per Association mit dem Boundary verknüpfen
+- [ ] Decline-Pfade (Timer-Abbruch **und** Message-Ablehnung) direkt mit `endEvent_membershipDeclined` verbinden (kein `revokeClaim` im Pfad)
+- [ ] `endEvent_membershipDeclined` in Compensating End Event umwandeln
 
-**Boundary Events am Subprozess:**
+Referenz-Modell: `../models/exercise-07/newsletter.bpmn`
 
-| Element | Typ | ID | Name | Konfiguration |
-|---|---|---|---|---|
-| Täglich | Non-Interrupting Timer | `timer_resendEveryDay` | Every day | Duration: `PT1M` (1 Minute, für Tests) |
-| Timeout | Interrupting Timer | `timer_abortAfter3HalfDays` | After 3½ days | Duration: `PT3M` (3 Minuten, für Tests) |
-| Ablehnung | Interrupting Message | `event_confirmationRejected` | Confirmation rejected | Message: `Message_ConfirmationRejected` |
+**Hinweis:** Der `RevokeClaimDelegate` bleibt unverändert – er wird jetzt nur anders aufgerufen (durch die BPMN-Engine statt via Sequenzfluss). Es muss kein Java-Code geändert werden.
 
-**Neue Service Tasks:**
-
-| Element | ID | Name | Delegate |
-|---|---|---|---|
-| Erinnerungsmail | `serviceTask_reSendConfirmationMail` | Re-Send confirmation mail | `#{reSendConfirmationMailDelegate}` |
-| Claim freigeben | `serviceTask_revokeClaim` | Revoke claim | `#{revokeClaimDelegate}` |
-
-**Neue End Events:**
-
-| ID | Name |
-|---|---|
-| `endEvent_membershipDeclined` | Membership declined |
-| `endEvent_membershipActivated` | Membership activated |
-
-### 2. Neue Use Cases & Delegates implementieren
-
-**`ReSendConfirmationMailUseCase`** / **`ReSendConfirmationMailService`**:
-- Loggt "Re-sending confirmation mail to [email]"
-
-**`RevokeClaimUseCase`** / **`RevokeClaimService`**:
-- Loggt "Revoking claim for [membershipId]" 
-- Gibt den Kapazitäts-Slot wieder frei (Counter dekrementieren)
-
-**`RevokeClaimDelegate`** / **`ReSendConfirmationMailDelegate`**: analog zu bisherigen Delegates
-
-### 3. Message-Boundary korrelieren
-
-Der Message Boundary `Message_ConfirmationRejected` wird von außen ausgelöst.
-Füge einen REST-Endpoint hinzu:
-
-```
-POST /api/memberships/{membershipId}/reject
-```
-
-Implementiere die Korrelation in `MembershipProcessAdapter`: Verwende `runtimeService.createMessageCorrelation(...)` mit dem Message-Namen aus dem BPMN-Modell und filtere auf die Prozessvariable `membershipId`.
-
-> Async-Continuations (siehe Aufgabe 3): Setze `asyncAfter` zusätzlich an allen Boundary Events (`timer_resendEveryDay`, `timer_abortAfter3HalfDays`, `event_confirmationRejected`).
+**Kontrollfrage:** Warum funktioniert `RevokeClaimDelegate` ohne Änderungen weiter, obwohl er nicht mehr im Sequenzfluss liegt?
 
 ## Testen
 
-```bash
-# Membership starten
-MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8080/api/memberships \
-  -d '{"email": "eve@miravelo.com", "name": "Eve", "age": 26}')
+**Kompensation prüfen – Timer-Ablauf:**
+1. `POST /api/memberships` → Prozess startet, Claim wird gesetzt
+2. Warte bis Timer-Boundary ausgelöst wird (z.B. Timer-Konfiguration auf 30s für den Test setzen)
+3. Log zeigt `"Revoking membership claim"` – obwohl kein expliziter Service Task im Pfad
+4. Cockpit: Prozessinstanz endet mit „Membership declined"
 
-# Nach ~1 Minute: Erinnerungsmail im Log
+**Kompensation prüfen – Manuelle Ablehnung:**
+1. `POST /api/memberships` → warte auf UserTask `confirmMembership`
+2. Trigger Confirmation-Rejected-Message → `event_confirmationRejected` Boundary löst aus
+3. Pfad geht direkt zu `endEvent_membershipDeclined` → Compensation feuert → `revokeClaim` automatisch ausgeführt
 
-# Ablehnung senden
-curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
+## Kontrolle
 
-# Nach ~3 Minuten ohne Bestätigung: Timeout-Abbruch
-```
+- [ ] Log zeigt `"Revoking membership claim"` beim Timer-Ablauf (ohne expliziten Task im Pfad)
+- [ ] Log zeigt `"Revoking membership claim"` nach Ablehnung via Message
+- [ ] Cockpit: Kompensations-Handler wird in der Prozesshistorie sichtbar
+- [ ] `revokeClaim` ist **nirgendwo** mehr im Sequenzfluss – nur noch als Compensation Handler
 
 ## Prozess-Test erweitern
 
-Dein Prozess-Test aus [Aufgabe 5](exercise-05.md) deckt bisher nur Happy Path und Ablehnung ab.
-Jetzt sind drei neue Pfade dazugekommen – ergänze für jeden einen Test:
+Fachlich ändert sich am Ergebnis der Decline-Pfade nichts – `serviceTask_revokeClaim`
+läuft weiterhin, nur jetzt als Kompensations-Handler. Deine bestehenden Assertions
+`hasPassed(Elements.SERVICE_TASK_REVOKE_CLAIM.getValue(), Elements.END_EVENT_MEMBERSHIP_DECLINED.getValue())`
+und `verify(revokeClaimUseCase).revokeClaim(id)` gelten unverändert.
 
-> Seit Aufgabe 5 referenzierst du Element-IDs über die generierte `SubscribeNewsletterProcessApi` statt
-> über Strings. Die neuen Elemente (Timer, Compensation) tauchen nach dem nächsten `generate-sources`
-> automatisch als `Elements.*`-Konstanten auf.
-
-- **Abbruch-Timer (interrupting):** Warte am User Task, feuere den Timer mit dem neuen Helfer
-  `fireTimer(processEngine, Elements.TIMER_ABORT_AFTER_3_HALF_DAYS.getValue())`, treibe weiter und prüfe
-  `hasPassed(Elements.SERVICE_TASK_REVOKE_CLAIM.getValue(), Elements.END_EVENT_MEMBERSHIP_DECLINED.getValue())`.
-  Mocke dafür `RevokeClaimUseCase`.
-- **Reject-Message:** Statt des Timers `membershipProcess.rejectMembership(id)` aufrufen – gleicher
-  Ausgang (`revokeClaim` → declined).
-- **Resend-Timer (non-interrupting):** `fireTimer(..., Elements.TIMER_RESEND_EVERY_DAY.getValue())`, dann prüfen, dass
-  `reSendConfirmationMailUseCase.reSendConfirmationMail(id)` ein **zweites** Mal lief und der Prozess
-  weiter am User Task wartet. Mocke `ReSendConfirmationMailUseCase`.
-
-Den `fireTimer`-Helfer (Timer-Job direkt ausführen, unabhängig vom Fälligkeitsdatum) findest du in
-`ProcessEngineTestUtils`.
+> **Weiterführendes:** BPMN-Kompensation eignet sich besonders für **SAGA-Muster** in Microservices: Jeder Schritt hat einen zugehörigen Kompensationsschritt. Bei Fehlern kompensiert die Engine alle bisher erfolgreichen Schritte in umgekehrter Reihenfolge. In CIB Seven kann Kompensation auch über Subprocess-Grenzen hinweg ausgelöst werden.
 
 ## Referenzlösung
 

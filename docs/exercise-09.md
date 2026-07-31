@@ -1,184 +1,195 @@
-# Aufgabe 9 – Call Activity & DMN
+# Aufgabe 9 – Remote Engine & External Task
 
-> **Voraussetzung:** Aufgabe 8 (Kompensation) ist abgeschlossen. Der Hauptprozess kennt bereits die Compensation-Boundary auf `serviceTask_claimMembership`.
+> **Voraussetzung: Aufgabe 8** ist abgeschlossen – der vollständige Membership-Prozess (Subprozess,
+> Boundary Events, Kompensation, Call Activity & DMN) läuft, inklusive des `notifyCommunity`-Zweigs,
+> den du in Aufgabe 6 als **In-Engine-Delegate** gebaut hast.
 
 ## Ziel-Modell
 
-Hauptprozess:
-
 ![BPMN Hauptprozess](assets/exercise-09-main.svg)
 
-Sub-Prozess `handleRejection`:
-
-![BPMN Sub-Prozess](assets/exercise-09-sub.svg)
+Referenz-Modell: `../models/exercise-09/newsletter.bpmn`. Das Prozess-Modell bleibt fachlich identisch –
+nur der Task `serviceTask_notifyCommunity` wechselt vom Delegate zum **External Task**.
 
 ## Lernziele
 
-- Call Activities modellieren und einsetzen
-- Subprozesse in eigenständige Prozesse auslagern
-- Datenaustausch zwischen Haupt- und Subprozess (Variable Mappings)
-- DMN-Entscheidungstabellen modellieren und einbinden
-- Business Rule Tasks in BPMN verwenden
-- User Tasks für manuelle Eingriffe basierend auf DMN-Ergebnissen
+- Einen bestehenden **In-Engine-Delegate** zu einem **External Service Task**
+  (`camunda:type="external"` + Topic) umbauen
+- Einen **External Task Worker** in einem **eigenen Service** (eigene JVM) bauen, der sich über die
+  **REST-API** mit der Engine verbindet (Remote Engine)
+- Verstehen, **warum** man einen Task auslagert (Wiederverwendung, Isolation von Secrets, Skalierung)
 
 ## Hintergrund
 
-Nach Aufgabe 8 läuft die Kompensation sauber: Wird ein Membership abgelehnt, kümmert sich die Engine via `serviceTask_revokeClaim`. Aber das ist erst der Anfang.
+In Aufgabe 6 hast du die Community-Benachrichtigung als **Delegate** direkt in die Prozess-Anwendung
+gebaut: Der `NotifyCommunityDelegate` ruft einen Use Case, der über den `MicrosoftTeamsMessagePublisher`
+eine Karte in einen Teams-Kanal postet. Das funktioniert – aber es sitzt am falschen Ort.
 
-Miravelo hat eine wichtige Erkenntnis gewonnen: Einige dieser „Crisis-Aspiranten" im Alter von 21–30 sind viel zu wertvoll, um sie einfach ziehen zu lassen. Die verdienen gut, sind mitten in ihrer Quarterlife Crisis und suchen genau das, was Miravelo bietet. Die müssen wir nochmal kontaktieren!
+**Zwei Gründe, es auszulagern:**
 
-Um den Hauptprozess nicht aufzublähen, lagern wir die gesamte Rejection-Behandlung in einen eigenen Prozess aus und rufen ihn über eine **Call Activity** auf. Die Compensation-Logik aus Aufgabe 8 bleibt im Hauptprozess – die Call Activity steht zwischen den Decline-Boundary-Events und dem Compensating End Event.
+- **Wiederverwendung:** Nicht nur neue Members sollen gemeldet werden. Demnächst soll z. B. auch **jedes
+  Leasing** eine Nachricht in denselben Kanal schicken. Die Benachrichtigung ist eine **eigenständige
+  Fähigkeit**, die mehrere Prozesse nutzen – kein Detail des Membership-Prozesses.
+- **Secret-Management:** In der Webhook-URL steckt eine **Signatur** – im Grunde ein Passwort für den
+  Teams-Kanal. Und Miravelo findet: So ein Geheimnis hat in der großen, ständig umgebauten
+  Prozess-Anwendung eigentlich nichts verloren. Also packen wir es dorthin, wo es hingehört – in einen
+  kleinen, ruhigen Worker, der genau **eine** Sache tut und das Secret schön für sich behält. 🤫
 
-> In diesem Fall könnte man das auch in einem Embedded Subprocess lösen – aber wir wollen verschiedene BPMN-Elemente kennenlernen ;)
+Deshalb schneiden wir die Benachrichtigung heraus: `serviceTask_notifyCommunity` wird ein **External
+Service Task**, und ein **separater Worker-Service** erledigt die Arbeit. Er kennt die Engine nur über
+deren REST-API – das klassische **External-Task-Pattern**.
 
-Nachdem die Call Activity steht, kommt der nächste Schritt: Wir wollen automatisch erkennen, welche abgelehnten Bewerber besonders wertvoll sind. Die „Quarterlife-Crisis"-Zielgruppe (21–29 Jahre) soll per **DMN-Entscheidungstabelle** identifiziert werden. Wenn jemand als „high value" eingestuft wird, soll ein Mitarbeiter persönlich Kontakt aufnehmen – per **User Task**.
+### Warum eine Remote Engine – und keine embedded?
 
-### Prozessstruktur
+Bisher lief die Engine **embedded** – mitten in der Prozess-Anwendung. Der Notification-Worker **betreibt
+keine eigene Engine**, er **nutzt** nur die fremde – über REST. Genau das meint **„Remote Engine"**: die
+Engine läuft woanders, unser Service klopft nur an. Der Worker darf so unabhängig deployt, schwächer
+skaliert und strenger abgesichert werden als die Prozess-Anwendung.
+
+### Neuer Prozessablauf
 
 ```
-Hauptprozess (newsletter.bpmn):
-  ...
-  [boundary_timer | event_confirmationRejected]
-        ↓
-  [CallActivity: handleRejection]
-        ↓
-  [Compensating End Event: Membership declined]
-        ↓ (Engine löst Compensation aus)
-  [serviceTask_revokeClaim]
+Hauptprozess (subscribeNewsletter):
 
-Subprozess (membership-rejection.bpmn):
-  [Start] → [Categorize applicant (DMN)] → [Is high value?]
-                                                ↓ Yes              ↓ No
-                                          [Contact personally]  [End: accepted]
-                                           (User Task)
-                                                ↓
-                                          [End: tried to reaquire]
+  ... → (Confirmed) →╱[Send Welcome Mail]──────────────╲→ [Membership activated]
+                   ⬦                                    ⬦
+     Parallel-Fork  ╲[Notify community]────────────────╱  Parallel-Join
+                      external, topic="notifyCommunity"
+                                ▲
+                                │ fetch & lock, complete
+          Worker-Service (eigene JVM):  NotifyCommunityHandler → RestClient → Teams-Kanal
 ```
+
+Weil der Join **beide** Zweige abwartet, ist die Membership erst „activated", wenn sowohl die Mail raus
+ist **als auch** der Worker die Community-Benachrichtigung abgeschlossen hat.
 
 ## Aufgaben
 
-### 1. Subprozess `membership-rejection.bpmn` erstellen
+### Teil A – Hauptservice (`services/process-application`)
 
-Neue Datei: `src/main/resources/bpmn/membership-rejection.bpmn`
+#### 1. `serviceTask_notifyCommunity` auf External Task umstellen
 
-Referenz: `../models/exercise-09/membership-rejection.bpmn`
+Im `newsletter.bpmn` den Task von Delegate auf External Task umstellen:
 
-Struktur:
-- Process ID: `handleRejection`
-- Start Event → Business Rule Task `Categorize applicant` → Exclusive Gateway → User Task `Contact personally` (Yes-Pfad) → End Event "Tried to reacquire"
-- Default-Pfad (No): direkt → End Event "Accept rejection"
-
-### 2. Hauptprozess anpassen
-
-Ersetze die direkten Decline-Pfade aus Aufgabe 8 durch eine **Call Activity**:
-
-| Element | Typ | ID | Name | Konfiguration |
-|---|---|---|---|---|
-| Rejection-Handler | Call Activity | `callActivity_handleRejection` | Handle rejection | Called Element: `handleRejection` |
-
-- Eingehende Flows: `timer_abortAfter3HalfDays`, `event_confirmationRejected` Boundary
-- Ausgehender Flow: → `endEvent_membershipDeclined` (Compensating End Event aus Aufgabe 8)
-
-Die Compensation aus Aufgabe 8 bleibt unangetastet. Nach Rückkehr aus der Call Activity feuert das Compensating End Event und die Engine ruft `serviceTask_revokeClaim` auf.
-
-Referenz: `../models/exercise-09/newsletter.bpmn`
-
-### 3. Variablen-Übergabe konfigurieren
-
-In der Call Activity müssen Variablen übergeben werden:
-
-**In-Mapping (Hauptprozess → Subprozess):**
-- `membershipId` → `membershipId`
-- `age` → `age` (wird für die DMN-Entscheidung benötigt)
-
-**Out-Mapping (Subprozess → Hauptprozess):** (optional, falls Ergebnis zurückgegeben werden soll)
-
-### 4. DMN-Entscheidungstabelle einbinden
-
-Kopiere die Referenz-DMN ins Projekt:
-
-```bash
-cp ../models/exercise-09/categorize-applicant.dmn src/main/resources/dmn/categorize-applicant.dmn
+```xml
+<bpmn:serviceTask id="serviceTask_notifyCommunity" name="Notify community"
+                  camunda:type="external" camunda:topic="notifyCommunity" />
 ```
 
-Inhalt der DMN-Tabelle:
-- **Decision ID:** `categorizeApplicant`
-- **Input:** `age` (Integer)
-- **Output:** `isHighValue` (Boolean)
-- **Regel:** Alter zwischen 21 und 29 → `true` (Quarter-Life-Crisis!), sonst `false`
+#### 2. Den In-Engine-Notifier aus dem Hauptservice entfernen
 
-### 5. Business Rule Task im Subprozess konfigurieren
+Die Benachrichtigung wandert komplett in den Worker – im `process-application` fliegen daher raus:
+`NotifyCommunityDelegate`, `NotifyCommunityUseCase`, `NotifyCommunityService`,
+`NotificationPublisherOutPort`, `MicrosoftTeamsMessagePublisher`, `RestClientConfig`, das
+`domain/Notification`-Record und der `notification.teams`-Block aus der `application.yaml`.
 
-| Element | Typ | ID | Name | Konfiguration |
-|---|---|---|---|---|
-| Kategorisierung | Business Rule Task | `businessRuleTask_categorizeApplicant` | Categorize applicant | Decision Ref: `categorizeApplicant`, Result Variable: `isHighValue`, Map Decision Result: `singleEntry` |
-| VIP-Check | Exclusive Gateway | `gateway_highValue` | High value? | Default-Flow: No-Pfad |
-| Persönlicher Kontakt | User Task | `userTask_writeRegretMail` | Write an email expressing regret | `asyncAfter=true` |
+> Für `serviceTask_notifyCommunity` brauchst du jetzt **keinen** Delegate, keinen Use Case und keinen
+> Outbound-Adapter mehr im Hauptservice – die Arbeit erledigt der externe Worker (Teil B). Die
+> Task-Type-Konstante `ServiceTasks.NOTIFY_COMMUNITY` wird beim Build aus der BPMN generiert.
 
-Gateway-Bedingungen:
-- Yes-Pfad: `${isHighValue}`
-- No-Pfad: Default
+### Teil B – Worker-Service (`services/notification-service`)
+
+Im Worker-Modul `services/notification-service/` implementierst du den **Handler** (den „Delegate"
+des Workers) und den **Service**. Der Teams-Adapter `MicrosoftTeamsMessagePublisher` ist bereits
+**vorgegeben** – der Adaptive-Card-Aufbau und der REST-Call sind Infrastruktur, kein Lernziel. (Es ist
+exakt der Publisher, den du in Aufgabe 6 im Hauptservice gebaut hast – jetzt lebt er hier.)
+
+#### 3. External Task Handler abonnieren (der „Delegate")
+
+`adapter/inbound/cibseven/NotifyCommunityHandler` implementiert `ExternalTaskHandler` und
+abonniert den Topic:
+
+```java
+@Component
+@ExternalTaskSubscription(topicName = "notifyCommunity")
+public class NotifyCommunityHandler implements ExternalTaskHandler {
+    public void execute(ExternalTask task, ExternalTaskService taskService) {
+        String name = task.getVariable("name");
+        publishNotification.publish(new Notification(
+                "Miravelo Inner Circle", "🎉 New Inner Circle member: " + name + "!"));
+        taskService.complete(task);   // Task abschließen!
+    }
+}
+```
+
+Der Handler übersetzt das External-Task-Event in ein Domain-Objekt **`Notification`** (Titel + Text)
+und gibt es an den Use Case `PublishNotificationUseCase` weiter – **nicht** den Member selbst.
+
+#### 4. Service implementieren
+
+`application/service/PublishNotificationService` (implementiert `PublishNotificationUseCase`) reicht
+die `Notification` an den Out-Port weiter:
+
+```java
+public void publish(Notification notification) {
+    notificationPublisher.publish(notification);   // NotificationPublisherOutPort
+}
+```
+
+> Der Out-Port `NotificationPublisherOutPort` und seine Implementierung
+> `MicrosoftTeamsMessagePublisher` (der Teams-Adapter) sind schon da – du rufst sie nur auf.
+
+Die Verbindung zur Remote Engine und die Ziel-URL stehen in `application.yaml`:
+
+```yaml
+camunda:
+  bpm:
+    client:
+      base-url: http://localhost:8080/engine-rest   # Remote Engine REST-API
+notification:
+  teams:
+    # Echte URL per Umgebungsvariable TEAMS_WEBHOOK_URL – kein Secret ins Repo committen.
+    webhook-url: ${TEAMS_WEBHOOK_URL:https://CHANGE-ME}
+```
+
+## Teams-Webhook einrichten (Power Automate „Workflows")
+
+1. In Teams beim Ziel-**Kanal** auf **••• → Workflows** (oder die **Workflows**-App → **Neuer Flow**).
+2. Vorlage **„Post to a channel when a webhook request is received"** wählen (Trigger
+   „When a Teams webhook request is received"), Teams-Verbindung bestätigen.
+3. **Team** + **Kanal** auswählen → **Erstellen**. Es entsteht eine **HTTP-POST-URL** (`https://…`).
+4. Diese URL beim Start des Workers als Umgebungsvariable übergeben:
+   `TEAMS_WEBHOOK_URL='<deine-URL>'` (oder Argument `--notification.teams.webhook-url=<URL>`).
+
+> ⚠️ Die Signatur (`sig=…`) in der URL ist ein **Secret** – nicht ins Repo committen. Den alten
+> „Incoming Webhook"-Connector **nicht** verwenden (2026 abgeschaltet). Da die Ausgabe hinter dem
+> Out-Port `NotificationPublisherOutPort` steckt, lässt sich statt Teams leicht ein anderer Web-Service
+> anbinden.
 
 ## Testen
 
-**Call Activity prüfen (einfache Ablehnung, Alter außerhalb 21–29):**
 ```bash
-MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8080/api/memberships \
-  -d '{"email": "grace@miravelo.com", "name": "Grace", "age": 35}' | jq -r .id)
+# 1. Stack + Hauptservice (Port 8080) starten
+cd stack && docker-compose up -d
+cd ../solutions/exercise-09/process-application && ../../../mvnw spring-boot:run
 
-# Confirmation-Rejected-Message triggern
-curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
+# 2. Worker mit deiner Teams-Webhook-URL starten (eigenes Terminal)
+cd solutions/exercise-09/notification-service
+TEAMS_WEBHOOK_URL='<deine-Teams-Webhook-URL>' ../../../mvnw spring-boot:run
+
+# 3. Membership anlegen und im Cockpit (http://localhost:8080/camunda, admin/admin)
+#    die Confirm-Aufgabe abschließen → der External Task wird vom Worker abgeholt →
+#    eine Karte erscheint im Teams-Kanal.
+curl -X POST http://localhost:8080/api/memberships \
+  -H "Content-Type: application/json" \
+  -d '{"email":"jane@example.com","name":"Jane","age":30}'
 ```
 
-Im Cockpit:
-1. Hauptprozess hat eine Call Activity-Aufrufstelle
-2. Separate Instanz von `handleRejection` läuft kurz durch
-3. DMN evaluiert → `isHighValue = false` → direkt zu „Accept rejection" End Event
-4. Rückkehr in Hauptprozess → Compensating End Event → Log: „Revoking claim for [membershipId]"
+**Beweis, dass der Worker wirklich remote & separat ist:** Worker **stoppen**, eine Membership
+durchführen → der Prozess wartet im Cockpit am External Task `Notify community` (der Parallel-Join
+kann noch nicht feuern). Worker **starten** → er holt den Task ab und postet, der Join feuert, die
+Membership ist aktiviert. 🎉
 
-**VIP-Bewerber (Alter 21–29):**
-```bash
-MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8080/api/memberships \
-  -d '{"email": "hanna@miravelo.com", "name": "Hanna", "age": 25}' | jq -r .id)
-
-curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
-```
-
-Im Cockpit:
-1. Im `handleRejection`-Subprozess → DMN → `isHighValue = true`
-2. **User Task „Write email expressing regret"** erscheint in der Task List
-3. Mitarbeiter füllt Notiz aus und schließt Task ab
-4. Sub-Prozess endet → Hauptprozess → Compensation triggert `revokeClaim`
-
-## Kontrolle
-
-- [ ] Sub-Prozess `handleRejection` ist als eigene Datei modelliert und im Cockpit als separate Process Definition deployed
-- [ ] Call Activity übergibt `membershipId` und `age` per In-Mapping
-- [ ] DMN-Tabelle ist in `src/main/resources/dmn/` und wird beim Deployment registriert
-- [ ] Bei Alter 21–29: User Task erscheint; bei anderem Alter: direkt zum End Event
-- [ ] Nach Sub-Prozess-Rückkehr: Compensation aus Aufgabe 8 löst `revokeClaim` aus
-
-## Prozess-Test erweitern
-
-Die Decline-Behandlung liegt jetzt in der Call Activity `callActivity_handleRejection`, die per DM
-`categorizeApplicant` (nach `age`) entscheidet. Erweitere den Test um beide DMN-Zweige:
-
-- **Low-Value-Bewerber** (z. B. `age = 40`): Nach Timer-/Message-Abbruch läuft die Call Activity
-  synchron durch (Accept Rejection), danach greift die Kompensation. Prüfe
-  `hasPassed(SubscribeNewsletterProcessApi.Elements.CALL_ACTIVITY_HANDLE_REJECTION.getValue(), SubscribeNewsletterProcessApi.Elements.SERVICE_TASK_REVOKE_CLAIM.getValue(), SubscribeNewsletterProcessApi.Elements.END_EVENT_MEMBERSHIP_DECLINED.getValue())`.
-- **High-Value-Bewerber** (`age` zwischen 21 und 29): Der aufgerufene Prozess wartet an
-  `userTask_writeRegretMail`. Weil das Element im **aufgerufenen** Prozess liegt, kommt seine Konstante
-  aus der zweiten generierten API: hole die Aufgabe über
-  `taskDefinitionKey(HandleRejectionProcessApi.Elements.USER_TASK_WRITE_REGRET_MAIL.getValue())`,
-  schließe sie ab, treibe weiter und prüfe denselben Abschluss.
-
-> Assertions wie `hasPassed(...)` auf der Hauptinstanz sehen nur deren Aktivitäten (u. a. die Call
-> Activity selbst) – die internen Schritte des aufgerufenen Prozesses laufen in einer eigenen Instanz.
+Automatisiert: `./mvnw -pl solutions/exercise-09/process-application test -Dtest=MembershipProcessTest`.
+Im Prozess-Test steht `completeExternalTask(...)` stellvertretend für den Remote-Worker.
 
 ## Referenzlösung
 
-`../solutions/exercise-09/`
+- Hauptservice: `../solutions/exercise-09/process-application/`
+- Worker-Service: `../solutions/exercise-09/notification-service/`
 
 ---
 
-🎉 **Glückwunsch!** Du hast alle Aufgaben durchgearbeitet und einen vollständigen, produktionsreifen Prozess mit Service Tasks, User Tasks, Gateways, Boundary Events, Sub-Prozessen, Kompensation, Call Activity und DMN aufgebaut.
+🎉 **Geschafft!** Du hast den vollständigen Membership-Prozess gebaut – von der reinen Modellierung bis
+zum ausgelagerten Remote-Worker. Lust auf mehr? Die [Extra-Aufgabe](extra-task-1.md) baut den Prozess
+engine-neutral um.
