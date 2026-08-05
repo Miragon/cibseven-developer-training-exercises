@@ -28,8 +28,8 @@
         <java.version>21</java.version>
         <postgresql.version>42.7.8</postgresql.version>
         <cib7.version>2.2.0</cib7.version>
-        <archunit.version>1.4.2</archunit.version>
-        <bpmn-to-code.version>5.1.0</bpmn-to-code.version>
+        <archunit.version>1.5.0</archunit.version>
+        <bpmn-to-code.version>5.2.0</bpmn-to-code.version>
     </properties>
 
     <!--
