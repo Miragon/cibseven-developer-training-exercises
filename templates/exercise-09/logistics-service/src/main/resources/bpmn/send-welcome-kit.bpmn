@@ -4,50 +4,19 @@
                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
                   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
                   xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:modeler="http://camunda.org/schema/modeler/1.0"
                   id="Definitions_SendWelcomeKit"
-                  targetNamespace="http://miravelo.io/logistics">
-  <bpmn:signal id="Signal_MemberActivated" name="Signal_MemberActivated" />
-  <bpmn:process id="sendWelcomeKit" name="Send Welcome Kit" isExecutable="true" camunda:historyTimeToLive="180">
-    <bpmn:startEvent id="startEvent_memberActivated" name="New member activated">
-      <bpmn:outgoing>Flow_toShipKit</bpmn:outgoing>
-      <bpmn:signalEventDefinition id="SignalEventDefinition_memberActivated" signalRef="Signal_MemberActivated" />
-    </bpmn:startEvent>
-    <bpmn:serviceTask id="serviceTask_shipWelcomeKit" name="Ship welcome kit"
-                      camunda:type="external" camunda:topic="shipWelcomeKit">
-      <bpmn:incoming>Flow_toShipKit</bpmn:incoming>
-      <bpmn:outgoing>Flow_toEnd</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:endEvent id="endEvent_welcomeKitShipped" name="Welcome kit shipped">
-      <bpmn:incoming>Flow_toEnd</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_toShipKit" sourceRef="startEvent_memberActivated" targetRef="serviceTask_shipWelcomeKit" />
-    <bpmn:sequenceFlow id="Flow_toEnd" sourceRef="serviceTask_shipWelcomeKit" targetRef="endEvent_welcomeKitShipped" />
+                  targetNamespace="http://miravelo.io/logistics"
+                  modeler:executionPlatform="Camunda Platform"
+                  modeler:executionPlatformVersion="7.23.0">
+  <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_1" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="sendWelcomeKit">
-      <bpmndi:BPMNShape id="startEvent_memberActivated_di" bpmnElement="startEvent_memberActivated">
-        <dc:Bounds x="172" y="102" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="150" y="145" width="82" height="27" />
-        </bpmndi:BPMNLabel>
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="99" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="serviceTask_shipWelcomeKit_di" bpmnElement="serviceTask_shipWelcomeKit">
-        <dc:Bounds x="270" y="80" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="endEvent_welcomeKitShipped_di" bpmnElement="endEvent_welcomeKitShipped">
-        <dc:Bounds x="432" y="102" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="410" y="145" width="82" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_toShipKit_di" bpmnElement="Flow_toShipKit">
-        <di:waypoint x="208" y="120" />
-        <di:waypoint x="270" y="120" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_toEnd_di" bpmnElement="Flow_toEnd">
-        <di:waypoint x="370" y="120" />
-        <di:waypoint x="432" y="120" />
-      </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>

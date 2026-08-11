@@ -17,6 +17,7 @@ import java.util.UUID;
 import static io.miragon.training.process.util.ProcessEngineTestUtils.broadcastSignal;
 import static io.miragon.training.process.util.ProcessEngineTestUtils.completeExternalTask;
 import static io.miragon.training.process.util.ProcessEngineTestUtils.findInstance;
+import static io.miragon.training.process.util.ProcessEngineTestUtils.startProcessByKey;
 import static org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat;
 import static org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.init;
 
@@ -64,6 +65,23 @@ class SendWelcomeKitProcessTest {
                 .isEnded()
                 .hasPassedInOrder(
                         Elements.START_EVENT_MEMBER_ACTIVATED.getValue(),
+                        Elements.SERVICE_TASK_SHIP_WELCOME_KIT.getValue(),
+                        Elements.END_EVENT_WELCOME_KIT_SHIPPED.getValue());
+    }
+
+    @Test
+    void theManualStartAlsoRunsTheProcess() {
+        // The second (none) start event lets the service drive a run itself, over the engine's REST API
+        // (RemoteWelcomeKitProcessAdapter) — for a manual re-send or a test, independent of the signal.
+        startProcessByKey(processEngine, SendWelcomeKitProcessApi.PROCESS_ID.getValue(), Map.of("name", "Jane"));
+        ProcessInstance instance = findInstance(processEngine, SendWelcomeKitProcessApi.PROCESS_ID.getValue());
+
+        completeExternalTask(processEngine, ServiceTasks.SHIP_WELCOME_KIT);
+
+        assertThat(instance)
+                .isEnded()
+                .hasPassedInOrder(
+                        Elements.START_EVENT_MANUAL_START.getValue(),
                         Elements.SERVICE_TASK_SHIP_WELCOME_KIT.getValue(),
                         Elements.END_EVENT_WELCOME_KIT_SHIPPED.getValue());
     }

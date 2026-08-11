@@ -20,6 +20,16 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Lint BPMN (bpmnlint)
+        run: |
+          npm ci
+          npm run lint:bpmn
+
       - name: Build
         run: ./mvnw clean verify
 

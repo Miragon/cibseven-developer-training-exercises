@@ -19,11 +19,14 @@ Aufgaben 0–8 aufgeräumt.
    ```
 
 3. Die `TODO Aufgabe 9`-Stellen ausfüllen (Details in [`docs/exercise-09.md`](../../../docs/exercise-09.md)):
-   - **`pom.xml`** – den auskommentierten OpenAPI-Generator-Block einkommentieren und die beiden
-     `TODO`-Werte setzen → erzeugt den typisierten `/engine-rest`-Client.
+   - **`send-welcome-kit.bpmn`** – enthält bewusst nur ein leeres Modell mit einem Start-Event.
+     Modelliere den `sendWelcomeKit`-Prozess selbst (Prozess-ID, Signal- + manuelles Start-Event,
+     External Service Task mit Topic, End-Event).
+   - **`pom.xml`** – die beiden auskommentierten Generator-Blöcke (bpmn-to-code + OpenAPI-Client)
+     einkommentieren und die `TODO`-Werte setzen → erzeugt Process-API + typisierten `/engine-rest`-Client.
    - **`EngineClientConfig`** – die `ProcessDefinitionApi`-Bean bereitstellen.
    - **`EngineDeploymentAdapter`** – das eigene Modell beim Start deployen.
-   - **`ShipWelcomeKitWorker`** – den External-Task erfüllen.
+   - **`ShipWelcomeKitWorker`** – den External-Task erfüllen (die Klasse ist absichtlich leer).
    - **`RemoteWelcomeKitProcessAdapter`** – den Prozess über den Client starten.
 
 Referenzlösung: [`solutions/exercise-09/logistics-service`](../../../solutions/exercise-09/logistics-service).

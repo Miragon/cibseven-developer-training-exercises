@@ -23,7 +23,11 @@ public final class SendWelcomeKitProcessApi {
   public static final class Elements {
     public static final ElementId END_EVENT_WELCOME_KIT_SHIPPED = new ElementId("endEvent_welcomeKitShipped");
 
+    public static final ElementId GATEWAY_START = new ElementId("gateway_start");
+
     public static final ElementId SERVICE_TASK_SHIP_WELCOME_KIT = new ElementId("serviceTask_shipWelcomeKit");
+
+    public static final ElementId START_EVENT_MANUAL_START = new ElementId("startEvent_manualStart");
 
     public static final ElementId START_EVENT_MEMBER_ACTIVATED = new ElementId("startEvent_memberActivated");
   }
@@ -46,9 +50,13 @@ public final class SendWelcomeKitProcessApi {
    * Worker code typically does not need these.
    */
   public static final class Flows {
-    public static final BpmnFlow FLOW_TO_END = new BpmnFlow("Flow_toEnd", null, "serviceTask_shipWelcomeKit", "endEvent_welcomeKitShipped", null, false);
+    public static final BpmnFlow FLOW_MANUAL_TO_START = new BpmnFlow("Flow_manualToStart", null, "startEvent_manualStart", "gateway_start", null, false);
 
-    public static final BpmnFlow FLOW_TO_SHIP_KIT = new BpmnFlow("Flow_toShipKit", null, "startEvent_memberActivated", "serviceTask_shipWelcomeKit", null, false);
+    public static final BpmnFlow FLOW_SHIP_TO_END = new BpmnFlow("Flow_shipToEnd", null, "serviceTask_shipWelcomeKit", "endEvent_welcomeKitShipped", null, false);
+
+    public static final BpmnFlow FLOW_SIGNAL_TO_START = new BpmnFlow("Flow_signalToStart", null, "startEvent_memberActivated", "gateway_start", null, false);
+
+    public static final BpmnFlow FLOW_START_TO_SHIP = new BpmnFlow("Flow_startToShip", null, "gateway_start", "serviceTask_shipWelcomeKit", null, false);
   }
 
   /**
@@ -58,8 +66,12 @@ public final class SendWelcomeKitProcessApi {
   public static final class Relations {
     public static final BpmnRelations END_EVENT_WELCOME_KIT_SHIPPED = new BpmnRelations("Welcome kit shipped", List.of("serviceTask_shipWelcomeKit"), List.of(), null, null, List.of(), "END_EVENT");
 
-    public static final BpmnRelations SERVICE_TASK_SHIP_WELCOME_KIT = new BpmnRelations("Ship welcome kit", List.of("startEvent_memberActivated"), List.of("endEvent_welcomeKitShipped"), null, null, List.of(), "SERVICE_TASK");
+    public static final BpmnRelations GATEWAY_START = new BpmnRelations("Started", List.of("startEvent_memberActivated", "startEvent_manualStart"), List.of("serviceTask_shipWelcomeKit"), null, null, List.of(), "EXCLUSIVE_GATEWAY");
 
-    public static final BpmnRelations START_EVENT_MEMBER_ACTIVATED = new BpmnRelations("New member activated", List.of(), List.of("serviceTask_shipWelcomeKit"), null, null, List.of(), "SIGNAL_START_EVENT");
+    public static final BpmnRelations SERVICE_TASK_SHIP_WELCOME_KIT = new BpmnRelations("Ship welcome kit", List.of("gateway_start"), List.of("endEvent_welcomeKitShipped"), null, null, List.of(), "SERVICE_TASK");
+
+    public static final BpmnRelations START_EVENT_MANUAL_START = new BpmnRelations("Manual start (testing / fallback)", List.of(), List.of("gateway_start"), null, null, List.of(), "START_EVENT");
+
+    public static final BpmnRelations START_EVENT_MEMBER_ACTIVATED = new BpmnRelations("New member activated", List.of(), List.of("gateway_start"), null, null, List.of(), "SIGNAL_START_EVENT");
   }
 }

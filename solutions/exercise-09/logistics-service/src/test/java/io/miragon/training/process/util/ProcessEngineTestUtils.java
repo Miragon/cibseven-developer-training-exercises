@@ -28,6 +28,11 @@ public final class ProcessEngineTestUtils {
                 .send();
     }
 
+    /** Starts a process by key with variables — as the manual/testing start does via the engine's REST API. */
+    public static void startProcessByKey(ProcessEngine engine, String processDefinitionKey, Map<String, Object> variables) {
+        engine.getRuntimeService().startProcessInstanceByKey(processDefinitionKey, variables);
+    }
+
     /**
      * Fetches, locks and completes the next external task of the given topic — standing in for the remote
      * worker, because an external task is a wait state the in-memory engine parks until it is completed.

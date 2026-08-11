@@ -68,10 +68,16 @@ Membership (subscribeNewsletter, Engine-Host):
                                                         │  broadcastet Signal_MemberActivated {name}
                                                         ▼
 Logistik (sendWelcomeKit, Remote-Service besitzt & deployt das Modell):
-  (Signal-Start: Signal_MemberActivated) → [Ship welcome kit]  external, topic="shipWelcomeKit"  → (End)
-                                                   ▲  fetch & lock, complete
+  (Signal-Start: Signal_MemberActivated) ┐
+                                         ⬦ → [Ship welcome kit] external, topic="shipWelcomeKit" → (End)
+  (Start: manuell / Test) ───────────────┘             ▲  fetch & lock, complete
                         logistics-service:  ShipWelcomeKitWorker → WelcomeKitShipmentOutPort
 ```
+
+Der `sendWelcomeKit`-Prozess hat **zwei Start-Events**: das **Signal-Start-Event** ist der Produktions-Trigger
+(reagiert auf das Broadcast), das leere **manuelle Start-Event** erlaubt einen Start per
+`startProcessInstanceByKey` über die REST-API – z. B. um ein Kit **erneut** zu verschicken oder zum Testen,
+falls das Signal mal nicht durchkommt. Genau dafür treibt der Service die Engine über den generierten Client.
 
 Das Parallel-Gateway aus Aufgabe 6 bleibt erhalten – wir **ergänzen** nur einen 3. Zweig, der das Signal
 broadcastet. Da ein Broadcast „fire-and-forget" ist, blockiert die Membership-Aktivierung nicht auf der
@@ -117,28 +123,42 @@ Das war's. Der Host ruft nur „neues Mitglied aktiviert" in den Raum – wer da
 
 ### Teil B – Logistik-Service (`services/logistics-service`)
 
-Hier steckt die eigentliche Arbeit. Fülle die **`TODO Aufgabe 9`**-Stellen der Reihe nach:
+Hier steckt die eigentliche Arbeit – das ist die **Capstone-Aufgabe**: Der Ablauf ist bewusst **erst den
+Prozess selbst modellieren, dann die APIs generieren, dann den Worker schreiben.** Fülle die
+**`TODO Aufgabe 9`**-Stellen der Reihe nach:
 
-1. **Client generieren** (`pom.xml`) – statt REST-Calls von Hand zu schreiben (fehleranfällig: URIs, das
-   typisierte Variablen-Format `{"value": …, "type": …}`), generierst du einen **typisierten
-   `/engine-rest`-Client** aus CIB sevens offizieller OpenAPI-Spec (Artefakt
-   `org.cibseven.bpm:cibseven-engine-rest-openapi`, an `cib7.version` gepinnt). Lies den auskommentierten
-   Generator-Block, kommentiere ihn ein und setze die beiden `TODO`-Werte (`generatorName` = `java`,
-   `library` = `restclient`). Dann generieren:
+1. **Prozess von Grund auf modellieren** (`send-welcome-kit.bpmn`) – die Datei enthält bewusst nur ein
+   **leeres Modell mit einem Start-Event**. Modelliere den kompletten `sendWelcomeKit`-Prozess selbst –
+   das ist dein Abschlusstest, ob das Gelernte sitzt. Ziel (siehe [Neuer Prozessablauf](#neuer-prozessablauf)):
+   - Prozess-**ID** `sendWelcomeKit`, `isExecutable=true`, `historyTimeToLive` gesetzt.
+   - Zwei Start-Events: ein **Signal-Start-Event** auf `Signal_MemberActivated` (Produktion) und ein leeres
+     **Start-Event** (manueller Start / Test), zu einem Gateway zusammengeführt.
+   - Ein **External Service Task** „Ship welcome kit" (Implementation = *External*, Topic `shipWelcomeKit`).
+   - Ein **End-Event**, saubere Sequenzflüsse und sprechende Element-IDs.
+2. **APIs generieren** (`pom.xml`) – zwei auskommentierte Generator-Blöcke aktivieren:
+   - **Process-API** (`bpmn-to-code`): erzeugt aus deinem (jetzt externen) Task die Konstante
+     `SendWelcomeKitProcessApi.ServiceTasks.SHIP_WELCOME_KIT`.
+   - **Engine-Client** (`openapi-generator`): erzeugt aus CIB sevens offizieller OpenAPI-Spec einen
+     **typisierten `/engine-rest`-Client** (statt fehleranfälliger REST-Calls von Hand). Setze die beiden
+     `TODO`-Werte (`generatorName` = `java`, `library` = `restclient`).
+
+   Beide Blöcke einkommentieren, dann generieren:
 
    ```bash
    ./mvnw -pl services/logistics-service generate-sources
    ```
 
-   Die Klassen erscheinen unter `target/generated-sources` (`org.cibseven.rest.client.api/.model`). Danach im
-   `EngineClientConfig` die `ProcessDefinitionApi`-Bean bereitstellen.
-2. **Modell deployen** (`EngineDeploymentAdapter`) – beim Start das eigene `send-welcome-kit.bpmn` in die
-   Engine schicken. **Idempotent**: ein Neustart erzeugt kein zweites Deployment. (Das Modell liegt schon
-   bereit; `bpmn-to-code` erzeugt daraus die `SendWelcomeKitProcessApi` mit Topics und IDs.)
-3. **Worker** (`ShipWelcomeKitWorker`, Topic `shipWelcomeKit`) – den `name` lesen, das Kit verschicken,
-   den Task abschließen.
-4. **Engine starten** (`RemoteWelcomeKitProcessAdapter`) – über den generierten Client eine
-   `sendWelcomeKit`-Instanz starten (für die „Kit erneut senden"-Aktion unter `POST /api/welcome-kits`).
+   (`org.cibseven.rest.client.api/.model` + `SendWelcomeKitProcessApi` erscheinen unter `target/…` bzw. `src`.)
+3. **Modell deployen** (`EngineDeploymentAdapter`) – beim Start das eigene `send-welcome-kit.bpmn` in die
+   Engine schicken. **Idempotent**: ein Neustart erzeugt kein zweites Deployment.
+4. **Worker schreiben** (`ShipWelcomeKitWorker`) – die Klasse ist absichtlich leer. Mach sie zur Bean
+   (`@Component`), abonniere den Topic
+   (`@ExternalTaskSubscription(topicName = SendWelcomeKitProcessApi.ServiceTasks.SHIP_WELCOME_KIT)`), lass sie
+   von `BaseExternalTaskWorker` erben, lies den `name`, verschicke das Kit über den Use Case und schließe den
+   Task ab.
+5. **Client verdrahten & Engine treiben** (`EngineClientConfig` + `RemoteWelcomeKitProcessAdapter`) – die
+   `ProcessDefinitionApi`-Bean bereitstellen und den Prozess per `startProcessInstanceByKey` starten. Das
+   nutzt das **manuelle Start-Event** und steckt hinter der „Kit erneut senden"-Aktion `POST /api/welcome-kits`.
 
 ## Testen
 

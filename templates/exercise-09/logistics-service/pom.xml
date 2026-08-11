@@ -165,6 +165,19 @@
             -->
 
             <!-- bpmn-to-code: typsichere Process-API aus dem EIGENEN BPMN-Modell (schon aktiv). -->
+            <!-- ============================================================================
+                 TODO Aufgabe 9 (Schritt 2): Die typsichere Process-API generieren.
+
+                 bpmn-to-code erzeugt aus deinem BPMN-Modell Konstanten für Element-IDs, Topics usw.
+                 Es generiert eine Topic-Konstante (SendWelcomeKitProcessApi.ServiceTasks.SHIP_WELCOME_KIT)
+                 aber ERST, wenn du den Prozess modelliert hast (inkl. External Service Task mit Topic) –
+                 deshalb ist dieser Block auskommentiert. Reihenfolge:
+                   1. Den sendWelcomeKit-Prozess in send-welcome-kit.bpmn modellieren (siehe docs/exercise-09.md).
+                   2. Diesen Block einkommentieren.
+                   3. `./mvnw -pl services/logistics-service generate-sources`
+                      -> SendWelcomeKitProcessApi erscheint; der Worker kann die Topic-Konstante abonnieren.
+                 ============================================================================ -->
+            <!--
             <plugin>
                 <groupId>io.miragon</groupId>
                 <artifactId>bpmn-to-code-maven</artifactId>
@@ -186,6 +199,7 @@
                     <processEngine>CAMUNDA_7</processEngine>
                 </configuration>
             </plugin>
+            -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
