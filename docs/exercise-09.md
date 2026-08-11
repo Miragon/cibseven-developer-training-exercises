@@ -1,195 +1,214 @@
-# Aufgabe 9 – Remote Engine & External Task
+# Aufgabe 9 – Die Engine als geteilte Infrastruktur (Remote Engine Pattern)
 
 > **Voraussetzung: Aufgabe 8** ist abgeschlossen – der vollständige Membership-Prozess (Subprozess,
-> Boundary Events, Kompensation, Call Activity & DMN) läuft, inklusive des `notifyCommunity`-Zweigs,
-> den du in Aufgabe 6 als **In-Engine-Delegate** gebaut hast.
+> Boundary Events, Kompensation, Call Activity & DMN) läuft, inklusive des `notifyCommunity`-Zweigs am
+> Parallel-Gateway, den du in Aufgabe 6 gebaut hast.
 
-## Ziel-Modell
+## Story
 
-![BPMN Hauptprozess](assets/exercise-09-main.svg)
+Die Engine hat sich im Unternehmen etabliert. Immer mehr **Abteilungen** wollen sie nutzen – aber niemand
+will eine **eigene** Engine betreiben. Um zu zeigen, dass die Engine eine **wiederverwendbare
+Infrastruktur-Komponente** sein kann, lagern wir das Benachrichtigen beim Anlegen eines neuen Members als
+**Signal** aus.
 
-Referenz-Modell: `../models/exercise-09/newsletter.bpmn`. Das Prozess-Modell bleibt fachlich identisch –
-nur der Task `serviceTask_notifyCommunity` wechselt vom Delegate zum **External Task**.
+Der Membership-Prozess **broadcastet** beim Aktivieren ein Signal `Signal_MemberActivated`. Die
+**Logistik-Abteilung** besitzt einen **eigenen, remote implementierten Prozess** in ihrem eigenen Service:
+`sendWelcomeKit`. Dieser Service **besitzt das Modell**, **deployt es selbst** in die geteilte Engine, hört
+per **Signal-Start-Event** auf das Broadcast und verschickt ein Welcome-Kit. Eine Engine, viele Abteilungen –
+ohne dass jede eine eigene braucht.
+
+## Worum es wirklich geht: Wem gehört der Prozess?
+
+**External Task** ist nur der **Mechanismus** – die Engine legt einen Task ab, ein Worker holt ihn per REST
+ab und meldet zurück. Das sagt aber nichts darüber, **wem der Prozess gehört**.
+
+Genau das ist hier der Punkt: Der **Logistik-Service besitzt seinen Prozess vollständig** – **Modell,
+Worker, Deployment und Tests** liegen bei ihm. Die geteilte Engine **führt den Prozess nur aus**; sie kennt
+weder seine fachliche Logik noch sein Modell – das hat der Logistik-Service selbst in die Engine deployt. So
+kann eine Abteilung ihren Prozess betreiben, **ohne eine eigene Engine zu brauchen**.
 
 ## Lernziele
 
-- Einen bestehenden **In-Engine-Delegate** zu einem **External Service Task**
-  (`camunda:type="external"` + Topic) umbauen
-- Einen **External Task Worker** in einem **eigenen Service** (eigene JVM) bauen, der sich über die
-  **REST-API** mit der Engine verbindet (Remote Engine)
-- Verstehen, **warum** man einen Task auslagert (Wiederverwendung, Isolation von Secrets, Skalierung)
+- Den **Mechanismus** (External Task) von der Frage **„wem gehört der Prozess?"** trennen.
+- Erleben, wie ein **eigener Service einen Prozess komplett besitzt** – Modell, Worker, Deployment und
+  Tests –, während die geteilte Engine ihn nur ausführt.
+- Einen **typisierten Engine-Client** aus der offiziellen OpenAPI-Spec **generieren** und damit die Engine
+  über `/engine-rest` treiben.
+- Jede Remote-Naht dort testen, wo sie lebt (Worker-Unit-Test, Prozesstest auf In-Memory-Engine,
+  Adapter-Test gegen einen HTTP-Stub).
 
-## Hintergrund
-
-In Aufgabe 6 hast du die Community-Benachrichtigung als **Delegate** direkt in die Prozess-Anwendung
-gebaut: Der `NotifyCommunityDelegate` ruft einen Use Case, der über den `MicrosoftTeamsMessagePublisher`
-eine Karte in einen Teams-Kanal postet. Das funktioniert – aber es sitzt am falschen Ort.
-
-**Zwei Gründe, es auszulagern:**
-
-- **Wiederverwendung:** Nicht nur neue Members sollen gemeldet werden. Demnächst soll z. B. auch **jedes
-  Leasing** eine Nachricht in denselben Kanal schicken. Die Benachrichtigung ist eine **eigenständige
-  Fähigkeit**, die mehrere Prozesse nutzen – kein Detail des Membership-Prozesses.
-- **Secret-Management:** In der Webhook-URL steckt eine **Signatur** – im Grunde ein Passwort für den
-  Teams-Kanal. Und Miravelo findet: So ein Geheimnis hat in der großen, ständig umgebauten
-  Prozess-Anwendung eigentlich nichts verloren. Also packen wir es dorthin, wo es hingehört – in einen
-  kleinen, ruhigen Worker, der genau **eine** Sache tut und das Secret schön für sich behält. 🤫
-
-Deshalb schneiden wir die Benachrichtigung heraus: `serviceTask_notifyCommunity` wird ein **External
-Service Task**, und ein **separater Worker-Service** erledigt die Arbeit. Er kennt die Engine nur über
-deren REST-API – das klassische **External-Task-Pattern**.
-
-### Warum eine Remote Engine – und keine embedded?
-
-Bisher lief die Engine **embedded** – mitten in der Prozess-Anwendung. Der Notification-Worker **betreibt
-keine eigene Engine**, er **nutzt** nur die fremde – über REST. Genau das meint **„Remote Engine"**: die
-Engine läuft woanders, unser Service klopft nur an. Der Worker darf so unabhängig deployt, schwächer
-skaliert und strenger abgesichert werden als die Prozess-Anwendung.
-
-### Neuer Prozessablauf
+## Zielarchitektur
 
 ```
-Hauptprozess (subscribeNewsletter):
+process-application  (GENERISCHER ENGINE-HOST — embedded Engine + /engine-rest + Cockpit, :8080)
+  • besitzt den Membership-Prozess; behält den in-engine "Notify community"-Zweig (Teams)
+  • NEU (additiv): 3. Parallel-Branch broadcastet  Signal_MemberActivated {name}
+  • kennt die Logistik nicht und trägt kein send-welcome-kit.bpmn
 
-  ... → (Confirmed) →╱[Send Welcome Mail]──────────────╲→ [Membership activated]
-                   ⬦                                    ⬦
-     Parallel-Fork  ╲[Notify community]────────────────╱  Parallel-Join
-                      external, topic="notifyCommunity"
-                                ▲
-                                │ fetch & lock, complete
-          Worker-Service (eigene JVM):  NotifyCommunityHandler → RestClient → Teams-Kanal
+logistics-service  (REMOTE-OWNER — eigene JVM, :8090)
+  • generierter, typisierter Client  <- openapi-generator aus cibseven-engine-rest-openapi
+  • deployt  send-welcome-kit.bpmn  beim Start per REST in die Engine (idempotent)
+  • erfüllt den Service-Task  shipWelcomeKit  als External Task (Richtung 1: Engine -> Worker)
+  • treibt die Engine über den generierten Client (Richtung 2: Worker -> Engine)
+  • besitzt seine eigenen Tests (In-Memory-Engine nur im Test-Scope)
 ```
 
-Weil der Join **beide** Zweige abwartet, ist die Membership erst „activated", wenn sowohl die Mail raus
-ist **als auch** der Worker die Community-Benachrichtigung abgeschlossen hat.
+Den typisierten Client **generiert der Logistik-Service selbst** aus der offiziellen OpenAPI-Spec – es gibt
+kein separates Client-Modul. Der Aufbau orientiert sich am Referenz-Blueprint
+[`miragon-blueprints/cibseven-remote-example`](https://github.com/miragon-blueprints/cibseven-remote-example)
+(dort in Kotlin/Gradle; hier Java/Maven).
+
+## Neuer Prozessablauf
+
+```
+Membership (subscribeNewsletter, Engine-Host):
+  ... (Confirmed) → ⬦ Parallel-Fork ┬─ [Send Welcome Mail] ──────────────────────┬ ⬦ Parallel-Join → [Membership activated]
+                                    ├─ [Notify community]  (#{notifyCommunityDelegate}, Teams) ┤
+                                    └─ [Broadcast member activated] (#{broadcastMemberActivatedDelegate}) ┘
+                                                        │  broadcastet Signal_MemberActivated {name}
+                                                        ▼
+Logistik (sendWelcomeKit, Remote-Service besitzt & deployt das Modell):
+  (Signal-Start: Signal_MemberActivated) → [Ship welcome kit]  external, topic="shipWelcomeKit"  → (End)
+                                                   ▲  fetch & lock, complete
+                        logistics-service:  ShipWelcomeKitWorker → WelcomeKitShipmentOutPort
+```
+
+Das Parallel-Gateway aus Aufgabe 6 bleibt erhalten – wir **ergänzen** nur einen 3. Zweig, der das Signal
+broadcastet. Da ein Broadcast „fire-and-forget" ist, blockiert die Membership-Aktivierung nicht auf der
+Logistik: Signal = **1:N-Broadcast**, mehrere Abteilungen könnten auf dasselbe Ereignis hören.
 
 ## Aufgaben
 
-### Teil A – Hauptservice (`services/process-application`)
+### Vorbereitung – den neuen Service anlegen
 
-#### 1. `serviceTask_notifyCommunity` auf External Task umstellen
+Bis hierher gab es in `services/` nur die `process-application`. Jetzt kommt eine **neue Abteilung** dazu –
+also legen wir ihren Service an. Die Vorlage liegt unter `templates/exercise-09/logistics-service`:
 
-Im `newsletter.bpmn` den Task von Delegate auf External Task umstellen:
+1. Vorlage nach `services/` kopieren:
 
-```xml
-<bpmn:serviceTask id="serviceTask_notifyCommunity" name="Notify community"
-                  camunda:type="external" camunda:topic="notifyCommunity" />
-```
+   ```bash
+   cp -R templates/exercise-09/logistics-service services/logistics-service
+   ```
 
-#### 2. Den In-Engine-Notifier aus dem Hauptservice entfernen
+2. Das Modul in der root `pom.xml` unter `<modules>` eintragen:
 
-Die Benachrichtigung wandert komplett in den Worker – im `process-application` fliegen daher raus:
-`NotifyCommunityDelegate`, `NotifyCommunityUseCase`, `NotifyCommunityService`,
-`NotificationPublisherOutPort`, `MicrosoftTeamsMessagePublisher`, `RestClientConfig`, das
-`domain/Notification`-Record und der `notification.teams`-Block aus der `application.yaml`.
+   ```xml
+   <module>services/logistics-service</module>
+   ```
 
-> Für `serviceTask_notifyCommunity` brauchst du jetzt **keinen** Delegate, keinen Use Case und keinen
-> Outbound-Adapter mehr im Hauptservice – die Arbeit erledigt der externe Worker (Teil B). Die
-> Task-Type-Konstante `ServiceTasks.NOTIFY_COMMUNITY` wird beim Build aus der BPMN generiert.
+Ab jetzt baut `./mvnw` den neuen Service mit. (Er kompiliert schon im Ausgangszustand – der Client-Teil ist
+noch auskommentiert.)
 
-### Teil B – Worker-Service (`services/notification-service`)
+### Teil A – Engine-Host (`services/process-application`)
 
-Im Worker-Modul `services/notification-service/` implementierst du den **Handler** (den „Delegate"
-des Workers) und den **Service**. Der Teams-Adapter `MicrosoftTeamsMessagePublisher` ist bereits
-**vorgegeben** – der Adaptive-Card-Aufbau und der REST-Call sind Infrastruktur, kein Lernziel. (Es ist
-exakt der Publisher, den du in Aufgabe 6 im Hauptservice gebaut hast – jetzt lebt er hier.)
+Hier ist fast nichts zu tun – der Host bekommt nur einen kleinen zusätzlichen Zweig:
 
-#### 3. External Task Handler abonnieren (der „Delegate")
+1. Am Parallel-Gateway einen **3. Zweig** ergänzen: einen Service-Task „Broadcast member activated"
+   (`#{broadcastMemberActivatedDelegate}`). `Send Welcome Mail` und `Notify community` bleiben unverändert.
+2. Im `BroadcastMemberActivatedDelegate` das Signal senden:
 
-`adapter/inbound/cibseven/NotifyCommunityHandler` implementiert `ExternalTaskHandler` und
-abonniert den Topic:
+   ```java
+   runtimeService.createSignalEvent("Signal_MemberActivated")
+       .setVariables(Map.of("name", name))
+       .send();
+   ```
 
-```java
-@Component
-@ExternalTaskSubscription(topicName = "notifyCommunity")
-public class NotifyCommunityHandler implements ExternalTaskHandler {
-    public void execute(ExternalTask task, ExternalTaskService taskService) {
-        String name = task.getVariable("name");
-        publishNotification.publish(new Notification(
-                "Miravelo Inner Circle", "🎉 New Inner Circle member: " + name + "!"));
-        taskService.complete(task);   // Task abschließen!
-    }
-}
-```
+Das war's. Der Host ruft nur „neues Mitglied aktiviert" in den Raum – wer darauf reagiert, ist ihm egal.
 
-Der Handler übersetzt das External-Task-Event in ein Domain-Objekt **`Notification`** (Titel + Text)
-und gibt es an den Use Case `PublishNotificationUseCase` weiter – **nicht** den Member selbst.
+### Teil B – Logistik-Service (`services/logistics-service`)
 
-#### 4. Service implementieren
+Hier steckt die eigentliche Arbeit. Fülle die **`TODO Aufgabe 9`**-Stellen der Reihe nach:
 
-`application/service/PublishNotificationService` (implementiert `PublishNotificationUseCase`) reicht
-die `Notification` an den Out-Port weiter:
+1. **Client generieren** (`pom.xml`) – statt REST-Calls von Hand zu schreiben (fehleranfällig: URIs, das
+   typisierte Variablen-Format `{"value": …, "type": …}`), generierst du einen **typisierten
+   `/engine-rest`-Client** aus CIB sevens offizieller OpenAPI-Spec (Artefakt
+   `org.cibseven.bpm:cibseven-engine-rest-openapi`, an `cib7.version` gepinnt). Lies den auskommentierten
+   Generator-Block, kommentiere ihn ein und setze die beiden `TODO`-Werte (`generatorName` = `java`,
+   `library` = `restclient`). Dann generieren:
 
-```java
-public void publish(Notification notification) {
-    notificationPublisher.publish(notification);   // NotificationPublisherOutPort
-}
-```
+   ```bash
+   ./mvnw -pl services/logistics-service generate-sources
+   ```
 
-> Der Out-Port `NotificationPublisherOutPort` und seine Implementierung
-> `MicrosoftTeamsMessagePublisher` (der Teams-Adapter) sind schon da – du rufst sie nur auf.
-
-Die Verbindung zur Remote Engine und die Ziel-URL stehen in `application.yaml`:
-
-```yaml
-camunda:
-  bpm:
-    client:
-      base-url: http://localhost:8080/engine-rest   # Remote Engine REST-API
-notification:
-  teams:
-    # Echte URL per Umgebungsvariable TEAMS_WEBHOOK_URL – kein Secret ins Repo committen.
-    webhook-url: ${TEAMS_WEBHOOK_URL:https://CHANGE-ME}
-```
-
-## Teams-Webhook einrichten (Power Automate „Workflows")
-
-1. In Teams beim Ziel-**Kanal** auf **••• → Workflows** (oder die **Workflows**-App → **Neuer Flow**).
-2. Vorlage **„Post to a channel when a webhook request is received"** wählen (Trigger
-   „When a Teams webhook request is received"), Teams-Verbindung bestätigen.
-3. **Team** + **Kanal** auswählen → **Erstellen**. Es entsteht eine **HTTP-POST-URL** (`https://…`).
-4. Diese URL beim Start des Workers als Umgebungsvariable übergeben:
-   `TEAMS_WEBHOOK_URL='<deine-URL>'` (oder Argument `--notification.teams.webhook-url=<URL>`).
-
-> ⚠️ Die Signatur (`sig=…`) in der URL ist ein **Secret** – nicht ins Repo committen. Den alten
-> „Incoming Webhook"-Connector **nicht** verwenden (2026 abgeschaltet). Da die Ausgabe hinter dem
-> Out-Port `NotificationPublisherOutPort` steckt, lässt sich statt Teams leicht ein anderer Web-Service
-> anbinden.
+   Die Klassen erscheinen unter `target/generated-sources` (`org.cibseven.rest.client.api/.model`). Danach im
+   `EngineClientConfig` die `ProcessDefinitionApi`-Bean bereitstellen.
+2. **Modell deployen** (`EngineDeploymentAdapter`) – beim Start das eigene `send-welcome-kit.bpmn` in die
+   Engine schicken. **Idempotent**: ein Neustart erzeugt kein zweites Deployment. (Das Modell liegt schon
+   bereit; `bpmn-to-code` erzeugt daraus die `SendWelcomeKitProcessApi` mit Topics und IDs.)
+3. **Worker** (`ShipWelcomeKitWorker`, Topic `shipWelcomeKit`) – den `name` lesen, das Kit verschicken,
+   den Task abschließen.
+4. **Engine starten** (`RemoteWelcomeKitProcessAdapter`) – über den generierten Client eine
+   `sendWelcomeKit`-Instanz starten (für die „Kit erneut senden"-Aktion unter `POST /api/welcome-kits`).
 
 ## Testen
 
+### Automatisiert (ohne laufende Engine)
+
+Der Logistik-Service testet **jede Naht selbst** – Worker-Unit-Test, Prozesstest (In-Memory-Engine,
+Signal-Start → External Task als Wait-State → complete), Deployment-Adapter- und Remote-Adapter-Test
+(HTTP-Stub via `MockRestServiceServer`):
+
 ```bash
-# 1. Stack + Hauptservice (Port 8080) starten
+./mvnw -pl solutions/exercise-09/logistics-service test
+./mvnw -pl solutions/exercise-09/process-application test -Dtest=MembershipProcessTest
+```
+
+### End-to-End (beide Services)
+
+```bash
+# 1. Stack + Engine-Host (:8080) starten
 cd stack && docker-compose up -d
 cd ../solutions/exercise-09/process-application && ../../../mvnw spring-boot:run
 
-# 2. Worker mit deiner Teams-Webhook-URL starten (eigenes Terminal)
-cd solutions/exercise-09/notification-service
-TEAMS_WEBHOOK_URL='<deine-Teams-Webhook-URL>' ../../../mvnw spring-boot:run
+# 2. Logistik-Service (:8090) in einem eigenen Terminal starten – er deployt sein Modell beim Start
+cd solutions/exercise-09/logistics-service && ../../../mvnw spring-boot:run
 
-# 3. Membership anlegen und im Cockpit (http://localhost:8080/camunda, admin/admin)
-#    die Confirm-Aufgabe abschließen → der External Task wird vom Worker abgeholt →
-#    eine Karte erscheint im Teams-Kanal.
+# 3. Beweis, dass der Remote-Service das Modell deployt hat:
+curl http://localhost:8080/engine-rest/deployment    # listet nun das logistics-service-Deployment
+#   → Neustart des Logistik-Services erzeugt KEIN zweites Deployment (idempotent).
+
+# 4. Member anlegen und im Cockpit (http://localhost:8080/camunda, admin/admin) die Confirm-Aufgabe
+#    abschließen → das Signal feuert → eine sendWelcomeKit-Instanz läuft → der Worker verschickt das Kit.
 curl -X POST http://localhost:8080/api/memberships \
   -H "Content-Type: application/json" \
   -d '{"email":"jane@example.com","name":"Jane","age":30}'
+
+# 5. Welcome-Kit erneut senden (treibt die Engine über den generierten Client):
+curl -X POST http://localhost:8090/api/welcome-kits -H "Content-Type: application/json" -d '{"name":"Jane"}'
 ```
 
-**Beweis, dass der Worker wirklich remote & separat ist:** Worker **stoppen**, eine Membership
-durchführen → der Prozess wartet im Cockpit am External Task `Notify community` (der Parallel-Join
-kann noch nicht feuern). Worker **starten** → er holt den Task ab und postet, der Join feuert, die
-Membership ist aktiviert. 🎉
+**Beweis, dass der Remote-Service wirklich Owner ist:** Logistik-Service **stoppen**, einen Member aktivieren
+→ im Cockpit wartet eine `sendWelcomeKit`-Instanz am External Task `Ship welcome kit`. Logistik-Service
+**starten** → er holt den Task ab und verschickt das Kit. 🎉
 
-Automatisiert: `./mvnw -pl solutions/exercise-09/process-application test -Dtest=MembershipProcessTest`.
-Im Prozess-Test steht `completeExternalTask(...)` stellvertretend für den Remote-Worker.
+## Akzeptanzkriterien
+
+- `send-welcome-kit.bpmn` liegt **nur** im Logistik-Service; es erscheint in den Deployments der Engine
+  **erst nachdem** der Logistik-Service gestartet ist (`GET /engine-rest/deployment` / Cockpit).
+- Ein Neustart des Logistik-Services erzeugt **kein** doppeltes Deployment (idempotent).
+- Member aktivieren ⇒ `Signal_MemberActivated` wird broadcastet ⇒ eine `sendWelcomeKit`-Instanz läuft ⇒ der
+  Worker verschickt das Kit; die Membership-Aktivierung wartet nicht auf die Logistik.
+- Die Tests des Logistik-Services sind **grün, ohne** dass der Engine-Host läuft.
+
+## Hinweise für Trainer / Ausblick
+
+- Kernkontrast: *External Task ist nur der Mechanismus – die eigentliche Frage ist, wem der Prozess gehört
+  (wer sein Modell besitzt und deployt)*. (Im Training: die Ownership-Folie aus Kapitel 7.1.)
+- Signal = **1:N-Broadcast**: Als Erweiterung kann eine **zweite** Abteilung (z. B. Analytics mit
+  `recordSignup`) auf **dasselbe** Signal hören – ein Prozess, den ein weiterer Remote-Service besitzt und
+  deployt. Genau das beweist „eine Engine, viele Abteilungen" live.
+- CIB Seven läuft hier weiterhin embedded im Host – „remote" ist die Sicht des **Clients**; eine echte
+  Standalone-Engine (`cibseven/cibseven:run`) ist dasselbe Bild mit ausgetauschtem Host.
 
 ## Referenzlösung
 
-- Hauptservice: `../solutions/exercise-09/process-application/`
-- Worker-Service: `../solutions/exercise-09/notification-service/`
+- Engine-Host: `../solutions/exercise-09/process-application/`
+- Logistik-Service: `../solutions/exercise-09/logistics-service/`
+- Generierter Client: `../services/cibseven-engine-client/`
+- Vorlage/Blueprint: [`miragon-blueprints/cibseven-remote-example`](https://github.com/miragon-blueprints/cibseven-remote-example)
 
 ---
 
-🎉 **Geschafft!** Du hast den vollständigen Membership-Prozess gebaut – von der reinen Modellierung bis
-zum ausgelagerten Remote-Worker. Lust auf mehr? Die [Extra-Aufgabe](extra-task-1.md) baut den Prozess
-engine-neutral um.
+🎉 **Geschafft!** Du hast einen Prozess gebaut, den ein **eigener Remote-Service besitzt und deployt** –
+und dabei die Engine als wiederverwendbare Infrastruktur erlebt. Lust auf mehr? Die
+[Extra-Aufgabe](extra-task-1.md) baut den Prozess engine-neutral um.

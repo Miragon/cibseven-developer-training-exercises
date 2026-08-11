@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1d2hcmz" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.24.0">
+  <bpmn:signal id="Signal_MemberActivated" name="Signal_MemberActivated" />
   <bpmn:process id="subscribeNewsletter" isExecutable="true" camunda:historyTimeToLive="180">
     <bpmn:startEvent id="startEvent_submitRegistration" name="Submit registration form" camunda:asyncBefore="true">
       <bpmn:outgoing>Flow_0p7ko1g</bpmn:outgoing>
@@ -112,17 +113,25 @@
       <bpmn:incoming>Flow_1j9l21y</bpmn:incoming>
       <bpmn:outgoing>Flow_1a6of9c</bpmn:outgoing>
       <bpmn:outgoing>Flow_1an5chz</bpmn:outgoing>
+      <bpmn:outgoing>Flow_toBroadcast</bpmn:outgoing>
     </bpmn:parallelGateway>
     <bpmn:sequenceFlow id="Flow_1an5chz" sourceRef="gateway_notifyFork" targetRef="serviceTask_notifyCommunity" />
     <bpmn:sequenceFlow id="Flow_12q7mbd" sourceRef="serviceTask_notifyCommunity" targetRef="gateway_notifyJoin" />
-    <bpmn:serviceTask id="serviceTask_notifyCommunity" name="Notify community" camunda:type="external" camunda:topic="notifyCommunity">
+    <bpmn:serviceTask id="serviceTask_notifyCommunity" name="Notify community" camunda:delegateExpression="#{notifyCommunityDelegate}">
       <bpmn:incoming>Flow_1an5chz</bpmn:incoming>
       <bpmn:outgoing>Flow_12q7mbd</bpmn:outgoing>
     </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_toBroadcast" sourceRef="gateway_notifyFork" targetRef="serviceTask_broadcastMemberActivated" />
+    <bpmn:serviceTask id="serviceTask_broadcastMemberActivated" name="Broadcast member activated" camunda:delegateExpression="#{broadcastMemberActivatedDelegate}">
+      <bpmn:incoming>Flow_toBroadcast</bpmn:incoming>
+      <bpmn:outgoing>Flow_broadcastToJoin</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_broadcastToJoin" sourceRef="serviceTask_broadcastMemberActivated" targetRef="gateway_notifyJoin" />
     <bpmn:sequenceFlow id="Flow_1yc0f2l" sourceRef="gateway_notifyJoin" targetRef="endEvent_membershipActivated" />
     <bpmn:parallelGateway id="gateway_notifyJoin">
       <bpmn:incoming>Flow_12q7mbd</bpmn:incoming>
       <bpmn:incoming>Flow_0arsuyz</bpmn:incoming>
+      <bpmn:incoming>Flow_broadcastToJoin</bpmn:incoming>
       <bpmn:outgoing>Flow_1yc0f2l</bpmn:outgoing>
     </bpmn:parallelGateway>
     <bpmn:sequenceFlow id="Flow_0arsuyz" sourceRef="serviceTask_sendWelcomeMail" targetRef="gateway_notifyJoin" />

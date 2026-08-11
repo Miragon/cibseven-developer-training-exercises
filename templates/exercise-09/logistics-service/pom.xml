@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.miragon</groupId>
+        <artifactId>cibseven-developer-training-exercises</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <!-- Empty on purpose: this module lives here as a template and is copied into services/ in
+             Aufgabe 9. The parent is resolved from the reactor/repo, so the same pom works in both spots. -->
+        <relativePath/>
+    </parent>
+
+    <artifactId>logistics-service</artifactId>
+    <name>logistics-service</name>
+
+    <!--
+      Aufgabe 9 – Skeleton des Logistik-Services (Remote-Owner des sendWelcomeKit-Prozesses).
+
+      Fülle die TODO Aufgabe 9-Stellen:
+        1. Den typisierten /engine-rest-Client generieren  -> der auskommentierte Plugin-Block unten.
+        2. Die Client-Beans verdrahten                      -> EngineClientConfig.
+        3. Das Modell selbst deployen                       -> EngineDeploymentAdapter.
+        4. Den External-Task-Worker implementieren          -> ShipWelcomeKitWorker.
+        5. Die Engine über den Client starten               -> RemoteWelcomeKitProcessAdapter.
+
+      Referenzlösung: solutions/exercise-09/logistics-service.
+    -->
+
+    <properties>
+        <!-- Package the generated /engine-rest client lands in (used once you enable the generator). -->
+        <cibseven-client.package>org.cibseven.rest.client</cibseven-client.package>
+    </properties>
+
+    <dependencies>
+        <!-- spring-web: RestClient (Deployment + generierter Client) + der kleine REST-Controller.
+             Ein leichter HTTP-Server läuft auf :8090 (kollidiert nicht mit der Engine auf :8080). -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!-- CIB Seven External Task Client (Richtung 1: Engine -> Worker) -->
+        <dependency>
+            <groupId>org.cibseven.bpm.springboot</groupId>
+            <artifactId>cibseven-bpm-spring-boot-starter-external-task-client</artifactId>
+        </dependency>
+        <!-- Der generierte Client ist self-contained auf Jackson 2 (Spring Boot 4 nutzt Jackson 3),
+             daher die Jackson-2-Artefakte + jakarta.annotation explizit (BOM-verwaltete Versionen). -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+        </dependency>
+        <!-- Runtime-Typen der bpmn-to-code generierten Process-API -->
+        <dependency>
+            <groupId>io.miragon</groupId>
+            <artifactId>bpmn-to-code-runtime</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- ============================================================================
+                 TODO Aufgabe 9 (Schritt 1): Typisierten /engine-rest-Client generieren.
+
+                 Statt REST-Calls von Hand zu schreiben (fehleranfällig: URIs, das typisierte
+                 Variablen-Format {"value": …, "type": …}), generieren wir einen fertigen, typisierten
+                 Client aus der OFFIZIELLEN OpenAPI-Spec von CIB seven. Die Spec steckt als
+                 openapi.json im Artefakt org.cibseven.bpm:cibseven-engine-rest-openapi (an
+                 ${cib7.version} gepinnt -> Client und Engine driften nie auseinander).
+
+                 Ablauf: (1) openapi.json aus dem Artefakt entpacken, (2) den OpenAPI-Generator laufen
+                 lassen. Die generierten Klassen landen unter target/generated-sources und werden
+                 automatisch mitkompiliert (org.cibseven.rest.client.api.* / .model.*).
+
+                 So aktivierst du ihn:
+                   1. Diesen Block einkommentieren.
+                   2. Die beiden mit TODO markierten Werte setzen (siehe docs/exercise-09.md bzw. Slide 7.5).
+                   3. `./mvnw -pl services/logistics-service generate-sources` -> Client erscheint.
+                   4. Danach EngineClientConfig + RemoteWelcomeKitProcessAdapter verdrahten.
+                 ============================================================================ -->
+            <!--
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>extract-openapi-spec</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.cibseven.bpm</groupId>
+                                    <artifactId>cibseven-engine-rest-openapi</artifactId>
+                                    <version>${cib7.version}</version>
+                                    <type>jar</type>
+                                    <includes>openapi.json</includes>
+                                    <outputDirectory>${project.build.directory}/openapi</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.openapitools</groupId>
+                <artifactId>openapi-generator-maven-plugin</artifactId>
+                <version>${openapi-generator.version}</version>
+                <executions>
+                    <execution>
+                        <id>generate-cibseven-client</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputSpec>${project.build.directory}/openapi/openapi.json</inputSpec>
+                            <!- - TODO Aufgabe 9: den Java-Generator wählen (Wert: java) - ->
+                            <generatorName>TODO-GENERATOR-NAME</generatorName>
+                            <!- - TODO Aufgabe 9: die Client-Library wählen, die auf Springs RestClient aufsetzt (Wert: restclient) - ->
+                            <library>TODO-CLIENT-LIBRARY</library>
+                            <apiPackage>${cibseven-client.package}.api</apiPackage>
+                            <modelPackage>${cibseven-client.package}.model</modelPackage>
+                            <invokerPackage>${cibseven-client.package}.invoker</invokerPackage>
+                            <generateApiTests>false</generateApiTests>
+                            <generateModelTests>false</generateModelTests>
+                            <generateApiDocumentation>false</generateApiDocumentation>
+                            <generateModelDocumentation>false</generateModelDocumentation>
+                            <validateSpec>false</validateSpec>
+                            <configOptions>
+                                <serializationLibrary>jackson</serializationLibrary>
+                                <useJakartaEe>true</useJakartaEe>
+                                <openApiNullable>false</openApiNullable>
+                                <dateLibrary>java8</dateLibrary>
+                                <hideGenerationTimestamp>true</hideGenerationTimestamp>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            -->
+
+            <!-- bpmn-to-code: typsichere Process-API aus dem EIGENEN BPMN-Modell (schon aktiv). -->
+            <plugin>
+                <groupId>io.miragon</groupId>
+                <artifactId>bpmn-to-code-maven</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-process-api</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate-bpmn-api</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <baseDir>${project.basedir}</baseDir>
+                    <filePattern>src/main/resources/bpmn/*.bpmn</filePattern>
+                    <outputFolderPath>${project.basedir}/src/main/java</outputFolderPath>
+                    <packagePath>io.miragon.training.adapter.process</packagePath>
+                    <outputLanguage>JAVA</outputLanguage>
+                    <processEngine>CAMUNDA_7</processEngine>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>io.miragon.training.TrainingWorkerApplication</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

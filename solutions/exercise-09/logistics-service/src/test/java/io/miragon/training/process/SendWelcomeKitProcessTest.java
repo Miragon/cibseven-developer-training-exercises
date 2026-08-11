@@ -1,0 +1,70 @@
+package io.miragon.training.process;
+
+import io.miragon.training.adapter.process.SendWelcomeKitProcessApi;
+import io.miragon.training.adapter.process.SendWelcomeKitProcessApi.Elements;
+import io.miragon.training.adapter.process.SendWelcomeKitProcessApi.ServiceTasks;
+import io.miragon.training.adapter.process.SendWelcomeKitProcessApi.Signals;
+import org.cibseven.bpm.engine.ProcessEngine;
+import org.cibseven.bpm.engine.impl.cfg.StandaloneInMemProcessEngineConfiguration;
+import org.cibseven.bpm.engine.runtime.ProcessInstance;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+import java.util.UUID;
+
+import static io.miragon.training.process.util.ProcessEngineTestUtils.broadcastSignal;
+import static io.miragon.training.process.util.ProcessEngineTestUtils.completeExternalTask;
+import static io.miragon.training.process.util.ProcessEngineTestUtils.findInstance;
+import static org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat;
+import static org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.init;
+
+/**
+ * Process-model behaviour test for the {@code sendWelcomeKit} model — it lives here because this service
+ * OWNS the model. It spins up a standalone in-memory engine, deploys the model from this service's own
+ * resources, and asserts the topology with CIB seven Assert. Engine communication (broadcasting the
+ * signal, completing the external task) is outsourced to {@code ProcessEngineTestUtils}.
+ *
+ * <p>The process is minimal — signal start → one external service task → end — so a single test covers it
+ * end to end: the broadcast starts it, the worker (stood in for) completes the task, and all three
+ * elements are passed in order.
+ */
+class SendWelcomeKitProcessTest {
+
+    private ProcessEngine processEngine;
+
+    @BeforeEach
+    void setUp() {
+        // Job executor stays off by default, so the external-task wait state is driven by hand.
+        processEngine = new StandaloneInMemProcessEngineConfiguration()
+                .setJdbcUrl("jdbc:h2:mem:sendWelcomeKitTest-" + UUID.randomUUID() + ";DB_CLOSE_DELAY=1000")
+                .buildProcessEngine();
+        // The process owner deploys its own model — here from this service's own resources on the classpath.
+        processEngine.getRepositoryService()
+                .createDeployment()
+                .addClasspathResource("bpmn/send-welcome-kit.bpmn")
+                .deploy();
+        init(processEngine);
+    }
+
+    @AfterEach
+    void tearDown() {
+        processEngine.close();
+    }
+
+    @Test
+    void theSignalStartsTheProcessAndTheWorkerShipsTheKitToTheEnd() {
+        broadcastSignal(processEngine, Signals.SIGNAL_MEMBER_ACTIVATED.getValue(), Map.of("name", "Jane"));
+        ProcessInstance instance = findInstance(processEngine, SendWelcomeKitProcessApi.PROCESS_ID.getValue());
+
+        completeExternalTask(processEngine, ServiceTasks.SHIP_WELCOME_KIT); // stands in for the remote worker
+
+        assertThat(instance)
+                .isEnded()
+                .hasPassedInOrder(
+                        Elements.START_EVENT_MEMBER_ACTIVATED.getValue(),
+                        Elements.SERVICE_TASK_SHIP_WELCOME_KIT.getValue(),
+                        Elements.END_EVENT_WELCOME_KIT_SHIPPED.getValue());
+    }
+}
