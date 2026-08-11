@@ -27,8 +27,8 @@ jobs:
 
       - name: Lint BPMN (bpmnlint)
         run: |
-          npm --prefix tools ci
-          npm --prefix tools run lint:bpmn
+          npm ci
+          npm run lint:bpmn
 
       - name: Build
         run: ./mvnw clean verify
