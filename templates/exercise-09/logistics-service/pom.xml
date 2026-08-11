@@ -170,9 +170,9 @@
 
                  bpmn-to-code erzeugt aus deinem BPMN-Modell Konstanten für Element-IDs, Topics usw.
                  Es generiert eine Topic-Konstante (SendWelcomeKitProcessApi.ServiceTasks.SHIP_WELCOME_KIT)
-                 aber ERST, wenn der Service-Task ein External Task mit Topic ist – deshalb ist dieser Block
-                 auskommentiert. Reihenfolge:
-                   1. Den Service-Task im Modell zu External + Topic machen (siehe send-welcome-kit.bpmn).
+                 aber ERST, wenn du den Prozess modelliert hast (inkl. External Service Task mit Topic) –
+                 deshalb ist dieser Block auskommentiert. Reihenfolge:
+                   1. Den sendWelcomeKit-Prozess in send-welcome-kit.bpmn modellieren (siehe docs/exercise-09.md).
                    2. Diesen Block einkommentieren.
                    3. `./mvnw -pl services/logistics-service generate-sources`
                       -> SendWelcomeKitProcessApi erscheint; der Worker kann die Topic-Konstante abonnieren.

@@ -4,7 +4,7 @@
   "private": true,
   "description": "Dev tooling for the CIB seven training exercises: BPMN linting (bpmnlint:recommended, configured via the root .bpmnlintrc).",
   "scripts": {
-    "lint:bpmn": "bpmnlint \"services/**/src/main/resources/bpmn/*.bpmn\" \"templates/**/src/main/resources/bpmn/*.bpmn\""
+    "lint:bpmn": "bpmnlint \"services/**/src/main/resources/bpmn/*.bpmn\""
   },
   "devDependencies": {
     "bpmnlint": "11.12.1"

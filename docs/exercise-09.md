@@ -123,13 +123,18 @@ Das war's. Der Host ruft nur „neues Mitglied aktiviert" in den Raum – wer da
 
 ### Teil B – Logistik-Service (`services/logistics-service`)
 
-Hier steckt die eigentliche Arbeit. Der Ablauf ist bewusst: **erst den Prozess anpassen, dann die APIs
-generieren, dann den Worker schreiben.** Fülle die **`TODO Aufgabe 9`**-Stellen der Reihe nach:
+Hier steckt die eigentliche Arbeit – das ist die **Capstone-Aufgabe**: Der Ablauf ist bewusst **erst den
+Prozess selbst modellieren, dann die APIs generieren, dann den Worker schreiben.** Fülle die
+**`TODO Aufgabe 9`**-Stellen der Reihe nach:
 
-1. **Prozess anpassen** (`send-welcome-kit.bpmn`) – der Service-Task „Ship welcome kit" ist noch ein
-   **gewöhnlicher** Service-Task. Mach ihn im Modeler zu einem **External Task** (Implementation =
-   *External*) und vergib den **Topic** `shipWelcomeKit`. Die zwei Start-Events (Signal + manuell) sind
-   vorgegeben.
+1. **Prozess von Grund auf modellieren** (`send-welcome-kit.bpmn`) – die Datei enthält bewusst nur ein
+   **leeres Modell mit einem Start-Event**. Modelliere den kompletten `sendWelcomeKit`-Prozess selbst –
+   das ist dein Abschlusstest, ob das Gelernte sitzt. Ziel (siehe [Neuer Prozessablauf](#neuer-prozessablauf)):
+   - Prozess-**ID** `sendWelcomeKit`, `isExecutable=true`, `historyTimeToLive` gesetzt.
+   - Zwei Start-Events: ein **Signal-Start-Event** auf `Signal_MemberActivated` (Produktion) und ein leeres
+     **Start-Event** (manueller Start / Test), zu einem Gateway zusammengeführt.
+   - Ein **External Service Task** „Ship welcome kit" (Implementation = *External*, Topic `shipWelcomeKit`).
+   - Ein **End-Event**, saubere Sequenzflüsse und sprechende Element-IDs.
 2. **APIs generieren** (`pom.xml`) – zwei auskommentierte Generator-Blöcke aktivieren:
    - **Process-API** (`bpmn-to-code`): erzeugt aus deinem (jetzt externen) Task die Konstante
      `SendWelcomeKitProcessApi.ServiceTasks.SHIP_WELCOME_KIT`.
