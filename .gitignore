@@ -21,3 +21,6 @@ target/
 
 # Local secrets (e.g. TEAMS_WEBHOOK_URL) — never commit the real .env
 .env
+
+# Node tooling
+node_modules/

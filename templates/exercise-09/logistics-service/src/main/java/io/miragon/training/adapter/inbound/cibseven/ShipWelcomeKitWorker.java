@@ -1,34 +1,32 @@
 package io.miragon.training.adapter.inbound.cibseven;
 
-import io.miragon.training.adapter.process.SendWelcomeKitProcessApi.ServiceTasks;
-import io.miragon.training.application.port.inbound.ShipWelcomeKitUseCase;
-import io.miragon.training.domain.Member;
-import org.cibseven.bpm.client.spring.annotation.ExternalTaskSubscription;
 import org.cibseven.bpm.client.task.ExternalTask;
 import org.cibseven.bpm.client.task.ExternalTaskService;
-import org.springframework.stereotype.Component;
 
 /**
- * Remote external-task worker for the {@code shipWelcomeKit} topic (Direction 1: the engine hands the
- * task out, the worker pulls it).
+ * TODO Aufgabe 9: Implementiere den External-Task-Worker für den "Ship welcome kit"-Task.
+ *
+ * <p>Hier steht bewusst nur das Gerüst – der Worker ist deine Aufgabe (nachdem du den Prozess angepasst
+ * und die Process-API generiert hast):
+ * <ol>
+ *   <li>Mach die Klasse zu einer Spring-Bean ({@code @Component}) und abonniere den Topic mit
+ *       {@code @ExternalTaskSubscription(topicName = SendWelcomeKitProcessApi.ServiceTasks.SHIP_WELCOME_KIT)}.
+ *       Die Konstante entsteht erst, wenn du den Service-Task im Modell als External Task mit Topic
+ *       markiert und die Process-API neu generiert hast.</li>
+ *   <li>Lies die Variable {@code name}, verschicke das Kit über {@code ShipWelcomeKitUseCase} (per
+ *       Konstruktor injizieren) und schließe den Task ab:
+ *       <pre>
+ *   String name = task.getVariable("name");
+ *   shipWelcomeKit.shipWelcomeKit(new Member(name));
+ *   taskService.complete(task);
+ *       </pre></li>
+ * </ol>
+ * Die gemeinsame Fehlerbehandlung steckt schon in {@link BaseExternalTaskWorker} – lass deinen Worker davon erben.
  */
-@Component
-@ExternalTaskSubscription(topicName = ServiceTasks.SHIP_WELCOME_KIT)
 public class ShipWelcomeKitWorker extends BaseExternalTaskWorker {
-
-    private final ShipWelcomeKitUseCase shipWelcomeKit;
-
-    public ShipWelcomeKitWorker(ShipWelcomeKitUseCase shipWelcomeKit) {
-        this.shipWelcomeKit = shipWelcomeKit;
-    }
 
     @Override
     protected void executeTask(ExternalTask task, ExternalTaskService taskService) {
-        // TODO Aufgabe 9: read the "name" the signal carried, ship the kit via the use case,
-        //   then complete the task so the process can end:
-        //     String name = task.getVariable("name");
-        //     shipWelcomeKit.shipWelcomeKit(new Member(name));
-        //     taskService.complete(task);
-        throw new UnsupportedOperationException("TODO Aufgabe 9: implement the external task worker");
+        throw new UnsupportedOperationException("TODO Aufgabe 9: implement the shipWelcomeKit worker");
     }
 }
