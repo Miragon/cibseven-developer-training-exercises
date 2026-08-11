@@ -9,9 +9,10 @@
         <groupId>io.miragon</groupId>
         <artifactId>cibseven-developer-training-exercises</artifactId>
         <version>1.0-SNAPSHOT</version>
-        <!-- Empty on purpose: this module lives here as a template and is copied into services/ in
-             Aufgabe 9. The parent is resolved from the reactor/repo, so the same pom works in both spots. -->
-        <relativePath/>
+        <!-- Correct once the module lives at services/logistics-service (its home after you copy it in
+             Aufgabe 9): ../../pom.xml is the repo root. While it still sits under templates/ (only the CI
+             check builds it there), CI installs the root pom first so the parent resolves from the repo. -->
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>logistics-service</artifactId>
