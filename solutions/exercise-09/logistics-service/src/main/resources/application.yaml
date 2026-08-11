@@ -1,0 +1,17 @@
+# Logistics service — the remote OWNER of the sendWelcomeKit process. It runs no engine of its own;
+# it knows the shared engine only through its REST API. A lightweight HTTP server (the "re-send" action)
+# runs on :8090 so it does not clash with the engine host on :8080.
+server:
+  port: 8090
+
+# CIB Seven External Task Client: connect remotely to the engine's REST API and fulfil our topic.
+# The same base-url is reused for the model deployment and the generated typed client (see EngineClientConfig).
+camunda:
+  bpm:
+    client:
+      base-url: http://localhost:8080/engine-rest
+      lock-duration: 20000
+
+logging:
+  level:
+    io.miragon.training: INFO

@@ -88,8 +88,9 @@
               daher kann die application.yaml einfach mitkopiert werden. src/test bleibt
               unberührt. Gültige Werte: 01–09 (zweistellig). Hinweis: Aufgabe 9 besteht aus zwei
               Services – geladen wird der Hauptservice solutions/exercise-09/process-application/;
-              der Worker-Service solutions/exercise-09/notification-service/ läuft separat
-              (Arbeitsmodul services/notification-service/) und wird von diesem Task nicht mitkopiert.
+              der Worker-Service solutions/exercise-09/logistics-service/ läuft separat (Arbeitsmodul
+              services/logistics-service/, in Aufgabe 9 aus templates/ angelegt) und wird von diesem
+              Task nicht mitkopiert.
             -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

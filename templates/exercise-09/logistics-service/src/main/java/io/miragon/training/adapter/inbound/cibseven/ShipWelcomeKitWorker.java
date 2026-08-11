@@ -1,0 +1,34 @@
+package io.miragon.training.adapter.inbound.cibseven;
+
+import io.miragon.training.adapter.process.SendWelcomeKitProcessApi.ServiceTasks;
+import io.miragon.training.application.port.inbound.ShipWelcomeKitUseCase;
+import io.miragon.training.domain.Member;
+import org.cibseven.bpm.client.spring.annotation.ExternalTaskSubscription;
+import org.cibseven.bpm.client.task.ExternalTask;
+import org.cibseven.bpm.client.task.ExternalTaskService;
+import org.springframework.stereotype.Component;
+
+/**
+ * Remote external-task worker for the {@code shipWelcomeKit} topic (Direction 1: the engine hands the
+ * task out, the worker pulls it).
+ */
+@Component
+@ExternalTaskSubscription(topicName = ServiceTasks.SHIP_WELCOME_KIT)
+public class ShipWelcomeKitWorker extends BaseExternalTaskWorker {
+
+    private final ShipWelcomeKitUseCase shipWelcomeKit;
+
+    public ShipWelcomeKitWorker(ShipWelcomeKitUseCase shipWelcomeKit) {
+        this.shipWelcomeKit = shipWelcomeKit;
+    }
+
+    @Override
+    protected void executeTask(ExternalTask task, ExternalTaskService taskService) {
+        // TODO Aufgabe 9: read the "name" the signal carried, ship the kit via the use case,
+        //   then complete the task so the process can end:
+        //     String name = task.getVariable("name");
+        //     shipWelcomeKit.shipWelcomeKit(new Member(name));
+        //     taskService.complete(task);
+        throw new UnsupportedOperationException("TODO Aufgabe 9: implement the external task worker");
+    }
+}

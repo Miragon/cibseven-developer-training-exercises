@@ -45,7 +45,7 @@ Detaillierte Aufgabenbeschreibungen befinden sich in [`docs/`](docs/).
 | [6](docs/exercise-06.md) | Boundary Events & Subprozesse | Parallel Gateway, Timer- & Message-Boundary-Events, Subprocess |
 | [7](docs/exercise-07.md) | Kompensation (SAGA) | Compensation Boundary Events, Compensating End Event, automatisches Rollback |
 | [8](docs/exercise-08.md) | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
-| [9](docs/exercise-09.md) | Remote Engine & External Task | Notify-Community-Delegate als External Task (`notifyCommunity`) in einen eigenen Remote-Worker auslagern, Benachrichtigung in einen Teams-Kanal |
+| [9](docs/exercise-09.md) | Remote Engine als geteilte Infrastruktur | Eine Abteilung besitzt einen **eigenen** kleinen Prozess (`sendWelcomeKit`) in ihrem Remote-Service: Modell, Worker, Deployment und Tests liegen dort; getriggert per Signal-Broadcast; die Engine über einen generierten OpenAPI-Client getrieben |
 | [Extra 1](docs/extra-task-1.md) | Process-Engine-API | Aufgabe 8 engine-neutral umbauen: Worker statt JavaDelegate, Adapter-Tausch statt Engine-Lock-in |
 
 ## Quick Start
@@ -102,9 +102,11 @@ cibseven-developer-training-exercises/
 │   │       │   │   └── outbound/     # Repository- und Prozess-Port-Interfaces
 │   │       │   └── service/          # Use-Case-Implementierungen
 │   │       └── domain/               # Domain-Modell (reines Java, keine Framework-Abhängigkeiten)
-│   └── notification-service/         # External-Task-Worker-Service (Aufgabe 9)
+│   └── (logistics-service/)          # erst in Aufgabe 9 aus templates/ angelegt (Remote-Owner)
+├── templates/
+│   └── exercise-09/logistics-service/ # Vorlage für den Aufgabe-9-Worker (in services/ kopieren)
 ├── solutions/                        # Kumulative Lösungen pro Aufgabe (exercise-01 … exercise-09, extra-task-1)
-│   ├── exercise-{01-09}/             # exercise-09/ ist verschachtelt: process-application/ + notification-service/
+│   ├── exercise-{01-09}/             # exercise-09/ ist verschachtelt: process-application/ + logistics-service/
 │   └── extra-task-1/
 ├── models/                           # Referenz-BPMN-/DMN-Modelle
 ├── stack/

@@ -46,6 +46,8 @@ public final class SubscribeNewsletterProcessApi {
 
     public static final ElementId GATEWAY_NOTIFY_JOIN = new ElementId("gateway_notifyJoin");
 
+    public static final ElementId SERVICE_TASK_BROADCAST_MEMBER_ACTIVATED = new ElementId("serviceTask_broadcastMemberActivated");
+
     public static final ElementId SERVICE_TASK_CLAIM_MEMBERSHIP = new ElementId("serviceTask_claimMembership");
 
     public static final ElementId SERVICE_TASK_NOTIFY_COMMUNITY = new ElementId("serviceTask_notifyCommunity");
@@ -102,7 +104,11 @@ public final class SubscribeNewsletterProcessApi {
    * Kept as {@code public static final String} because annotation arguments must be compile-time constants.
    */
   public static final class ServiceTasks {
+    public static final String BROADCAST_MEMBER_ACTIVATED_DELEGATE = "#{broadcastMemberActivatedDelegate}";
+
     public static final String CLAIM_MEMBERSHIP_DELEGATE = "#{claimMembershipDelegate}";
+
+    public static final String NOTIFY_COMMUNITY_DELEGATE = "#{notifyCommunityDelegate}";
 
     public static final String RE_SEND_CONFIRMATION_MAIL_DELEGATE = "#{reSendConfirmationMailDelegate}";
 
@@ -113,8 +119,6 @@ public final class SubscribeNewsletterProcessApi {
     public static final String SEND_REJECTION_MAIL_DELEGATE = "#{sendRejectionMailDelegate}";
 
     public static final String SEND_WELCOME_MAIL_DELEGATE = "#{sendWelcomeMailDelegate}";
-
-    public static final String NOTIFY_COMMUNITY = "notifyCommunity";
   }
 
   public static final class Timers {
@@ -185,6 +189,10 @@ public final class SubscribeNewsletterProcessApi {
     public static final BpmnFlow FLOW_1_Y_9_MU_7_R = new BpmnFlow("Flow_1y9mu7r", null, "startEvent_confirmationRequired", "serviceTask_sendConfirmationMail", null, false);
 
     public static final BpmnFlow FLOW_1_YC_0_F_2_L = new BpmnFlow("Flow_1yc0f2l", null, "gateway_notifyJoin", "endEvent_membershipActivated", null, false);
+
+    public static final BpmnFlow FLOW_BROADCAST_TO_JOIN = new BpmnFlow("Flow_broadcastToJoin", null, "serviceTask_broadcastMemberActivated", "gateway_notifyJoin", null, false);
+
+    public static final BpmnFlow FLOW_TO_BROADCAST = new BpmnFlow("Flow_toBroadcast", null, "gateway_notifyFork", "serviceTask_broadcastMemberActivated", null, false);
   }
 
   /**
@@ -210,9 +218,11 @@ public final class SubscribeNewsletterProcessApi {
 
     public static final BpmnRelations GATEWAY_HAS_EMPTY_SPOTS = new BpmnRelations("Has empty spots", List.of("serviceTask_claimMembership"), List.of("subProcess_confirmMembership", "serviceTask_sendRejectionMail"), null, null, List.of(), "EXCLUSIVE_GATEWAY");
 
-    public static final BpmnRelations GATEWAY_NOTIFY_FORK = new BpmnRelations(null, List.of("subProcess_confirmMembership"), List.of("serviceTask_sendWelcomeMail", "serviceTask_notifyCommunity"), null, null, List.of(), "PARALLEL_GATEWAY");
+    public static final BpmnRelations GATEWAY_NOTIFY_FORK = new BpmnRelations(null, List.of("subProcess_confirmMembership"), List.of("serviceTask_sendWelcomeMail", "serviceTask_notifyCommunity", "serviceTask_broadcastMemberActivated"), null, null, List.of(), "PARALLEL_GATEWAY");
 
-    public static final BpmnRelations GATEWAY_NOTIFY_JOIN = new BpmnRelations(null, List.of("serviceTask_notifyCommunity", "serviceTask_sendWelcomeMail"), List.of("endEvent_membershipActivated"), null, null, List.of(), "PARALLEL_GATEWAY");
+    public static final BpmnRelations GATEWAY_NOTIFY_JOIN = new BpmnRelations(null, List.of("serviceTask_notifyCommunity", "serviceTask_sendWelcomeMail", "serviceTask_broadcastMemberActivated"), List.of("endEvent_membershipActivated"), null, null, List.of(), "PARALLEL_GATEWAY");
+
+    public static final BpmnRelations SERVICE_TASK_BROADCAST_MEMBER_ACTIVATED = new BpmnRelations("Broadcast member activated", List.of("gateway_notifyFork"), List.of("gateway_notifyJoin"), null, null, List.of(), "SERVICE_TASK");
 
     public static final BpmnRelations SERVICE_TASK_CLAIM_MEMBERSHIP = new BpmnRelations("Claim membership", List.of("startEvent_submitRegistration"), List.of("gateway_hasEmptySpots"), null, null, List.of("boundary_compensateClaim"), "SERVICE_TASK");
 
@@ -232,7 +242,7 @@ public final class SubscribeNewsletterProcessApi {
 
     public static final BpmnRelations START_EVENT_SUBMIT_REGISTRATION = new BpmnRelations("Submit registration form", List.of(), List.of("serviceTask_claimMembership"), null, null, List.of(), "MESSAGE_START_EVENT");
 
-    public static final BpmnRelations SUB_PROCESS_CONFIRM_MEMBERSHIP = new BpmnRelations("Confirm membership", List.of("gateway_hasEmptySpots"), List.of("gateway_notifyFork"), null, null, List.of("timer_abortAfter3HalfDays", "event_confirmationRejected", "timer_resendEveryDay"), "SUB_PROCESS");
+    public static final BpmnRelations SUB_PROCESS_CONFIRM_MEMBERSHIP = new BpmnRelations("Confirm membership", List.of("gateway_hasEmptySpots"), List.of("gateway_notifyFork"), null, null, List.of("event_confirmationRejected", "timer_abortAfter3HalfDays", "timer_resendEveryDay"), "SUB_PROCESS");
 
     public static final BpmnRelations TIMER_ABORT_AFTER_3_HALF_DAYS = new BpmnRelations("After 3 1/2 days", List.of(), List.of("callActivity_handleRejection"), null, "subProcess_confirmMembership", List.of(), "TIMER_BOUNDARY_EVENT");
 

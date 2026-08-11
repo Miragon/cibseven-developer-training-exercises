@@ -18,9 +18,14 @@
     <packaging>pom</packaging>
     <name>cibseven-developer-training-exercises</name>
 
+    <!--
+      Nur der Hauptservice, an dem Teilnehmende von Anfang an arbeiten, plus die Referenzlösungen.
+      Der Aufgabe-9-Worker (logistics-service) taucht bewusst NICHT hier auf – er wird erst in Aufgabe 9
+      aus templates/exercise-09/ heraus angelegt. So bleibt services/ für die Aufgaben 0–8 aufgeräumt.
+      (Zum Bauen/Prüfen der Vorlage: Profil -Pexercise-9, siehe unten.)
+    -->
     <modules>
         <module>services/process-application</module>
-        <module>services/notification-service</module>
         <module>solutions</module>
     </modules>
 
@@ -30,6 +35,7 @@
         <cib7.version>2.2.0</cib7.version>
         <archunit.version>1.5.0</archunit.version>
         <bpmn-to-code.version>5.2.0</bpmn-to-code.version>
+        <openapi-generator.version>7.24.0</openapi-generator.version>
     </properties>
 
     <!--
@@ -68,6 +74,13 @@
                 <artifactId>cibseven-bpm-assert</artifactId>
                 <version>${cib7.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <!-- Engine core — a worker without an engine starter (Aufgabe 9) brings it explicitly
+                 to spin up a standalone in-memory engine for its own process tests -->
+            <dependency>
+                <groupId>org.cibseven.bpm</groupId>
+                <artifactId>cibseven-engine</artifactId>
+                <version>${cib7.version}</version>
             </dependency>
             <!-- Runtime types referenced by the bpmn-to-code generated process API -->
             <dependency>
@@ -117,5 +130,20 @@
             <url>https://artifacts.cibseven.org/repository/public</url>
         </repository>
     </repositories>
+
+    <profiles>
+        <!--
+          Aufgabe 9 baut auf einem zweiten Service (dem logistics-service) auf, der erst dort angelegt
+          wird. Die Vorlage liegt unter templates/exercise-09/ und ist NICHT Teil des Standard-Builds.
+          Mit diesem Profil lässt sich die Vorlage bauen/prüfen (CI nutzt es genau dafür):
+              ./mvnw -Pexercise-9 verify
+        -->
+        <profile>
+            <id>exercise-9</id>
+            <modules>
+                <module>templates/exercise-09/logistics-service</module>
+            </modules>
+        </profile>
+    </profiles>
 
 </project>
