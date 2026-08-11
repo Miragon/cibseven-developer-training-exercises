@@ -7,18 +7,6 @@
                   id="Definitions_SendWelcomeKit"
                   targetNamespace="http://miravelo.io/logistics">
   <bpmn:signal id="Signal_MemberActivated" name="Signal_MemberActivated" />
-  <!--
-    TODO Aufgabe 9: Der Service-Task "Ship welcome kit" ist noch ein GEWÖHNLICHER Service-Task.
-    Mache ihn zu einem External Service Task, indem du im Modeler die Implementation auf "External"
-    setzt und einen Topic vergibst (z.B. shipWelcomeKit) — im XML:
-        camunda:type="external" camunda:topic="shipWelcomeKit"
-    Danach die Process-API neu generieren (bpmn-to-code) → SendWelcomeKitProcessApi.ServiceTasks
-    enthält dann die Topic-Konstante, die dein Worker abonniert.
-
-    Zwei Start-Events sind bewusst vorgegeben: das Signal-Start-Event (Produktion: reagiert auf
-    Signal_MemberActivated aus dem Membership-Prozess) und ein leeres Start-Event für den manuellen
-    Start / Test (per startProcessInstanceByKey über den generierten Client).
-  -->
   <bpmn:process id="sendWelcomeKit" name="Send Welcome Kit" isExecutable="true" camunda:historyTimeToLive="180">
     <bpmn:startEvent id="startEvent_memberActivated" name="New member activated">
       <bpmn:outgoing>Flow_signalToStart</bpmn:outgoing>
