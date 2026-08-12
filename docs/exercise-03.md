@@ -59,16 +59,6 @@ vielleicht wollen sie auch mehr als nur einen Newsletter. Vielleicht wollen sie 
 
 Referenz-Modell: `../models/exercise-03/newsletter.bpmn`
 
-## Best Practice: Async Continuations
-
-Setze in deinem Modell mindestens:
-- `asyncBefore` am **Message-Start-Event** `startEvent_submitRegistration`
-- `asyncAfter` an jedem **User Task** (also an `userTask_confirmSubscription`)
-
-Hintergrund: Damit wird nach jedem Wait-State eine neue Engine-Transaktion gestartet. Fehler in nachgelagerten Service Tasks führen sonst dazu, dass die User-Task-Completion zurückgerollt wird und der Task im Tasklist wieder erscheint. `asyncBefore` am Message-Start gibt der Engine eine saubere TX-Grenze nach der Message-Korrelation.
-
-Im Miragon BPMN Modeler: Element selektieren → Properties Panel → "Asynchronous Before/After".
-
 ### 2. `SendConfirmationMailUseCase` erstellen
 
 **Neue Datei:** `application/port/inbound/SendConfirmationMailUseCase.java`

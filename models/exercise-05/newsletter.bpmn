@@ -19,7 +19,7 @@
       <bpmn:incoming>Flow_13584xc</bpmn:incoming>
       <bpmn:outgoing>Flow_0ya530i</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:serviceTask id="serviceTask_sendWelcomeMail" name="Send Welcome Mail" camunda:delegateExpression="#{sendWelcomeMailDelegate}">
+    <bpmn:serviceTask id="serviceTask_sendWelcomeMail" name="Send Welcome Mail" camunda:asyncBefore="true" camunda:delegateExpression="#{sendWelcomeMailDelegate}">
       <bpmn:incoming>Flow_0ya530i</bpmn:incoming>
       <bpmn:outgoing>Flow_1s74azu</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -28,7 +28,7 @@
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_1s74azu" sourceRef="serviceTask_sendWelcomeMail" targetRef="endEvent_membershipConfirmed" />
     <bpmn:sequenceFlow id="Flow_13584xc" sourceRef="serviceTask_sendConfirmationMail" targetRef="userTask_confirmMembership" />
-    <bpmn:serviceTask id="serviceTask_sendConfirmationMail" name="Send confirmation mail" camunda:delegateExpression="#{sendConfirmationMailDelegate}">
+    <bpmn:serviceTask id="serviceTask_sendConfirmationMail" name="Send confirmation mail" camunda:asyncBefore="true" camunda:delegateExpression="#{sendConfirmationMailDelegate}">
       <bpmn:incoming>Flow_1pl6nn4</bpmn:incoming>
       <bpmn:outgoing>Flow_13584xc</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -43,7 +43,7 @@
       <bpmn:outgoing>Flow_0cad0i8</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_1pl6nn4" name="Yes" sourceRef="gateway_hasEmptySpots" targetRef="serviceTask_sendConfirmationMail" />
-    <bpmn:serviceTask id="serviceTask_sendRejectionMail" name="Send rejection mail" camunda:delegateExpression="#{sendRejectionMailDelegate}">
+    <bpmn:serviceTask id="serviceTask_sendRejectionMail" name="Send rejection mail" camunda:asyncBefore="true" camunda:delegateExpression="#{sendRejectionMailDelegate}">
       <bpmn:incoming>Flow_0cad0i8</bpmn:incoming>
       <bpmn:outgoing>Flow_0loiw0z</bpmn:outgoing>
     </bpmn:serviceTask>

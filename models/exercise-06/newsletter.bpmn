@@ -14,7 +14,7 @@
       <bpmn:startEvent id="startEvent_confirmationRequired" name="Confirmation required">
         <bpmn:outgoing>Flow_1y9mu7r</bpmn:outgoing>
       </bpmn:startEvent>
-      <bpmn:serviceTask id="serviceTask_sendConfirmationMail" name="Send confirmation mail" camunda:delegateExpression="#{sendConfirmationMailDelegate}">
+      <bpmn:serviceTask id="serviceTask_sendConfirmationMail" name="Send confirmation mail" camunda:asyncBefore="true" camunda:delegateExpression="#{sendConfirmationMailDelegate}">
         <bpmn:incoming>Flow_1y9mu7r</bpmn:incoming>
         <bpmn:outgoing>Flow_1wb7scj</bpmn:outgoing>
       </bpmn:serviceTask>
@@ -42,11 +42,11 @@
       <bpmn:outgoing>Flow_forkToWelcome</bpmn:outgoing>
       <bpmn:outgoing>Flow_forkToNotify</bpmn:outgoing>
     </bpmn:parallelGateway>
-    <bpmn:serviceTask id="serviceTask_sendWelcomeMail" name="Send Welcome Mail" camunda:delegateExpression="#{sendWelcomeMailDelegate}">
+    <bpmn:serviceTask id="serviceTask_sendWelcomeMail" name="Send Welcome Mail" camunda:asyncBefore="true" camunda:delegateExpression="#{sendWelcomeMailDelegate}">
       <bpmn:incoming>Flow_forkToWelcome</bpmn:incoming>
       <bpmn:outgoing>Flow_welcomeToJoin</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="serviceTask_notifyCommunity" name="Notify community" camunda:delegateExpression="#{notifyCommunityDelegate}">
+    <bpmn:serviceTask id="serviceTask_notifyCommunity" name="Notify community" camunda:asyncBefore="true" camunda:delegateExpression="#{notifyCommunityDelegate}">
       <bpmn:incoming>Flow_forkToNotify</bpmn:incoming>
       <bpmn:outgoing>Flow_notifyToJoin</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -75,11 +75,11 @@
     <bpmn:endEvent id="endEvent_membershipRejected" name="Membership rejected">
       <bpmn:incoming>Flow_10ryvaz</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:serviceTask id="serviceTask_sendRejectionMail" name="Send rejection mail" camunda:delegateExpression="#{sendRejectionMailDelegate}">
+    <bpmn:serviceTask id="serviceTask_sendRejectionMail" name="Send rejection mail" camunda:asyncBefore="true" camunda:delegateExpression="#{sendRejectionMailDelegate}">
       <bpmn:incoming>Flow_0bt3531</bpmn:incoming>
       <bpmn:outgoing>Flow_10ryvaz</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="serviceTask_reSendConfirmationMail" name="Re-Send confirmation mail" camunda:delegateExpression="#{reSendConfirmationMailDelegate}">
+    <bpmn:serviceTask id="serviceTask_reSendConfirmationMail" name="Re-Send confirmation mail" camunda:asyncBefore="true" camunda:delegateExpression="#{reSendConfirmationMailDelegate}">
       <bpmn:incoming>Flow_1unns5i</bpmn:incoming>
       <bpmn:outgoing>Flow_03vzvil</bpmn:outgoing>
     </bpmn:serviceTask>

@@ -1,18 +1,20 @@
 # Extra-Aufgabe 1 – Raus aus dem Engine-Lock-in: die Process-Engine-API
 
-> **Voraussetzung:** Aufgabe 8 ist abgeschlossen. Der Prozess läuft vollständig – mit Service Tasks, User Tasks, Gateways, Boundary Events, Subprozess, Call Activity, DMN und Kompensation.
+> **Voraussetzung:** Aufgabe 9 ist abgeschlossen. Der Membership-Prozess läuft vollständig – mit Service Tasks, User Tasks, Gateways, Boundary Events, Subprozess, Call Activity, DMN, Kompensation und dem **Signal-End-Event** „Membership activated".
+>
+> **Fokus:** Es geht hier **ausschließlich um den Embedded-Service** (`process-application`) – wir bauen nur dessen Engine-Anbindung engine-neutral um. Der **Logistik-Service aus Aufgabe 9 bleibt unverändert** (eigener Remote-Service, External Task, generierter Client) und ist **nicht Teil** dieser Aufgabe.
 
 ## Ziel-Modell
 
-Das Prozessmodell ändert sich **fachlich nicht**. Es ist exakt der Prozess aus Aufgabe 8 – nur die technische Anbindung der Service Tasks wechselt.
+Das Prozessmodell ändert sich **fachlich nicht**. Es ist exakt der Prozess aus Aufgabe 9 – nur die technische Anbindung der Service Tasks wechselt. Das Signal-End-Event „Membership activated" bleibt ein **natives BPMN-Throw** (kein Delegate) und passt damit ohnehin in die engine-neutrale Welt.
 
 Hauptprozess:
 
-![BPMN Hauptprozess](assets/exercise-08-main.svg)
+![BPMN Hauptprozess](assets/extra-task-1-main.svg)
 
 Sub-Prozess `handleRejection`:
 
-![BPMN Sub-Prozess](assets/exercise-08-sub.svg)
+![BPMN Sub-Prozess](assets/extra-task-1-sub.svg)
 
 ## Lernziele
 
@@ -40,7 +42,7 @@ Das Beste daran: **Domain, Application-Services und Ports bleiben unangetastet.*
 
 ## Was sich ändert (und was nicht)
 
-| Schicht | Aufgabe 8 (nativ CIB7) | Extra-Aufgabe 1 (Process-Engine-API) |
+| Schicht | Aufgabe 9 (nativ CIB7) | Extra-Aufgabe 1 (Process-Engine-API) |
 |---|---|---|
 | `domain/`, `application/` | unverändert | **unverändert** |
 | Inbound Service Tasks | `JavaDelegate` + `DelegateExecution` | `@ProcessEngineWorker`-Worker |
@@ -86,6 +88,8 @@ wird ein External Task mit Topic – plus ein Input-Mapping, damit der Worker di
 ```
 
 Das machst du für alle sieben Service Tasks (`claimMembership`, `sendConfirmationMail`, `sendWelcomeMail`, `sendRejectionMail`, `reSendConfirmationMail`, `revokeClaim`, `notifyCommunity`) – auch für den Kompensations-Task `revokeClaim`.
+
+> **Was mit den `asyncBefore`-Markern passiert:** Die in Aufgabe 4/6 gesetzten `camunda:asyncBefore="true"` auf den Mail-/Notify-Tasks **entfallen** bei der Umstellung. Ein External Task ist von Natur aus ein Wait State: Die Engine committet, sobald sie den Task anlegt, und wartet, bis ein Worker ihn fetcht und completet. Die Transaktionsgrenze, die wir mit `asyncBefore` von Hand gesetzt haben, bringt der External Task also **eingebaut** mit. Genau darin liegt Teil des Gewinns beim Wechsel auf das Worker-Pattern.
 
 ### 3. Delegates durch Worker ersetzen
 
@@ -168,7 +172,7 @@ public void rejectMembership(MembershipId membershipId) {
 ### 5. Bootstrap & Konfiguration
 
 - `@EnableProcessApplication` von der `TrainingApplication` entfernen – der Adapter übernimmt Deployment und Worker-Registrierung.
-- Einen `EngineCommandExecutor` als Bean bereitstellen, damit Engine- und Business-Daten in **einer** Transaktion committen:
+- Einen `EngineCommandExecutor` als Bean bereitstellen, damit Engine- und Business-Daten in **einer** Transaktion committen. Das ist die Fortsetzung des Transaction-Management-Themas aus Aufgabe 4: `Runnable::run` führt den Engine-Command **synchron im aufrufenden Thread** und damit in derselben Transaktion wie der Business-Write aus – Engine-Fortschritt und Fachdaten committen oder rollen gemeinsam. Ein eigener Thread-Pool-Executor würde diese Grenze zerschneiden.
 
   ```java
   @Bean
@@ -211,7 +215,7 @@ Wenn dieser Test grün ist, lebt die Engine nur noch in `pom.xml` und `applicati
 
 ## Testen
 
-Die REST-Schnittstelle und das Verhalten sind identisch zu Aufgabe 8 (Port `8080`). Service Tasks werden jetzt per Polling (~5 s) abgearbeitet, es kann also einen Moment dauern.
+Die REST-Schnittstelle und das Verhalten sind identisch zu Aufgabe 9 (Port `8080`). Service Tasks werden jetzt per Polling (~5 s) abgearbeitet, es kann also einen Moment dauern.
 
 **Einfache Ablehnung (Alter außerhalb 21–29):**
 ```bash
@@ -240,7 +244,7 @@ curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
 - [ ] Der Outbound-Adapter nutzt `StartProcessApi` / `CorrelationApi` statt `RuntimeService`
 - [ ] `@EnableProcessApplication` ist entfernt, der `EngineCommandExecutor`-Bean ist gesetzt
 - [ ] Der ArchUnit-Test bestätigt: **0** `org.cibseven.bpm`-Abhängigkeiten im Code
-- [ ] Fachliches Verhalten ist identisch zu Aufgabe 8
+- [ ] Fachliches Verhalten ist identisch zu Aufgabe 9
 
 ## Referenzlösung
 

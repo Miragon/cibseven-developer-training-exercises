@@ -66,7 +66,7 @@ public final class SendWelcomeKitProcessApi {
   public static final class Relations {
     public static final BpmnRelations END_EVENT_WELCOME_KIT_SHIPPED = new BpmnRelations("Welcome kit shipped", List.of("serviceTask_shipWelcomeKit"), List.of(), null, null, List.of(), "END_EVENT");
 
-    public static final BpmnRelations GATEWAY_START = new BpmnRelations("Started", List.of("startEvent_memberActivated", "startEvent_manualStart"), List.of("serviceTask_shipWelcomeKit"), null, null, List.of(), "EXCLUSIVE_GATEWAY");
+    public static final BpmnRelations GATEWAY_START = new BpmnRelations(null, List.of("startEvent_memberActivated", "startEvent_manualStart"), List.of("serviceTask_shipWelcomeKit"), null, null, List.of(), "EXCLUSIVE_GATEWAY");
 
     public static final BpmnRelations SERVICE_TASK_SHIP_WELCOME_KIT = new BpmnRelations("Ship welcome kit", List.of("gateway_start"), List.of("endEvent_welcomeKitShipped"), null, null, List.of(), "SERVICE_TASK");
 

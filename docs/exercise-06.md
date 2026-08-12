@@ -96,7 +96,11 @@ POST /api/memberships/{membershipId}/reject
 
 Implementiere die Korrelation in `MembershipProcessAdapter`: Verwende `runtimeService.createMessageCorrelation(...)` mit dem Message-Namen aus dem BPMN-Modell und filtere auf die Prozessvariable `membershipId`.
 
-> Async-Continuations (siehe Aufgabe 3): Setze `asyncAfter` zusätzlich an allen Boundary Events (`timer_resendEveryDay`, `timer_abortAfter3HalfDays`, `event_confirmationRejected`).
+> **Async-Continuations (siehe Aufgabe 4):** Setze `asyncAfter` zusätzlich an allen Boundary Events. Jedes Event bekommt so eine saubere TX-Grenze für das, was danach kommt:
+> - `timer_resendEveryDay` (non-interrupting) → der Resend läuft in einer eigenen Transaktion und wiederholt sich unabhängig, ohne den wartenden Subprozess zu berühren.
+> - `timer_abortAfter3HalfDays` und `event_confirmationRejected` (interrupting) → saubere Grenze **vor** dem Abbruch/der Kompensation (Aufgabe 7/8).
+>
+> Der neue Resend-Task `serviceTask_reSendConfirmationMail` ist ein externer Effekt und bekommt – wie in Aufgabe 4 – `asyncBefore`.
 
 ### 4. Parallel Gateway + Notify community
 
@@ -110,6 +114,12 @@ ein **Parallel Gateway (Fork)** hinzu, das zwei Zweige öffnet:
 Ein zweites **Parallel Gateway (Join)** führt beide Zweige wieder zusammen, bevor das
 `endEvent_membershipActivated` erreicht wird. Weil der Join **beide** Zweige abwartet, ist die
 Membership erst „activated", wenn Mail **und** Benachrichtigung durch sind.
+
+> **Transaktionsgrenze pro Zweig (Pflicht, siehe Aufgabe 4):** Ohne Marker liegen `sendWelcomeMail` und
+> `notifyCommunity` in **einer** Transaktion. Scheitert der Teams-Webhook, rollt die Engine den Job
+> zurück und wiederholt ihn – die Welcome-Mail wäre dann schon raus und würde **erneut** verschickt.
+> Setze deshalb `asyncBefore` an **beide** Zweige (`serviceTask_sendWelcomeMail`,
+> `serviceTask_notifyCommunity`), damit jeder externe Effekt einzeln committet und unabhängig retryt.
 
 Die Benachrichtigung läuft komplett **in der Engine** (ein ganz normaler Delegate). Implementiere:
 

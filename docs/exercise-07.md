@@ -22,6 +22,8 @@ Statt den `revokeClaim` weiterhin als expliziten Service Task an jeden Decline-P
 
 **Warum ist das besser?** Bei mehreren abzusichernden Aktionen (z.B. claimMembership + sendConfirmationMail + Drittdienste) wächst der manuelle Kompensierungspfad schnell und wird schwer wartbar. Mit BPMN-Kompensation deklariert man die Zuordnung einmal – und die Engine übernimmt die Ausführung automatisch.
 
+> **Kompensation ≠ Transaktions-Rollback.** Das technische Rollback aus dem Trainingskapitel *Async & Transaction Boundaries* (Topic 4) macht eine *einzelne, noch nicht committete* Engine-Transaktion rückgängig – automatisch, unsichtbar. Kompensation ist das fachliche Gegenstück: Sie macht *bereits committete* Arbeit über **neue** Transaktionen (den `revokeClaim`-Aufruf) wieder rückgängig, nachdem der Wait State längst passiert ist. Kurz: Rollback greift *vor* dem Commit, Kompensation *danach*.
+
 ```
 serviceTask_claimMembership ──── [Kompensations-Boundary] ──── serviceTask_revokeClaim
                                                                 (isForCompensation=true)

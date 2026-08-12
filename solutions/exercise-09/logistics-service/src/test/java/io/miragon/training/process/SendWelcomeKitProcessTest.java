@@ -16,6 +16,7 @@ import java.util.UUID;
 
 import static io.miragon.training.process.util.ProcessEngineTestUtils.broadcastSignal;
 import static io.miragon.training.process.util.ProcessEngineTestUtils.completeExternalTask;
+import static io.miragon.training.process.util.ProcessEngineTestUtils.continueToNextWaitState;
 import static io.miragon.training.process.util.ProcessEngineTestUtils.findInstance;
 import static io.miragon.training.process.util.ProcessEngineTestUtils.startProcessByKey;
 import static org.cibseven.bpm.engine.test.assertions.bpmn.BpmnAwareTests.assertThat;
@@ -59,6 +60,9 @@ class SendWelcomeKitProcessTest {
         broadcastSignal(processEngine, Signals.SIGNAL_MEMBER_ACTIVATED.getValue(), Map.of("name", "Jane"));
         ProcessInstance instance = findInstance(processEngine, SendWelcomeKitProcessApi.PROCESS_ID.getValue());
 
+        // The signal start is asyncBefore: the instance commits at once and only reaches the external task
+        // once its async continuation runs. With the job executor off, we drive that from the test thread.
+        continueToNextWaitState(processEngine);
         completeExternalTask(processEngine, ServiceTasks.SHIP_WELCOME_KIT); // stands in for the remote worker
 
         assertThat(instance)
