@@ -4,7 +4,7 @@
     <bpmn:startEvent id="startEvent_confirmationRejected" name="Confirmation rejected">
       <bpmn:outgoing>Flow_0vqwqsj</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:businessRuleTask id="serviceTask_categorizeApplicant" name="Categorize applicant" camunda:decisionRef="categorizeApplicant" camunda:mapDecisionResult="singleEntry" camunda:resultVariable="isHighValue">
+    <bpmn:businessRuleTask id="serviceTask_categorizeApplicant" name="Categorize applicant" camunda:resultVariable="isHighValue" camunda:decisionRef="categorizeApplicant" camunda:mapDecisionResult="singleEntry">
       <bpmn:incoming>Flow_0vqwqsj</bpmn:incoming>
       <bpmn:outgoing>Flow_0gvf8zj</bpmn:outgoing>
     </bpmn:businessRuleTask>
@@ -15,7 +15,7 @@
       <bpmn:outgoing>Flow_1imjd1v</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_0gvf8zj" sourceRef="serviceTask_categorizeApplicant" targetRef="gateway_highValue" />
-    <bpmn:sequenceFlow id="Flow_07y997b" sourceRef="gateway_highValue" targetRef="userTask_writeRegretMail">
+    <bpmn:sequenceFlow id="Flow_07y997b" name="Yes" sourceRef="gateway_highValue" targetRef="userTask_writeRegretMail">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${isHighValue}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:userTask id="userTask_writeRegretMail" name="Write an&#10;email expressing regret" camunda:asyncAfter="true">
@@ -29,7 +29,7 @@
     <bpmn:endEvent id="endEvent_acceptRejection" name="Accept rejection">
       <bpmn:incoming>Flow_1imjd1v</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_1imjd1v" sourceRef="gateway_highValue" targetRef="endEvent_acceptRejection" />
+    <bpmn:sequenceFlow id="Flow_1imjd1v" name="No" sourceRef="gateway_highValue" targetRef="endEvent_acceptRejection" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="handleRejection">
@@ -76,6 +76,9 @@
       <bpmndi:BPMNEdge id="Flow_07y997b_di" bpmnElement="Flow_07y997b">
         <di:waypoint x="515" y="190" />
         <di:waypoint x="580" y="190" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="539" y="172" width="18" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1ufk6o2_di" bpmnElement="Flow_1ufk6o2">
         <di:waypoint x="680" y="190" />
@@ -85,6 +88,9 @@
         <di:waypoint x="490" y="215" />
         <di:waypoint x="490" y="320" />
         <di:waypoint x="612" y="320" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="498" y="264.5" width="15" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

@@ -107,9 +107,35 @@ Erstelle nach dem bewährten Muster (analog zu Aufgabe 3):
 - `ClaimMembershipDelegate`: Prüft Kapazität, setzt Variable `hasEmptySpots` auf der `DelegateExecution`
 - `SendRejectionMailDelegate`: Liest `membershipId`, ruft Use Case auf
 
-**Hinweis:** Die Element-IDs und Variablennamen (z.B. `hasEmptySpots`) kannst du direkt aus dem BPMN-Modell entnehmen. Async-Continuations (siehe Aufgabe 3) gelten ab hier als bekannt – `asyncBefore` am Message-Start, `asyncAfter` am User Task.
+**Hinweis:** Die Element-IDs und Variablennamen (z.B. `hasEmptySpots`) kannst du direkt aus dem BPMN-Modell entnehmen.
 
-### 5. Business Key setzen
+### 5. Transaktionsgrenzen setzen (Pflicht)
+
+> Theorie dazu: Trainingskapitel **„Async & Transaction Boundaries"** (Topic 4, *Execution Resilience*) – Save Points, Default- vs. manuelle Grenzen, Rollback in Aktion. Hier ist die erste Stelle, an der wir es **anwenden**.
+
+Bis hierher (Aufgabe 1–3) lief der Prozess komplett **synchron**. Ab diesem Modell setzt du die ersten **Transaktionsgrenzen** – in zwei Stufen.
+
+**a) Wait-State-Grenzen (Basis).** Die Engine committet automatisch an jedem Wait State; ergänze die manuellen Continuations, die sonst fehlen:
+- `asyncBefore` am **Message-Start-Event** `startEvent_submitRegistration` – saubere TX-Grenze nach der Message-Korrelation; der `correlateMessage`-Aufruf legt nur die Instanz an und kehrt zurück.
+- `asyncAfter` an jedem **User Task** (`userTask_confirmMembership`) – die Completion committet sofort. Sonst laufen Completion **und** der nachgelagerte Service Task in **einer** Transaktion: wirft er, rollt die Completion mit zurück und der Task erscheint wieder in der Tasklist.
+
+**b) Service-Task-Grenzen (der neue Fall).** Mit `claimMembership` steht erstmals ein **nicht wiederholbarer** Schritt (die Platz-Reservierung) direkt vor dem Mailversand. Zwischen Message-Start und User Task liegt **kein** Wait State – ohne weitere Marker laufen `claimMembership` **und** `sendConfirmationMail` deshalb in **einer** Engine-Transaktion.
+
+Wirft der Mailversand eine Exception, rollt die Engine die *gesamte* Transaktion zurück und führt den Continuation-Job erneut aus. Ergebnis: `claimMembership` läuft **ein zweites Mal** – ein doppelt reservierter Platz, obwohl fachlich nur der Mailversand fehlschlug.
+
+**Regel:** Trenne die *nicht wiederholbare* Arbeit vom *externen, nicht zurückrollbaren* Effekt mit einer eigenen Transaktionsgrenze. Setze `asyncBefore` an jeden Service Task, der einen externen Effekt (Mailversand) auslöst:
+
+| Marker | Element | Warum |
+|---|---|---|
+| `asyncBefore` | `serviceTask_sendConfirmationMail` | committet die Reservierung zuerst; ein Mail-Fehler wiederholt nur den Versand, nicht den Claim |
+| `asyncBefore` | `serviceTask_sendRejectionMail` | dito – liegt sonst in derselben TX wie `claimMembership` |
+| `asyncBefore` | `serviceTask_sendWelcomeMail` | Konsistenz (externer Effekt); ab Aufgabe 6 zusätzlich auf einem Parallel-Zweig relevant |
+
+`claimMembership` bekommt bewusst **keinen** Marker – es soll früh, gemeinsam mit dem Token-Fortschritt, committen. Der Marker gehört auf den *nachgelagerten* Aufruf, der die Reservierung sonst mit zurückrollt. Im Modeler: Element selektieren → Properties Panel → „Asynchronous Before".
+
+> **Idempotenz-Merksatz:** Ein Retry darf einen Service Task erneut ausführen. Sobald eine Aktion nur *einmal* passieren darf (Reservierung, Zahlung), muss sie entweder vor der Grenze committen oder idempotent sein. Bei externen Schnittstellen (Aufgabe 9, external tasks in [Extra-Task 1](extra-task-1.md)) taucht dasselbe Muster wieder auf.
+
+### 6. Business Key setzen
 
 Bislang starten wir den Prozess ohne fachliche Kennung – im Cockpit sind die Instanzen
 nur über ihre technische ID unterscheidbar. Setze deshalb beim Start des Prozesses einen
@@ -129,7 +155,7 @@ runtimeService.createMessageCorrelation("Message_SubscriptionRequested")
         .correlateStartMessage();
 ```
 
-### 6. Task-Formular für den Confirm-Task (Review & Approve)
+### 7. Task-Formular für den Confirm-Task (Review & Approve)
 
 Der User Task `userTask_confirmMembership` ist bisher eine Blackbox: Wer ihn im Cockpit
 bzw. in der Tasklist öffnet, sieht nur einen leeren Task und kann ihn blind abschließen.

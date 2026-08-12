@@ -42,7 +42,7 @@ kann eine Abteilung ihren Prozess betreiben, **ohne eine eigene Engine zu brauch
 ```
 process-application  (GENERISCHER ENGINE-HOST — embedded Engine + /engine-rest + Cockpit, :8080)
   • besitzt den Membership-Prozess; behält den in-engine "Notify community"-Zweig (Teams)
-  • NEU (additiv): 3. Parallel-Branch broadcastet  Signal_MemberActivated {name}
+  • NEU (additiv): das terminale End-Event "Membership activated" wirft als Signal-End-Event  Signal_MemberActivated {name}
   • kennt die Logistik nicht und trägt kein send-welcome-kit.bpmn
 
 logistics-service  (REMOTE-OWNER — eigene JVM, :8090)
@@ -62,11 +62,9 @@ kein separates Client-Modul. Der Aufbau orientiert sich am Referenz-Blueprint
 
 ```
 Membership (subscribeNewsletter, Engine-Host):
-  ... (Confirmed) → ⬦ Parallel-Fork ┬─ [Send Welcome Mail] ──────────────────────┬ ⬦ Parallel-Join → [Membership activated]
-                                    ├─ [Notify community]  (#{notifyCommunityDelegate}, Teams) ┤
-                                    └─ [Broadcast member activated] (#{broadcastMemberActivatedDelegate}) ┘
-                                                        │  broadcastet Signal_MemberActivated {name}
-                                                        ▼
+  ... (Confirmed) → ⬦ Parallel-Fork ┬─ [Send Welcome Mail] ┬ ⬦ Parallel-Join → (◉ "Membership activated" = Signal-End-Event)
+                                    └─ [Notify community]  ┘                              │  wirft Signal_MemberActivated {name}
+                                       (#{notifyCommunityDelegate}, Teams)                ▼
 Logistik (sendWelcomeKit, Remote-Service besitzt & deployt das Modell):
   (Signal-Start: Signal_MemberActivated) ┐
                                          ⬦ → [Ship welcome kit] external, topic="shipWelcomeKit" → (End)
@@ -79,16 +77,33 @@ Der `sendWelcomeKit`-Prozess hat **zwei Start-Events**: das **Signal-Start-Event
 `startProcessInstanceByKey` über die REST-API – z. B. um ein Kit **erneut** zu verschicken oder zum Testen,
 falls das Signal mal nicht durchkommt. Genau dafür treibt der Service die Engine über den generierten Client.
 
-Das Parallel-Gateway aus Aufgabe 6 bleibt erhalten – wir **ergänzen** nur einen 3. Zweig, der das Signal
-broadcastet. Da ein Broadcast „fire-and-forget" ist, blockiert die Membership-Aktivierung nicht auf der
-Logistik: Signal = **1:N-Broadcast**, mehrere Abteilungen könnten auf dasselbe Ereignis hören.
+Das Parallel-Gateway aus Aufgabe 6 bleibt erhalten – wir machen nur das **terminale End-Event**
+„Membership activated" zu einem **Signal-End-Event** (es beendet den Prozess **und** wirft das Signal, kein
+neuer Zweig). Da ein Broadcast „fire-and-forget" ist, blockiert die
+Membership-Aktivierung nicht auf der Logistik: Signal = **1:N-Broadcast**, mehrere Abteilungen könnten auf
+dasselbe Ereignis hören.
 
 ## Aufgaben
 
-### Vorbereitung – den neuen Service anlegen
+### Vorbereitung
 
-Bis hierher gab es in `services/` nur die `process-application`. Jetzt kommt eine **neue Abteilung** dazu –
-also legen wir ihren Service an. Die Vorlage liegt unter `templates/exercise-09/logistics-service`:
+**Baseline: Membership-Prozess aus Aufgabe 8.** Aufgabe 9 **baut auf dem fertigen Membership-Prozess auf** –
+Teil A ändert dessen terminales End-Event „Membership activated", und ohne den kompletten Vorprozess (Claim,
+Gateway, Confirm-Subprozess, Boundaries, Kompensation, Call Activity, Notify) hängt das Signal an nichts.
+Hast du die Aufgaben 1–8 durchgearbeitet, ist `services/process-application` bereits im richtigen Zustand.
+**Steigst du direkt hier ein, hol dir zuerst die Baseline** (voller Prozess **+ Code** aus Aufgabe 8):
+
+```bash
+./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=08
+```
+
+> Nur das **fertige Ergebnis** laufen lassen, ohne Teil A selbst zu bauen? `-Dsolution=09` lädt den kompletten
+> Host inkl. Signal-End-Event in `services/process-application`. Das End-to-End-Setup unten läuft ohnehin
+> direkt gegen die fertigen `solutions/exercise-09/…`-Module – da ist alles schon integriert.
+
+**Neue Abteilung anlegen.** Bis hierher gab es in `services/` nur die `process-application`. Jetzt kommt eine
+**neue Abteilung** dazu – also legen wir ihren Service an. Die Vorlage liegt unter
+`templates/exercise-09/logistics-service`:
 
 1. Vorlage nach `services/` kopieren:
 
@@ -107,19 +122,29 @@ noch auskommentiert.)
 
 ### Teil A – Engine-Host (`services/process-application`)
 
-Hier ist fast nichts zu tun – der Host bekommt nur einen kleinen zusätzlichen Zweig:
+Hier ist fast nichts zu tun – beim Host wird nur das End-Event zum Signal-Werfer:
 
-1. Am Parallel-Gateway einen **3. Zweig** ergänzen: einen Service-Task „Broadcast member activated"
-   (`#{broadcastMemberActivatedDelegate}`). `Send Welcome Mail` und `Notify community` bleiben unverändert.
-2. Im `BroadcastMemberActivatedDelegate` das Signal senden:
+1. Das bestehende terminale End-Event **„Membership activated"** (nach dem Parallel-Join) zu einem
+   **Signal-End-Event** machen – es beendet den Prozess **und** wirft das Signal. `Send Welcome Mail` und
+   `Notify community` bleiben unverändert. **Kein neuer Zweig, kein neues Element.**
+2. Das End-Event wirft `Signal_MemberActivated` – **ohne** Java-Delegate, die Engine wirft das Signal nativ.
+   Die Payload (`name`) gibt das End-Event über `camunda:in` mit:
 
-   ```java
-   runtimeService.createSignalEvent("Signal_MemberActivated")
-       .setVariables(Map.of("name", name))
-       .send();
+   ```xml
+   <bpmn:endEvent id="endEvent_membershipActivated" name="Membership activated" camunda:asyncBefore="true">
+     <bpmn:signalEventDefinition signalRef="Signal_MemberActivated">
+       <bpmn:extensionElements>
+         <camunda:in source="name" target="name" />
+       </bpmn:extensionElements>
+     </bpmn:signalEventDefinition>
+   </bpmn:endEvent>
    ```
 
+   Dazu einmalig das Signal auf Definitions-Ebene deklarieren:
+   `<bpmn:signal id="Signal_MemberActivated" name="Signal_MemberActivated" />`.
+
 Das war's. Der Host ruft nur „neues Mitglied aktiviert" in den Raum – wer darauf reagiert, ist ihm egal.
+Kein `RuntimeService`, kein Delegate – reines BPMN.
 
 ### Teil B – Logistik-Service (`services/logistics-service`)
 
@@ -219,6 +244,22 @@ curl -X POST http://localhost:8090/api/welcome-kits -H "Content-Type: applicatio
   deployt. Genau das beweist „eine Engine, viele Abteilungen" live.
 - CIB Seven läuft hier weiterhin embedded im Host – „remote" ist die Sicht des **Clients**; eine echte
   Standalone-Engine (`cibseven/cibseven:run`) ist dasselbe Bild mit ausgetauschtem Host.
+- **Transaktionsgrenze (Anknüpfung an Aufgabe 4):** Der External Task ist die Commit-Grenze zwischen Engine
+  und Worker. Die Engine committet, sobald sie den Task anlegt, und wartet als Wait State – der Worker holt
+  ihn per `fetchAndLock`, arbeitet in **seiner eigenen** Transaktion und meldet erst `complete` (oder
+  `handleFailure`) zurück. Ein fehlgeschlagener `shipWelcomeKit` rollt deshalb **nichts** in der Engine
+  zurück; ob und wie oft neu versucht wird, ist eine **Worker-Entscheidung** (Retries/Backoff), kein
+  Engine-Rollback. Das ist der bewusste Gegenpol zum `asyncBefore`-Muster: dort setzt *das Modell* die
+  Grenze, hier bringt der Mechanismus sie mit und die Fehlerbehandlung wandert zum Owner.
+- **Signal-Broadcast ist synchron im Werfer.** Ein Signal-Wurf liefert in CIB seven/Camunda 7 **in der
+  Transaktion des Werfers** aus: Ohne Marker würde das Signal-End-Event `endEvent_membershipActivated` die
+  `sendWelcomeKit`-Instanz anlegen und synchron bis zum External Task treiben – alles in der Membership-Aktivierungs-Transaktion.
+  Ein Fehler dort (Prozess noch nicht deployt, Race beim Start) würde die Aktivierung mit zurückrollen.
+  Deshalb sind **zwei** Grenzen gesetzt: `asyncBefore` auf dem Signal-End-Event `endEvent_membershipActivated`
+  (der Signal-Wurf committet in eigener Transaktion, nach dem Join) **und** `asyncBefore` auf dem
+  **Signal-Start** `startEvent_memberActivated` im Logistik-Prozess (die neue Instanz committet sofort und
+  läuft im eigenen Job – die beiden Prozesse sind an der Signalnaht sauber entkoppelt). Erst damit gilt
+  „die Membership-Aktivierung wartet nicht auf die Logistik" auch **vor** dem External Task.
 
 ## Referenzlösung
 

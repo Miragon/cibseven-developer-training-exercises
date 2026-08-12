@@ -169,17 +169,6 @@ Danach im **Cockpit** unter http://localhost:8080/camunda:
 - UserTask `Fill out form` erscheint in **Task List**
 - Nach Abschluss der UserTask → Service Task läuft durch → Log: "Sending welcome mail to alice@miravelo.com"
 
-## Best Practice: Async Continuations
-
-Setze in deinem Modell mindestens:
-- `asyncAfter` an jedem **User Task** (also an `userTask_fillOutForm`)
-
-Hintergrund: Damit wird nach jedem Wait-State eine neue Engine-Transaktion gestartet. Würde der nachgelagerte `serviceTask_sendWelcomeMail` eine Exception werfen, würde sonst die User-Task-Completion zurückgerollt – der Bearbeiter sieht den Task wieder in der Tasklist und alles, was er beim Completion eingegeben hat, ist weg.
-
-Wir kommen darauf in Aufgabe 3 nochmal zurück (dann auch für Message-Events). Ab dann gilt es als bekannt.
-
-Im Miragon BPMN Modeler: Element selektieren → Properties Panel → "Asynchronous After".
-
 ## Bonus: Prozesstest
 
 Prozess-Tests bekommen in **[Aufgabe 5](exercise-05.md)** ihren eigenen, ausführlichen Platz –

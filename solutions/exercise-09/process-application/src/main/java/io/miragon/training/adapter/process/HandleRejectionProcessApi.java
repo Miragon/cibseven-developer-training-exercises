@@ -38,13 +38,13 @@ public final class HandleRejectionProcessApi {
    * Worker code typically does not need these.
    */
   public static final class Flows {
-    public static final BpmnFlow FLOW_07_Y_997_B = new BpmnFlow("Flow_07y997b", null, "gateway_highValue", "userTask_writeRegretMail", "${isHighValue}", false);
+    public static final BpmnFlow FLOW_07_Y_997_B = new BpmnFlow("Flow_07y997b", "Yes", "gateway_highValue", "userTask_writeRegretMail", "${isHighValue}", false);
 
     public static final BpmnFlow FLOW_0_GVF_8_ZJ = new BpmnFlow("Flow_0gvf8zj", null, "serviceTask_categorizeApplicant", "gateway_highValue", null, false);
 
     public static final BpmnFlow FLOW_0_VQWQSJ = new BpmnFlow("Flow_0vqwqsj", null, "startEvent_confirmationRejected", "serviceTask_categorizeApplicant", null, false);
 
-    public static final BpmnFlow FLOW_1_IMJD_1_V = new BpmnFlow("Flow_1imjd1v", null, "gateway_highValue", "endEvent_acceptRejection", null, true);
+    public static final BpmnFlow FLOW_1_IMJD_1_V = new BpmnFlow("Flow_1imjd1v", "No", "gateway_highValue", "endEvent_acceptRejection", null, true);
 
     public static final BpmnFlow FLOW_1_UFK_6_O_2 = new BpmnFlow("Flow_1ufk6o2", null, "userTask_writeRegretMail", "endEvent_triedToReacquire", null, false);
   }
