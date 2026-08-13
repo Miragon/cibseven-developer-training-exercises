@@ -1,33 +1,45 @@
-# Aufgabe 5 · Add-on – Von Strings zu typsicheren Konstanten (bpmn-to-code)
+# Aufgabe 5 · Add-on – Von Strings zu typsicheren Konstanten
 
-> Add-on zu [Aufgabe 5](exercise-05.md). Es kommt **kein neues Modell** dazu – du härtest den
-> Prozess-Test, den du gerade geschrieben hast.
+> **Voraussetzung:** [Aufgabe 5](exercise-05.md) ist abgeschlossen – beide Prozess-Tests sind grün.
+> **Arbeitsverzeichnis:** `services/process-application`
+> **Neu in dieser Aufgabe:** das Maven-Plugin `bpmn-to-code`, generierte Process-API, Konstanten statt String-Literale.
 
-## Hintergrund
+## Darum geht es
 
-Dein Test ist grün – und trotzdem tickt in ihm eine kleine Zeitbombe. Zähl mal die String-Literale:
-`"userTask_confirmMembership"`, `"serviceTask_sendWelcomeMail"`, `"endEvent_membershipConfirmed"` … jede
-dieser IDs ist eine **handgetippte Kopie** einer ID aus dem BPMN. Benennt nächste Woche jemand
-`userTask_confirmMembership` im Modeler um, merkt das **niemand**: Der Compiler ist zufrieden, der Test
-prüft klaglos gegen eine ID, die es gar nicht mehr gibt – und wird grün oder rot aus dem falschen Grund.
-Genau der Silent-Failure, den wir mit dem Test eigentlich *ausrotten* wollten.
+Dein Test ist grün – und trotzdem tickt in ihm eine Zeitbombe. Zähl die String-Literale:
+`"userTask_confirmMembership"`, `"serviceTask_sendWelcomeMail"`,
+`"endEvent_membershipConfirmed"` … jede dieser IDs ist eine **handgetippte Kopie** einer ID
+aus dem Modell.
 
-Die Lösung ist [**bpmn-to-code**](https://github.com/Miragon/bpmn-to-code): ein Maven-Plugin, das aus
-deinen BPMN-Dateien beim Build eine **typsichere Process-API** generiert – eine Java-Klasse pro Prozess,
-in der jede Element-ID, jeder Message-Name und der Process-Key als Konstante steht
-(`Elements.USER_TASK_CONFIRM_MEMBERSHIP`, `Messages.MESSAGE_SUBSCRIPTION_REQUESTED`, `PROCESS_ID`).
-Umbenennen im Modeler → nächster Build regeneriert → aus dem stillen Laufzeit-Fehler wird ein
-**Compilerfehler**, den du sofort siehst.
+Benennt nächste Woche jemand `userTask_confirmMembership` im Modeler um, merkt das
+**niemand**: Der Compiler ist zufrieden, der Test prüft klaglos gegen eine ID, die es nicht
+mehr gibt – und wird grün oder rot aus dem falschen Grund. Genau der stille Fehler, den der
+Test eigentlich ausrotten sollte.
 
-> Ehrlich gesagt hätte sich das schon vorher gelohnt – der Outbound-Adapter korreliert seine Nachricht
-> per `"Message_SubscriptionRequested"`, auch so ein handgetippter String. Aber beim **Testen** zahlt es
-> sich am meisten aus: Kein anderer Code referenziert so viele Element-IDs auf einmal wie ein Prozess-Test.
+[**bpmn-to-code**](https://github.com/Miragon/bpmn-to-code) ist ein Maven-Plugin, das beim
+Build aus deinen BPMN-Dateien eine **typsichere Process-API** generiert: eine Java-Klasse
+pro Prozess, in der jede Element-ID, jeder Message-Name und der Prozess-Key als Konstante
+steht. Umbenennen im Modeler → nächster Build → aus dem stillen Laufzeitfehler wird ein
+**Compilerfehler**.
 
-## Aufgaben
+## Lernziele
 
-### a) Plugin + Runtime in die `pom.xml`
+Nach diesem Add-on kannst du
 
-Version zentral aus der Root-`pom.xml`, im Modul also ohne `<version>`:
+- `bpmn-to-code` als Maven-Plugin einbinden und die Process-API generieren,
+- Element-IDs, Message-Namen und den Prozess-Key über generierte Konstanten referenzieren,
+- begründen, warum handgetippte IDs in Tests eine Fehlerquelle sind,
+- die Gegenprobe fahren: eine Umbenennung im Modell muss den Build brechen.
+
+## Ziel-Modell
+
+Es kommt **kein neues Modell** dazu – du härtest den Test aus Aufgabe 5.
+
+## Aufgabe
+
+### 1. Plugin und Runtime in die `pom.xml` eintragen
+
+Die Version kommt zentral aus der Root-`pom.xml`, im Modul also ohne `<version>`:
 
 ```xml
 <!-- dependencies -->
@@ -60,20 +72,22 @@ Version zentral aus der Root-`pom.xml`, im Modul also ohne `<version>`:
 </plugin>
 ```
 
-### b) Generieren
+### 2. Process-API generieren
 
-Das Plugin läuft in der Phase `generate-sources` – ein Build genügt:
+Das Plugin hängt in der Maven-Phase `generate-sources`. Stoß sie einmal an, damit die
+Klassen entstehen – ab dann passiert das bei jedem Build automatisch:
 
 ```bash
-../../mvnw -pl services/process-application generate-sources
+./mvnw -pl services/process-application generate-sources
 ```
 
-Danach liegt `io.miragon.training.adapter.process.SubscribeNewsletterProcessApi` in `src/main/java`.
+Danach liegt `io.miragon.training.adapter.process.SubscribeNewsletterProcessApi` unter
+`src/main/java`.
 
-### c) Strings ersetzen
+### 3. Strings im Test ersetzen
 
-Die Wrapper-Typen (`ElementId`, `MessageName`, `ProcessId`) sind keine Strings –
-in String-Kontexten rufst du `.getValue()` auf:
+Die Wrapper-Typen (`ElementId`, `MessageName`, `ProcessId`) sind keine Strings – in
+String-Kontexten rufst du `.getValue()` auf:
 
 ```java
 import io.miragon.training.adapter.process.SubscribeNewsletterProcessApi.Elements;
@@ -93,7 +107,10 @@ assertThat(instance)
                 Elements.END_EVENT_MEMBERSHIP_REJECTED.getValue());
 ```
 
-Ersetze genauso den Process-Key im `ProcessEngineTestUtils` und den Message-Namen im Outbound-Adapter:
+### 4. Prozess-Key und Message-Namen ersetzen
+
+Nicht nur der Test hat handgetippte Strings: Der Test-Helfer sucht Instanzen über den
+Prozess-Key, der Outbound-Adapter korreliert über den Message-Namen. Ersetze beide:
 
 ```java
 // ProcessEngineTestUtils: statt "subscribeNewsletter"
@@ -103,30 +120,54 @@ private static final String PROCESS_DEFINITION_KEY = SubscribeNewsletterProcessA
 runtimeService.createMessageCorrelation(Messages.MESSAGE_SUBSCRIPTION_REQUESTED.getValue()) ...
 ```
 
-Ab hier gilt: **Ab dieser Aufgabe nutzen alle Lösungen die generierte Process-API** – jede weitere Stufe
-(Boundary, Compensation, Call Activity) referenziert ihre neuen Elemente über Konstanten statt
-über Strings.
+## Randbedingungen
 
-> Variablen-Namen wie `"membershipId"` oder `"hasEmptySpots"` lassen wir hier bewusst als Strings stehen –
-> die Process-API kann sie zwar auch typisieren, der Fokus dieses Add-ons sind aber die Element-IDs.
+- **Ab hier nutzen alle Lösungen die generierte Process-API.** Jede weitere Stufe
+  (Boundary Events, Kompensation, Call Activity) referenziert ihre neuen Elemente über
+  Konstanten statt über Strings.
+- Variablennamen wie `"membershipId"` oder `"hasEmptySpots"` bleiben bewusst Strings – die
+  Process-API kann sie zwar auch typisieren, hier geht es aber um die Element-IDs.
+- Das Plugin läuft in der Phase `generate-sources`; ein normaler Build genügt, ein
+  gesonderter Aufruf ist nur beim ersten Mal nötig.
 
-## Testen
+## Erwartetes Ergebnis
+
+Lass die Tests aus Aufgabe 5 erneut laufen – am Verhalten darf sich nichts geändert haben:
 
 ```bash
-../../mvnw -pl services/process-application test -Dtest=MembershipProcessTest
+./mvnw -pl services/process-application test -Dtest=MembershipProcessTest
 ```
 
-> **Gegenprobe:** Benenne testweise ein Element im `newsletter.bpmn` um, führe `generate-sources` aus –
-> die entsprechende Konstante verschwindet und dein Test **kompiliert nicht mehr**. Genau das wollten wir.
+Die Tests sind weiterhin grün, enthalten aber kein einziges Element-ID-Literal mehr.
 
-> **Ausblick:** In der **Extra-Aufgabe** geht die Process-API noch einen Schritt weiter: Dort ersetzen
-> engine-neutrale Worker die JavaDelegates und binden sich über `ServiceTasks`-Konstanten aus genau
-> dieser API an die Service Tasks – der native Engine-Import verschwindet komplett.
+**Gegenprobe:** Benenne testweise ein Element im `newsletter.bpmn` um und führe
+`generate-sources` erneut aus – die zugehörige Konstante verschwindet und dein Test
+**kompiliert nicht mehr**. Genau das war das Ziel.
+
+## Selbstcheck
+
+- [ ] `SubscribeNewsletterProcessApi` wird beim Build generiert
+- [ ] Im Prozess-Test steht kein Element-ID-String mehr
+- [ ] `ProcessEngineTestUtils` nutzt `PROCESS_ID`, der Outbound-Adapter nutzt `Messages.*`
+- [ ] Die Gegenprobe erzeugt einen Compilerfehler statt eines stillen Fehlschlags
+
+## Hinweise
+
+Gelohnt hätte sich das schon vorher: Der Outbound-Adapter korreliert seine Nachricht per
+`"Message_SubscriptionRequested"` – auch ein handgetippter String. Beim **Testen** zahlt es
+sich am meisten aus, weil kein anderer Code so viele Element-IDs auf einmal referenziert.
+
+**Ausblick:** In der [Extra-Aufgabe](extra-task-1.md) geht die Process-API einen Schritt
+weiter – dort binden sich engine-neutrale Worker über `ServiceTasks`-Konstanten aus genau
+dieser API an die Service Tasks.
 
 ## Referenzlösung
 
 `../solutions/exercise-05/`
 
----
+## Nächster Schritt
+
+In Aufgabe 6 wird der Prozess deutlich reicher: Subprozess, Timer, Message Boundary Events
+und ein Parallel Gateway.
 
 ➡️ [Weiter zu Aufgabe 6](exercise-06.md)

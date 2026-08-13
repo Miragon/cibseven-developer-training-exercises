@@ -1,85 +1,152 @@
 # Aufgabe 7 – Kompensation (SAGA-Muster)
 
-## Ziel-Modell
+> **Voraussetzung:** Aufgabe 6 ist abgeschlossen – Subprozess, Boundary Events und Parallelzweige laufen.
+> **Arbeitsverzeichnis:** `services/process-application`
+> **Neu in dieser Aufgabe:** Compensation Boundary Event, Kompensations-Handler, Compensating End Event, SAGA-Denkweise.
 
-![BPMN Modell der Aufgabe](assets/exercise-07.svg)
+## Darum geht es
 
-Referenz-Modell: `../models/exercise-07/newsletter.bpmn`.
+Erinnerst du dich an `revokeClaim`? In Aufgabe 6 liegt dieser Service Task im **Sequenzfluss**
+jedes Abbruchpfads und gibt den reservierten Platz wieder frei. Das war pragmatisch – und es
+skaliert schlecht.
+
+Sobald mehrere Aktivitäten zurückgenommen werden müssen (Reservierung, Bestätigungs-Mail,
+Aufrufe an Drittdienste), wächst dieser Rücknahmepfad in **jedem** Sequenzfluss mit, der zu
+einem Abbruch führt. Man kopiert dieselbe Folge von Service Tasks an jedes Abbruch-End-Event –
+und vergisst sie beim nächsten neuen Pfad.
+
+**BPMN-Kompensation** dreht das um: Der Prozess deklariert **einmal**, welche Aktivität
+(`revokeClaim`) welche andere Aktivität (`claimMembership`) rückgängig macht. Wird ein
+Compensating End Event erreicht, ruft die Engine diesen Kompensations-Handler von sich aus
+auf – ganz ohne Sequenzfluss.
 
 ## Lernziele
 
-- Abgeschlossene Aktionen bei Abbruch automatisch rückgängig machen (BPMN-Kompensation)
-- Compensation Boundary Event + Compensating End Event einsetzen
-- SAGA-Muster in Prozessmodellen anwenden
+Nach dieser Aufgabe kannst du
 
-## Hintergrund
+- ein Compensation Boundary Event an einen Service Task hängen,
+- einen Task als Kompensations-Handler markieren (`isForCompensation`) und per Association
+  zuordnen,
+- ein End Event in ein Compensating End Event umwandeln,
+- Kompensation von einem Transaktions-Rollback unterscheiden,
+- das SAGA-Muster in einem Prozessmodell wiedererkennen.
 
-### Kompensation
+## Ziel-Modell
 
-Erinnerst du dich an `revokeClaim`? In Aufgabe 6 haben wir den Service Task eingeführt, um den Membership-Platz bei Ablehnung oder Timeout wieder freizugeben – als expliziter Knoten direkt im Sequenzfluss. Damals: pragmatisch. Heute: nicht mehr zeitgemäß.
-
-Statt den `revokeClaim` weiterhin als expliziten Service Task an jeden Decline-Pfad zu hängen, nutzen wir **BPMN-Kompensation**. Der Prozess deklariert einmal, *welche Aktion* (`revokeClaim`) *welche andere Aktion* (`claimMembership`) rückgängig macht. Sobald ein Compensating End Event erreicht wird, kümmert sich die Engine um den Rest.
-
-**Warum ist das besser?** Bei mehreren abzusichernden Aktionen (z.B. claimMembership + sendConfirmationMail + Drittdienste) wächst der manuelle Kompensierungspfad schnell und wird schwer wartbar. Mit BPMN-Kompensation deklariert man die Zuordnung einmal – und die Engine übernimmt die Ausführung automatisch.
-
-> **Kompensation ≠ Transaktions-Rollback.** Das technische Rollback aus dem Trainingskapitel *Async & Transaction Boundaries* (Topic 4) macht eine *einzelne, noch nicht committete* Engine-Transaktion rückgängig – automatisch, unsichtbar. Kompensation ist das fachliche Gegenstück: Sie macht *bereits committete* Arbeit über **neue** Transaktionen (den `revokeClaim`-Aufruf) wieder rückgängig, nachdem der Wait State längst passiert ist. Kurz: Rollback greift *vor* dem Commit, Kompensation *danach*.
+![BPMN-Modell der Aufgabe](assets/exercise-07.svg)
 
 ```
-serviceTask_claimMembership ──── [Kompensations-Boundary] ──── serviceTask_revokeClaim
-                                                                (isForCompensation=true)
-endEvent_membershipDeclined  →  [Compensating End Event]  →  Engine ruft revokeClaim auf
+serviceTask_claimMembership ──[Compensation Boundary]--- - -→ serviceTask_revokeClaim
+                                boundary_compensateClaim         (isForCompensation="true")
+
+timer_abortAfter3HalfDays  ─┐
+                            ├─→ endEvent_membershipDeclined  (Compensating End Event)
+event_confirmationRejected ─┘              ↓
+                                  Engine ruft revokeClaim auf
 ```
 
-## Aufgaben
+Referenzmodell: `../models/exercise-07/newsletter.bpmn`
 
-### 1. BPMN anpassen – Kompensation
+## Aufgabe
 
-Ändere `newsletter.bpmn` im Miragon BPMN Modeler:
+### 1. Kompensations-Handler deklarieren
 
-- [ ] Compensation Boundary Event an `serviceTask_claimMembership` anhängen
-- [ ] `serviceTask_revokeClaim` mit `isForCompensation=true` markieren und per Association mit dem Boundary verknüpfen
-- [ ] Decline-Pfade (Timer-Abbruch **und** Message-Ablehnung) direkt mit `endEvent_membershipDeclined` verbinden (kein `revokeClaim` im Pfad)
-- [ ] `endEvent_membershipDeclined` in Compensating End Event umwandeln
+Zuerst sagst du dem Modell, *was* die Reservierung rückgängig macht. Dazu gehören drei
+Dinge: ein Compensation Boundary Event am reservierenden Task, der Handler selbst und die
+Association, die beide verbindet.
 
-Referenz-Modell: `../models/exercise-07/newsletter.bpmn`
+| Element | Typ | ID | Konfiguration |
+|---|---|---|---|
+| Kompensations-Boundary | Compensation Boundary Event | `boundary_compensateClaim` | hängt an `serviceTask_claimMembership` |
+| Verknüpfung | Association | `association_compensateClaim` | vom Boundary auf `serviceTask_revokeClaim` |
+| Handler | Service Task | `serviceTask_revokeClaim` | `isForCompensation="true"`, Delegate bleibt `#{revokeClaimDelegate}` |
 
-**Hinweis:** Der `RevokeClaimDelegate` bleibt unverändert – er wird jetzt nur anders aufgerufen (durch die BPMN-Engine statt via Sequenzfluss). Es muss kein Java-Code geändert werden.
+Der Handler liegt damit **außerhalb** des Sequenzflusses: kein eingehender, kein
+ausgehender Flow.
 
-**Kontrollfrage:** Warum funktioniert `RevokeClaimDelegate` ohne Änderungen weiter, obwohl er nicht mehr im Sequenzfluss liegt?
+### 2. Abbruchpfade entkoppeln
 
-## Testen
+Verbinde `timer_abortAfter3HalfDays` und `event_confirmationRejected` **direkt** mit
+`endEvent_membershipDeclined`. Der Service Task `serviceTask_revokeClaim` fällt damit aus
+beiden Sequenzflüssen heraus.
 
-**Kompensation prüfen – Timer-Ablauf:**
-1. `POST /api/memberships` → Prozess startet, Claim wird gesetzt
-2. Warte bis Timer-Boundary ausgelöst wird (z.B. Timer-Konfiguration auf 30s für den Test setzen)
-3. Log zeigt `"Revoking membership claim"` – obwohl kein expliziter Service Task im Pfad
-4. Cockpit: Prozessinstanz endet mit „Membership declined"
+### 3. End Event zum Auslöser machen
 
-**Kompensation prüfen – Manuelle Ablehnung:**
-1. `POST /api/memberships` → warte auf UserTask `confirmMembership`
-2. Trigger Confirmation-Rejected-Message → `event_confirmationRejected` Boundary löst aus
-3. Pfad geht direkt zu `endEvent_membershipDeclined` → Compensation feuert → `revokeClaim` automatisch ausgeführt
+Wandle `endEvent_membershipDeclined` in ein **Compensating End Event** um. Erst dadurch
+löst der Abbruch die Kompensation aus.
 
-## Kontrolle
+## Randbedingungen
 
-- [ ] Log zeigt `"Revoking membership claim"` beim Timer-Ablauf (ohne expliziten Task im Pfad)
-- [ ] Log zeigt `"Revoking membership claim"` nach Ablehnung via Message
-- [ ] Cockpit: Kompensations-Handler wird in der Prozesshistorie sichtbar
-- [ ] `revokeClaim` ist **nirgendwo** mehr im Sequenzfluss – nur noch als Compensation Handler
+- **Am Java-Code ändert sich nichts.** `RevokeClaimDelegate` bleibt unverändert – er wird
+  nur anders aufgerufen: von der Engine als Kompensations-Handler statt über einen
+  Sequenzfluss.
+- Alle übrigen Elemente (Subprozess, Timer, Parallelzweige, Ablehnung wegen fehlender
+  Kapazität) bleiben unangetastet.
+- Für den manuellen Test lohnt es sich, die Timer-Dauer vorübergehend auf `PT30S` zu setzen.
 
-## Prozess-Test erweitern
+## Erwartetes Ergebnis
 
-Fachlich ändert sich am Ergebnis der Decline-Pfade nichts – `serviceTask_revokeClaim`
-läuft weiterhin, nur jetzt als Kompensations-Handler. Deine bestehenden Assertions
+**Abbruch durch Timeout:**
+
+1. `POST /api/memberships` – eine Prozessinstanz startet und reserviert einen Platz.
+2. Warte, bis das Timer Boundary Event feuert.
+3. Im Log erscheint die Freigabe (`Revoking membership claim for …`) – obwohl kein
+   expliziter Task mehr im Pfad liegt.
+4. Im Cockpit endet die Instanz an „Membership declined".
+
+**Abbruch durch Rückzug:**
+
+1. `POST /api/memberships`, dann warten, bis der User Task `Confirm membership` steht.
+2. `POST /api/memberships/{membershipId}/reject` – das Message Boundary Event feuert.
+3. Der Pfad geht direkt zum Compensating End Event, die Engine ruft `revokeClaim` auf.
+
+## Selbstcheck
+
+- [ ] `serviceTask_revokeClaim` liegt **nirgends** mehr im Sequenzfluss
+- [ ] Der Task trägt `isForCompensation="true"` und ist per Association mit dem Boundary
+      Event an `claimMembership` verknüpft
+- [ ] `endEvent_membershipDeclined` ist ein Compensating End Event
+- [ ] Die Freigabe wird bei Timeout **und** bei Rückzug ausgelöst
+- [ ] Im Cockpit ist der Kompensations-Handler in der Prozesshistorie sichtbar
+- [ ] Der Prozess-Test aus Aufgabe 6 läuft unverändert grün
+
+## Hinweise
+
+**Kontrollfrage:** Warum funktioniert `RevokeClaimDelegate` ohne Änderung weiter, obwohl er
+nicht mehr im Sequenzfluss liegt? (Antwort: Der Delegate ist an das *Element* gebunden, nicht
+an dessen Position im Fluss. Die Engine erzeugt für den Handler eine eigene Execution mit
+denselben Prozessvariablen.)
+
+**Kompensation ist kein Rollback.** Das technische Rollback aus dem Trainingskapitel
+*Async & Transaction Boundaries* macht eine *einzelne, noch nicht committete*
+Engine-Transaktion rückgängig – automatisch und unsichtbar. Kompensation ist das fachliche
+Gegenstück: Sie macht *bereits committete* Arbeit über **neue** Transaktionen rückgängig,
+lange nachdem der Wait State passiert ist. Kurz: Rollback greift *vor* dem Commit,
+Kompensation *danach*.
+
+**Warum dein Prozess-Test unverändert bleibt:** Fachlich ändert sich am Ergebnis nichts –
+`serviceTask_revokeClaim` läuft weiterhin, nur als Handler. Deine Assertions
 `hasPassed(Elements.SERVICE_TASK_REVOKE_CLAIM.getValue(), Elements.END_EVENT_MEMBERSHIP_DECLINED.getValue())`
-und `verify(revokeClaimUseCase).revokeClaim(id)` gelten unverändert.
+und `verify(revokeClaimUseCase).revokeClaim(id)` gelten weiter. Genau das ist ein gutes
+Zeichen: Ein Umbau der Modellierung, der das Verhalten nicht ändert, darf den Test nicht
+brechen.
 
-> **Weiterführendes:** BPMN-Kompensation eignet sich besonders für **SAGA-Muster** in Microservices: Jeder Schritt hat einen zugehörigen Kompensationsschritt. Bei Fehlern kompensiert die Engine alle bisher erfolgreichen Schritte in umgekehrter Reihenfolge. In CIB Seven kann Kompensation auch über Subprocess-Grenzen hinweg ausgelöst werden.
+**Weiterführend:** Kompensation ist das BPMN-Werkzeug für **SAGA-Muster** in verteilten
+Systemen – jeder Schritt bekommt einen Kompensationsschritt, und bei einem Fehler
+kompensiert die Engine die erfolgreichen Schritte in umgekehrter Reihenfolge. In CIB Seven
+funktioniert das auch über Subprozessgrenzen hinweg.
 
 ## Referenzlösung
 
-`../solutions/exercise-07/`
+`../solutions/exercise-07/` – oder direkt laden:
 
----
+```bash
+./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=07
+```
+
+## Nächster Schritt
+
+In Aufgabe 8 wandert die gesamte Ablehnungsbehandlung in einen eigenen Prozess – aufgerufen
+über eine Call Activity und gesteuert von einer DMN-Entscheidungstabelle.
 
 ➡️ [Weiter zu Aufgabe 8](exercise-08.md)

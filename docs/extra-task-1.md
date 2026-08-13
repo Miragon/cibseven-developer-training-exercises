@@ -1,62 +1,82 @@
-# Extra-Aufgabe 1 – Raus aus dem Engine-Lock-in: die Process-Engine-API
+# Extra-Aufgabe 1 – Raus aus dem Engine-Lock-in
 
-> **Voraussetzung:** Aufgabe 9 ist abgeschlossen. Der Membership-Prozess läuft vollständig – mit Service Tasks, User Tasks, Gateways, Boundary Events, Subprozess, Call Activity, DMN, Kompensation und dem **Signal-End-Event** „Membership activated".
->
-> **Fokus:** Es geht hier **ausschließlich um den Embedded-Service** (`process-application`) – wir bauen nur dessen Engine-Anbindung engine-neutral um. Der **Logistik-Service aus Aufgabe 9 bleibt unverändert** (eigener Remote-Service, External Task, generierter Client) und ist **nicht Teil** dieser Aufgabe.
+> **Voraussetzung:** Aufgabe 9 ist abgeschlossen – der Membership-Prozess läuft vollständig, inklusive Signal-End-Event „Membership activated".
+> **Arbeitsverzeichnis:** `services/process-application`
+> **Neu in dieser Aufgabe:** Process-Engine-API von bpm-crafters, Worker-Pattern statt JavaDelegate, engine-neutraler Outbound-Adapter, ArchUnit-Guardrail.
 
-## Ziel-Modell
-
-Das Prozessmodell ändert sich **fachlich nicht**. Es ist exakt der Prozess aus Aufgabe 9 – nur die technische Anbindung der Service Tasks wechselt. Das Signal-End-Event „Membership activated" bleibt ein **natives BPMN-Throw** (kein Delegate) und passt damit ohnehin in die engine-neutrale Welt.
-
-Hauptprozess:
-
-![BPMN Hauptprozess](assets/extra-task-1-main.svg)
-
-Sub-Prozess `handleRejection`:
-
-![BPMN Sub-Prozess](assets/extra-task-1-sub.svg)
-
-## Lernziele
-
-- Verstehen, wo native Engine-Kopplung im Code entsteht (`JavaDelegate`, `DelegateExecution`, `RuntimeService`)
-- Die **Process-Engine-API** als engine-neutralen Abstraktions-Layer einsetzen
-- Service Tasks über das **Worker-Pattern** (`@ProcessEngineWorker`) statt `DelegateExpression` anbinden
-- Prozesse engine-neutral starten und Nachrichten korrelieren (`StartProcessApi`, `CorrelationApi`)
-- Den Engine-Wechsel auf einen **Adapter-Tausch** reduzieren
-- Per Architektur-Test garantieren, dass kein `org.cibseven.bpm`-Import mehr in den Code leakt
-
-## Hintergrund
+## Darum geht es
 
 **Strategie-Meeting. Der Prozess läuft. Jemand stellt die unbequeme Frage.**
 
-> *„Schön, dass alles läuft. Aber wir haben gerade unsere komplette Fachlogik an eine Engine getackert. Was passiert, wenn wir in zwei Jahren wechseln müssen?"*
+> *„Schön, dass alles läuft. Aber wir haben unsere komplette Fachlogik an eine Engine
+> getackert. Was passiert, wenn wir in zwei Jahren wechseln müssen?"*
 > — Die Person, die schon mal eine Migration mitgemacht hat.
 
-Camunda 7 ist End-of-Life. Wir sind auf **CIB Seven** umgestiegen – einen gepflegten Fork, gute Wahl. Aber ehrlich: Unser Code weiß das ein bisschen *zu* genau. Jeder Service Task hängt an einem `JavaDelegate` mit `org.cibseven.bpm.engine.delegate.DelegateExecution`. Der Prozess-Adapter ruft `RuntimeService` direkt auf. Würden wir morgen auf Camunda 8 oder Operaton wechseln wollen, müssten wir **jeden Delegate und jeden Engine-Call anfassen**.
+Camunda 7 ist End-of-Life, wir sind auf **CIB Seven** umgestiegen – ein gepflegter Fork,
+gute Wahl. Aber unser Code weiß das ein bisschen *zu* genau: Jeder Service Task hängt an
+einem `JavaDelegate` mit `org.cibseven.bpm.engine.delegate.DelegateExecution`, der
+Prozess-Adapter ruft den `RuntimeService` direkt auf. Ein Wechsel auf Camunda 8 oder
+Operaton hieße: jeden Delegate und jeden Engine-Aufruf anfassen.
 
-Genau dafür gibt es die [**Process-Engine-API**](https://github.com/bpm-crafters/process-engine-api) von bpm-crafters: ein engine-neutraler Layer – so wie JPA Datenbanken abstrahiert oder Spring Cloud Stream Messaging-Systeme. Sie bringt Adapter für verschiedene BPMN-Engines mit (CIB Seven, Camunda 7, Camunda 8, Operaton …). Ein Engine-Wechsel wird – stark vereinfacht – zum **Tausch eines Adapters**. In der Realität nie ganz so einfach, aber deutlich einfacher als sonst. Und: Wir bauen weniger Kopplung auf, machen weniger falsch und sammeln weniger technische Schulden.
+Die [**Process-Engine-API**](https://github.com/bpm-crafters/process-engine-api) von
+bpm-crafters ist eine engine-neutrale Abstraktionsschicht – so, wie JPA die Datenbank
+abstrahiert. Sie bringt Adapter für verschiedene BPMN-Engines mit (CIB Seven, Camunda 7,
+Camunda 8, Operaton). Ein Engine-Wechsel wird damit – stark vereinfacht – zum **Tausch eines
+Adapters**. In der Realität nie ganz so einfach, aber deutlich einfacher als sonst.
 
-> Als Vorlage für diese Aufgabe dient das Repo [**engine-safari**](https://github.com/emaarco/engine-safari), Modul `cib-seven-with-process-engine-api`.
+Das Beste daran: **Domain, Application-Services und Ports bleiben unangetastet.** Sie waren
+schon immer engine-neutral – genau dafür gibt es die hexagonale Architektur. Du fasst nur
+die Adapter-Schicht an.
 
-Das Beste daran: **Domain, Application-Services und Ports bleiben unangetastet.** Sie waren schon immer engine-neutral – das war der ganze Sinn der hexagonalen Architektur. Wir fassen nur den Adapter-Layer an.
+## Lernziele
 
-## Was sich ändert (und was nicht)
+Nach dieser Aufgabe kannst du
 
-| Schicht | Aufgabe 9 (nativ CIB7) | Extra-Aufgabe 1 (Process-Engine-API) |
+- benennen, wo native Engine-Kopplung im Code entsteht (`JavaDelegate`, `DelegateExecution`,
+  `RuntimeService`),
+- Service Tasks über das Worker-Pattern (`@ProcessEngineWorker`) statt über
+  `DelegateExpression` anbinden,
+- Prozesse engine-neutral starten und Nachrichten korrelieren (`StartProcessApi`,
+  `CorrelationApi`),
+- begründen, warum External Tasks die `asyncBefore`-Marker überflüssig machen,
+- per Architektur-Test garantieren, dass kein `org.cibseven.bpm`-Import mehr in den Code leakt.
+
+## Ziel-Modell
+
+Das Prozessmodell ändert sich **fachlich nicht**. Es ist exakt der Prozess aus Aufgabe 9 –
+nur die technische Anbindung der Service Tasks wechselt. Das Signal-End-Event „Membership
+activated" bleibt ein natives BPMN-Throw ohne Delegate und passt damit ohnehin in die
+engine-neutrale Welt.
+
+Hauptprozess:
+
+![BPMN-Hauptprozess](assets/extra-task-1-main.svg)
+
+Aufgerufener Prozess `handleRejection`:
+
+![BPMN-Subprozess](assets/extra-task-1-sub.svg)
+
+Was sich ändert – und was nicht:
+
+| Schicht | Aufgabe 9 (nativ CIB Seven) | Extra-Aufgabe 1 |
 |---|---|---|
 | `domain/`, `application/` | unverändert | **unverändert** |
 | Inbound Service Tasks | `JavaDelegate` + `DelegateExecution` | `@ProcessEngineWorker`-Worker |
 | Outbound Prozess-Adapter | `RuntimeService.createMessageCorrelation(...)` | `StartProcessApi` / `CorrelationApi` |
 | BPMN Service Tasks | `camunda:delegateExpression="#{xDelegate}"` | `camunda:type="external"` + `camunda:topic` |
-| Bootstrap | `@EnableProcessApplication` | entfällt (Adapter übernimmt Deployment & Worker) |
+| Bootstrap | `@EnableProcessApplication` | entfällt – der Adapter übernimmt Deployment und Worker |
 
-Alles andere im BPMN – Message-Start, Boundary-Events, Subprozess, Call Activity, DMN, Kompensation – bleibt **strukturell gleich**. DMN und User Tasks laufen weiterhin in der Engine; dafür brauchen wir keine Worker.
+Message Start, Boundary Events, Subprozess, Call Activity, DMN und Kompensation bleiben
+strukturell gleich. DMN und User Tasks laufen weiterhin in der Engine; dafür braucht es
+keine Worker.
 
-## Aufgaben
+## Aufgabe
 
-> Tipp: Am einfachsten kopierst du deine Aufgabe-7-Lösung und baust sie Schritt für Schritt um.
+> Am einfachsten kopierst du deine Aufgabe-9-Lösung und baust sie Schritt für Schritt um.
+> Der Logistik-Service aus Aufgabe 9 bleibt dabei **unverändert** und ist nicht Teil dieser
+> Aufgabe.
 
-### 1. Dependencies & Adapter einbinden
+### 1. Dependencies einbinden
 
 In die `pom.xml` des Moduls:
 
@@ -64,18 +84,20 @@ In die `pom.xml` des Moduls:
 - `dev.bpm-crafters.process-engine-worker:process-engine-worker-spring-boot-starter`
 - `dev.bpm-crafters.process-engine-adapters:process-engine-adapter-cib-seven-embedded-spring-boot-starter`
 
-Der CIB-Seven-Embedded-Adapter ist der Baustein, den du beim Engine-Wechsel später austauschen würdest – mehr nicht.
+Der CIB-Seven-Embedded-Adapter ist genau die Abhängigkeit, die du beim Engine-Wechsel gegen
+einen anderen Adapter tauschen würdest – Worker und Ports bleiben, wie sie sind.
 
-### 2. Service Tasks im BPMN auf External Tasks umstellen
+### 2. Service Tasks auf External Tasks umstellen
 
-Aus jedem
+Aus
 
 ```xml
 <bpmn:serviceTask id="serviceTask_sendConfirmationMail" name="Send confirmation mail"
                   camunda:delegateExpression="#{sendConfirmationMailDelegate}">
 ```
 
-wird ein External Task mit Topic – plus ein Input-Mapping, damit der Worker die `membershipId` bekommt:
+wird ein External Task mit Topic – plus ein Input-Mapping, damit der Worker die
+`membershipId` bekommt:
 
 ```xml
 <bpmn:serviceTask id="serviceTask_sendConfirmationMail" name="Send confirmation mail"
@@ -87,9 +109,9 @@ wird ein External Task mit Topic – plus ein Input-Mapping, damit der Worker di
   </bpmn:extensionElements>
 ```
 
-Das machst du für alle sieben Service Tasks (`claimMembership`, `sendConfirmationMail`, `sendWelcomeMail`, `sendRejectionMail`, `reSendConfirmationMail`, `revokeClaim`, `notifyCommunity`) – auch für den Kompensations-Task `revokeClaim`.
-
-> **Was mit den `asyncBefore`-Markern passiert:** Die in Aufgabe 4/6 gesetzten `camunda:asyncBefore="true"` auf den Mail-/Notify-Tasks **entfallen** bei der Umstellung. Ein External Task ist von Natur aus ein Wait State: Die Engine committet, sobald sie den Task anlegt, und wartet, bis ein Worker ihn fetcht und completet. Die Transaktionsgrenze, die wir mit `asyncBefore` von Hand gesetzt haben, bringt der External Task also **eingebaut** mit. Genau darin liegt Teil des Gewinns beim Wechsel auf das Worker-Pattern.
+Stelle alle sieben Service Tasks um: `claimMembership`, `sendConfirmationMail`,
+`sendWelcomeMail`, `sendRejectionMail`, `reSendConfirmationMail`, `revokeClaim` (auch als
+Kompensations-Handler) und `notifyCommunity`.
 
 ### 3. Delegates durch Worker ersetzen
 
@@ -106,7 +128,7 @@ public class SendConfirmationMailDelegate extends BaseDelegate {
 }
 ```
 
-wird ein engine-neutraler Worker – **kein** `org.cibseven.bpm`-Import mehr:
+wird ein engine-neutraler Worker – **ohne** `org.cibseven.bpm`-Import:
 
 ```java
 @Component
@@ -125,9 +147,8 @@ public class SendConfirmationMailWorker {
 }
 ```
 
-> Die Topic-Konstanten (`ServiceTasks.SEND_CONFIRMATION_MAIL`) stammen aus der aus dem BPMN **generierten** Process-API, die du seit [Aufgabe 5](exercise-05.md) kennst – hier binden sich die Worker jetzt zusätzlich über ihre `ServiceTasks`-Konstanten an die Service Tasks. Das Plugin ist bereits eingerichtet; du kannst die Topics zur Not auch als schlichte Strings schreiben.
-
-Der `claimMembership`-Worker gibt – anders als die übrigen – ein Ergebnis zurück, das das Gateway auswertet:
+Der `claimMembership`-Worker gibt – anders als die übrigen – ein Ergebnis zurück, das das
+Gateway auswertet:
 
 ```java
 @ProcessEngineWorker(topic = ServiceTasks.CLAIM_MEMBERSHIP)
@@ -137,9 +158,9 @@ public Map<String, Object> claimMembership(@Variable(name = "membershipId") Stri
 }
 ```
 
-### 4. Outbound-Adapter auf die Engine-API umstellen
+### 4. Outbound-Adapter umstellen
 
-Statt `RuntimeService` injizierst du `StartProcessApi` und `CorrelationApi`:
+Statt des `RuntimeService` injizierst du `StartProcessApi` und `CorrelationApi`:
 
 ```java
 @Override
@@ -169,41 +190,49 @@ public void rejectMembership(MembershipId membershipId) {
 }
 ```
 
-### 5. Bootstrap & Konfiguration
+### 5. Bootstrap und Konfiguration anpassen
 
-- `@EnableProcessApplication` von der `TrainingApplication` entfernen – der Adapter übernimmt Deployment und Worker-Registrierung.
-- Einen `EngineCommandExecutor` als Bean bereitstellen, damit Engine- und Business-Daten in **einer** Transaktion committen. Das ist die Fortsetzung des Transaction-Management-Themas aus Aufgabe 4: `Runnable::run` führt den Engine-Command **synchron im aufrufenden Thread** und damit in derselben Transaktion wie der Business-Write aus – Engine-Fortschritt und Fachdaten committen oder rollen gemeinsam. Ein eigener Thread-Pool-Executor würde diese Grenze zerschneiden.
+Entferne `@EnableProcessApplication` aus der `TrainingApplication` – der Adapter übernimmt
+Deployment und Worker-Registrierung.
 
-  ```java
-  @Bean
-  public EngineCommandExecutor engineCommandExecutor() {
-      return new EngineCommandExecutor(Runnable::run);
-  }
-  ```
+Stelle einen `EngineCommandExecutor` als Bean bereit, damit Engine- und Business-Daten in
+**einer** Transaktion committen:
 
-- In der `application.yaml` den Worker-/Adapter-Block ergänzen (Polling-Strategie `embedded_scheduled`):
+```java
+@Bean
+public EngineCommandExecutor engineCommandExecutor() {
+    return new EngineCommandExecutor(Runnable::run);
+}
+```
 
-  ```yaml
-  dev:
-    bpm-crafters:
-      process-api:
-        worker:
-          deployment:
-            enabled: true
-            bpmnResourcePattern: "classpath*:/**/*.bpmn"
-            dmnResourcePattern: "classpath*:/**/*.dmn"
-        adapter:
-          cib-seven-embedded:
-            enabled: true
-            service-tasks:
-              delivery-strategy: embedded_scheduled
-              worker-id: extra-task-1-worker
-              schedule-delivery-fixed-rate-in-seconds: 5
-  ```
+`Runnable::run` führt den Engine-Command synchron im aufrufenden Thread aus – Engine-Fortschritt
+und Fachdaten committen oder rollen gemeinsam. Ein eigener Thread-Pool würde diese Grenze
+zerschneiden. Das ist die direkte Fortsetzung des Themas aus [Aufgabe 4](exercise-04.md).
+
+Ergänze in der `application.yaml` den Worker- und Adapter-Block:
+
+```yaml
+dev:
+  bpm-crafters:
+    process-api:
+      worker:
+        deployment:
+          enabled: true
+          bpmnResourcePattern: "classpath*:/**/*.bpmn"
+          dmnResourcePattern: "classpath*:/**/*.dmn"
+      adapter:
+        cib-seven-embedded:
+          enabled: true
+          service-tasks:
+            delivery-strategy: embedded_scheduled
+            worker-id: extra-task-1-worker
+            schedule-delivery-fixed-rate-in-seconds: 5
+```
 
 ### 6. Guardrail setzen
 
-Ein ArchUnit-Test macht die Kernaussage prüfbar: **Nirgends** im Java-Code darf noch ein `org.cibseven.bpm`-Import stehen.
+Ein ArchUnit-Test macht die Kernaussage prüfbar: **Nirgends** im Java-Code darf noch ein
+`org.cibseven.bpm`-Import stehen.
 
 ```java
 @ArchTest
@@ -211,45 +240,74 @@ static final ArchRule no_class_should_depend_on_the_native_engine = noClasses()
         .should().dependOnClassesThat().resideInAPackage("org.cibseven.bpm..");
 ```
 
-Wenn dieser Test grün ist, lebt die Engine nur noch in `pom.xml` und `application.yaml` – genau das, was beim Wechsel angefasst werden müsste.
+Ist der Test grün, lebt die Engine nur noch in `pom.xml` und `application.yaml` – genau
+das, was bei einem Wechsel angefasst werden müsste.
 
-## Testen
+## Randbedingungen
 
-Die REST-Schnittstelle und das Verhalten sind identisch zu Aufgabe 9 (Port `8080`). Service Tasks werden jetzt per Polling (~5 s) abgearbeitet, es kann also einen Moment dauern.
+- **Die `asyncBefore`-Marker entfallen.** Ein External Task ist von Natur aus ein Wait
+  State: Die Engine committet, sobald sie den Task anlegt, und wartet, bis ein Worker ihn
+  fetcht und completet. Die Transaktionsgrenze, die du in Aufgabe 4 und 6 von Hand gesetzt
+  hast, bringt der External Task eingebaut mit. Darin liegt ein Teil des Gewinns.
+- Die Topic-Konstanten (`ServiceTasks.SEND_CONFIRMATION_MAIL`) stammen aus der generierten
+  Process-API, die du seit [Aufgabe 5](exercise-05.md) kennst. Das Plugin ist bereits
+  eingerichtet; zur Not gehen auch schlichte Strings.
+- Die REST-Schnittstelle bleibt identisch zu Aufgabe 9 (Port `8080`). Service Tasks werden
+  jetzt per Polling abgearbeitet (etwa alle 5 Sekunden) – es kann also einen Moment dauern.
 
-**Einfache Ablehnung (Alter außerhalb 21–29):**
+## Erwartetes Ergebnis
+
+Fahre dieselben beiden Szenarien wie in Aufgabe 8 – das Ergebnis muss identisch sein, nur
+die Ausführung läuft jetzt über Worker statt über Delegates.
+
+**Ablehnung außerhalb der Zielgruppe:**
+
 ```bash
 MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8080/api/memberships \
-  -d '{"email": "grace@miravelo.com", "name": "Grace", "age": 35}' | tr -d '"')
+  -H "Content-Type: application/json" \
+  -d '{"email": "grace@miravelo.com", "name": "Grace", "age": 35}')
 
 curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
 ```
 
-Im Cockpit (`http://localhost:8080/camunda`, admin/admin):
-1. Worker `sendConfirmationMail` feuert, User Task „Confirm membership" erscheint
-2. Nach dem Reject läuft die Call Activity `handleRejection`, danach feuert über die Kompensation der Worker `revokeClaim` (Log: „Revoking claim …")
+Im Cockpit (`http://localhost:8080/camunda`, admin/admin): Der Worker
+`sendConfirmationMail` feuert, der User Task *Confirm membership* erscheint. Nach dem
+Rückzug läuft die Call Activity `handleRejection`, danach feuert über die Kompensation der
+Worker `revokeClaim`.
 
-**VIP-Bewerber (Alter 21–29):**
+**Ablehnung innerhalb der Zielgruppe:**
+
 ```bash
 MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8080/api/memberships \
-  -d '{"email": "hanna@miravelo.com", "name": "Hanna", "age": 25}' | tr -d '"')
+  -H "Content-Type: application/json" \
+  -d '{"email": "hanna@miravelo.com", "name": "Hanna", "age": 25}')
 
 curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
 ```
 
-## Kontrolle
+Hier wartet der aufgerufene Prozess zusätzlich am User Task *Write an email expressing
+regret*.
 
-- [ ] Alle sieben Service Tasks sind im BPMN `camunda:type="external"` mit Topic
-- [ ] Es gibt keine `JavaDelegate`-Klassen mehr – nur noch `@ProcessEngineWorker`-Worker
+## Selbstcheck
+
+- [ ] Alle sieben Service Tasks sind `camunda:type="external"` mit Topic
+- [ ] Es gibt keine `JavaDelegate`-Klassen mehr, nur noch `@ProcessEngineWorker`-Worker
 - [ ] Der Outbound-Adapter nutzt `StartProcessApi` / `CorrelationApi` statt `RuntimeService`
 - [ ] `@EnableProcessApplication` ist entfernt, der `EngineCommandExecutor`-Bean ist gesetzt
-- [ ] Der ArchUnit-Test bestätigt: **0** `org.cibseven.bpm`-Abhängigkeiten im Code
-- [ ] Fachliches Verhalten ist identisch zu Aufgabe 9
+- [ ] Der ArchUnit-Test meldet **null** Abhängigkeiten auf `org.cibseven.bpm`
+- [ ] Das fachliche Verhalten ist identisch zu Aufgabe 9
+
+## Hinweise
+
+Als Vorlage dient das Repository [**engine-safari**](https://github.com/emaarco/engine-safari),
+Modul `cib-seven-with-process-engine-api`.
 
 ## Referenzlösung
 
 `../solutions/extra-task-1/`
 
----
+## Nächster Schritt
 
-🦁 **Geschafft!** Dein Prozess ist jetzt engine-neutral. CIB Seven läuft weiter unter der Haube – aber dein Code weiß davon nichts mehr. Ein Engine-Wechsel ist damit kein Code-Umbau mehr, sondern ein Adapter-Tausch.
+🦁 **Geschafft!** Dein Prozess ist engine-neutral. CIB Seven läuft weiter unter der Haube –
+aber dein Code weiß nichts mehr davon. Ein Engine-Wechsel ist damit kein Code-Umbau mehr,
+sondern ein Adapter-Tausch.
