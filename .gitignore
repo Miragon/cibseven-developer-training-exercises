@@ -13,7 +13,11 @@
 /.idea/*.iml
 .DS_Store
 .vscode
-.claude
+.claude/*
+# Der Review-Skill für die Trainingsaufgaben gehört ins Repository:
+!.claude/skills
+.claude/skills/*
+!.claude/skills/aufgaben-review
 
 # Maven
 target/

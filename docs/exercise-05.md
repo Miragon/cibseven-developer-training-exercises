@@ -1,59 +1,56 @@
-# Aufgabe 5 – Prozess-Tests
+# Aufgabe 5 – Den Prozess mit Tests absichern
 
-## Ziel-Modell
+> **Voraussetzung:** Aufgabe 4 ist abgeschlossen – Gateway, Kapazitätsprüfung und beide Prozessausgänge laufen.
+> **Arbeitsverzeichnis:** `services/process-application`
+> **Neu in dieser Aufgabe:** In-Memory-Engine mit h2, abgeschalteter Job Executor, `@MockitoBean`, Assertions mit `BpmnAwareTests`.
 
-![BPMN Modell der Aufgabe](assets/exercise-05.svg)
-
-> Es kommt **kein neues Modell** dazu. Du testest den Prozess, den du in Aufgabe 4 gebaut hast
-> (Message-Start → Claim → Gateway → Bestätigung → Welcome / Rejection).
-
-Referenz-Modell (unverändert gegenüber Aufgabe 4): `../models/exercise-05/newsletter.bpmn`
-
-## Lernziele
-
-- Einen Prozess als **Unit-Test** absichern – ohne PostgreSQL, ohne laufende Infrastruktur
-- Die Engine im Test auf **h2** und mit **abgeschaltetem Job-Executor** betreiben
-- Die Use Cases hinter den Delegates gezielt **mocken** (`@MockitoBean`)
-- Async-Continuations deterministisch bis zum nächsten **Wait State** treiben
-- Prozesspfade mit **`BpmnAwareTests`** prüfen (`isWaitingAt`, `hasPassedInOrder`, `isEnded` …)
-
-## Hintergrund
+## Darum geht es
 
 **Montagmorgen. Der Prozess läuft. Angeblich.**
 
-Du hast in den letzten Aufgaben einen ordentlichen Prozess gebaut: Gateway, Bestätigungs-Mail,
-Ablehnung. In der Cockpit-Demo hat alles funktioniert – einmal. Aber Hand aufs Herz: Woher weißt du,
-dass er **immer noch** funktioniert, nachdem nächste Woche jemand ein Boundary Event dranhängt,
-einen Flow umbiegt oder eine Bedingung dreht?
+Du hast einen ordentlichen Prozess gebaut: Gateway, Bestätigungs-Mail, Ablehnung. In der
+Cockpit-Demo hat alles funktioniert – einmal. Aber woher weißt du, dass er **nächste Woche
+noch** funktioniert, wenn jemand ein Boundary Event anhängt, einen Sequenzfluss umbiegt oder
+eine Bedingung dreht?
 
-Klickst du dann jedes Mal von Hand durch Cockpit? Startest PostgreSQL, feuerst curl-Requests,
-liest Logs? Das macht niemand zuverlässig. Und genau da sterben Prozesse leise: Ein Flow zeigt nach
-dem Refactoring ins Leere, das Gateway nimmt den falschen Pfad – und keiner merkt es, bis ein
-Bewerber trotz freiem Platz eine Absage bekommt.
+Klickst du dann jedes Mal durchs Cockpit? Startest PostgreSQL, schickst curl-Aufrufe ab,
+liest Logs? Das macht niemand zuverlässig. Genau da sterben Prozesse leise: Ein Sequenzfluss
+zeigt nach dem Refactoring ins Leere, das Gateway nimmt den falschen Pfad – und keiner merkt
+es, bis jemand trotz freiem Platz eine Absage bekommt.
 
 > *„Works on my machine" ist kein Testkonzept. Es ist eine Ausrede mit besserer PR.*
 
-Die Lösung ist ein **Prozess-Test**: Wir starten den echten Prozess in einer In-Memory-Engine,
-lassen die echten Delegates laufen, mocken nur die Fachlogik dahinter – und behaupten dann in Code,
-welchen Weg der Prozess nehmen muss. Ab jetzt sagt dir ein grüner Test in Sekunden, ob das Ding
-noch tut, was es soll. Jede folgende Aufgabe erweitert diesen Test mit.
+Ein **Prozess-Test** startet den echten Prozess in einer In-Memory-Engine, lässt die echten
+Delegates laufen und ersetzt nur die Fachlogik dahinter durch Mocks. Welchen Weg die
+Prozessinstanz nehmen muss, steht danach als **Assertion** im Test – überprüfbar bei jedem
+Build statt einmalig in einer Demo.
 
-## Warum das ohne PostgreSQL geht
+## Lernziele
 
-Zwei Stellschrauben machen den Test schnell und reproduzierbar:
+Nach dieser Aufgabe kannst du
 
-1. **h2 statt PostgreSQL** – die Engine bekommt eine In-Memory-Datenbank, die pro Testlauf frisch
-   angelegt und wieder verworfen wird (`ddl-auto: create-drop`).
-2. **Job-Executor aus** – normalerweise arbeitet ein Hintergrund-Thread `asyncBefore`/`asyncAfter`
-   ab. Im Test schalten wir ihn ab und treiben die Async-Continuations selbst aus dem Testthread.
-   Dadurch ist das Timing komplett unter Kontrolle – kein Warten, kein Flackern.
+- einen Prozess als Unit-Test absichern, ohne PostgreSQL und ohne laufende Infrastruktur,
+- die Engine im Test auf h2 und mit abgeschaltetem Job Executor betreiben,
+- die Use Cases hinter den Delegates mit `@MockitoBean` gezielt mocken,
+- die Async-Continuations im Test selbst ausführen und die Instanz damit kontrolliert bis
+  zum nächsten Wait State bringen,
+- Prozesspfade mit `BpmnAwareTests` prüfen (`isWaitingAt`, `hasPassedInOrder`, `isEnded`).
 
-## Aufgaben
+## Ziel-Modell
+
+![BPMN-Modell der Aufgabe](assets/exercise-05.svg)
+
+Es kommt **kein neues Modell** dazu. Du testest den Prozess aus Aufgabe 4: Message Start →
+Claim → Gateway → Bestätigung → Willkommens-Mail beziehungsweise Ablehnung.
+
+Referenzmodell (unverändert gegenüber Aufgabe 4): `../models/exercise-05/newsletter.bpmn`
+
+## Aufgabe
 
 ### 1. Test-Dependency ergänzen
 
-Die Assertions kommen aus dem CIB-Seven-Port von `camunda-bpm-assert`. Die Version ist in der
-Root-`pom.xml` zentral gemanagt – im Modul reicht die Dependency ohne Version:
+Die Assertions kommen aus dem CIB-Seven-Port von `camunda-bpm-assert`. Die Version ist
+zentral in der Root-`pom.xml` gemanagt:
 
 ```xml
 <dependency>
@@ -63,9 +60,9 @@ Root-`pom.xml` zentral gemanagt – im Modul reicht die Dependency ohne Version:
 </dependency>
 ```
 
-> `spring-boot-starter-test` (JUnit 5, Mockito, AssertJ) und `h2` sind bereits vorhanden.
+`spring-boot-starter-test` (JUnit 5, Mockito, AssertJ) und `h2` sind bereits vorhanden.
 
-### 2. Test-Profil `application-test.yaml`
+### 2. Testprofil anlegen
 
 **Neue Datei:** `src/test/resources/application-test.yaml`
 
@@ -95,7 +92,7 @@ camunda:
       type: h2
       schema-update: true
     job-execution:
-      enabled: false   # <-- der Kern: Async-Continuations treiben wir selbst
+      enabled: false   # <-- der Kern: die Async-Continuations führen wir selbst aus
     webapp:
       enabled: false
 
@@ -106,17 +103,22 @@ cibseven:
       jwtSecret: M9nU3ORo3s+gK23D9mO5I2h+EIqnosCFDCJi+2bKoulKqZkeQT8pGYg5RhuORlf/fWhLu5meC/SPZCv9NNuj6SK/vE5Sid04UQGrnyh04EpBdiAosAO91xezjgmbSeALUtneibseGpS0tNE4RvLIl+gXiAKqNXyO
 ```
 
+> **Begriff: Job Executor.** Der Hintergrund-Thread der Engine. Er holt sich die Jobs, die
+> bei einer asynchronen Continuation (`asyncBefore` / `asyncAfter` aus
+> [Aufgabe 4](exercise-04.md)) entstehen, und arbeitet sie ab – im Betrieb genau richtig,
+> im Test eine Quelle für Zufall: Der Test weiß nie, wie weit die Instanz gerade ist.
+> Deshalb schalten wir ihn ab und führen die Jobs selbst aus.
+
 ### 3. Test-Helfer anlegen
 
 **Neue Datei:** `src/test/java/io/miragon/training/process/util/ProcessEngineTestUtils.java`
 
-Zwei kleine Helfer reichen für diese Aufgabe (den `fireTimer`-Helfer brauchst du erst mit den
-Boundary Events in Aufgabe 6):
+Zwei Helfer reichen für diese Aufgabe:
 
-- `continueToNextWaitState(processEngine)` – führt die offenen Async-Jobs nacheinander aus, bis der
-  Prozess seinen nächsten Wait State (User Task oder Ende) erreicht.
+- `continueToNextWaitState(processEngine)` – führt die offenen Async-Jobs nacheinander aus,
+  bis die Instanz ihren nächsten Wait State (User Task oder Ende) erreicht.
 - `findProcessInstance(runtimeService, membershipId)` – findet die laufende Instanz über den
-  Process-Key `subscribeNewsletter` und die Variable `membershipId`.
+  Prozess-Key `subscribeNewsletter` und die Variable `membershipId`.
 
 ```java
 public static void continueToNextWaitState(ProcessEngine processEngine) {
@@ -130,8 +132,8 @@ public static void continueToNextWaitState(ProcessEngine processEngine) {
 }
 ```
 
-> Die vollständige Datei (inkl. `findProcessInstance` und dem `fireTimer` für später) findest du
-> in der Referenzlösung.
+Den `fireTimer`-Helfer brauchst du erst mit den Boundary Events in Aufgabe 6. Die
+vollständige Datei liegt in der Referenzlösung.
 
 ### 4. Happy-Path-Test schreiben
 
@@ -161,8 +163,8 @@ class MembershipProcessTest {
 }
 ```
 
-Der Happy Path: `claimMembership` liefert `true`, der Prozess wartet am User Task, wir schließen ihn
-ab, die Welcome-Mail wird verschickt, das Ende ist `endEvent_membershipConfirmed`.
+Der Happy Path: `claimMembership` liefert `true`, die Prozessinstanz wartet am User Task, du
+schließt ihn ab, die Willkommens-Mail geht raus, das Ende ist `endEvent_membershipConfirmed`.
 
 ```java
 @Test
@@ -198,33 +200,55 @@ void happyPath_membershipIsConfirmedAndWelcomeMailIsSent() {
 }
 ```
 
-> Diese Element-IDs stehen hier noch als Strings im Test – im [Add-on](exercise-05-addon.md) räumen wir
-> sie gleich weg. Merk dir schon mal, wie viele es sind.
-
-### 5. Rejection-Pfad testen (selbst)
+### 5. Ablehnungspfad selbst testen
 
 Schreibe einen zweiten Test `noCapacity_membershipIsRejected`:
-- `claimMembership` liefert `false`
-- der Prozess läuft ohne Wait State direkt bis `endEvent_membershipRejected`
-- geprüft wird: `serviceTask_sendRejectionMail` wurde durchlaufen, Bestätigung/Welcome **nicht**,
-  und `sendWelcomeMailUseCase` wurde nie aufgerufen (`verify(..., never())`).
 
-## Testen
+- `claimMembership` liefert `false`.
+- Die Prozessinstanz läuft ohne Wait State direkt bis `endEvent_membershipRejected`.
+- Geprüft wird: `serviceTask_sendRejectionMail` wurde durchlaufen, Bestätigung und
+  Willkommens-Mail **nicht**, und `sendWelcomeMailUseCase` wurde nie aufgerufen
+  (`verify(..., never())`).
+
+## Randbedingungen
+
+- Der Test läuft **ohne** PostgreSQL und ohne laufenden Stack. Zwei Stellschrauben machen
+  ihn schnell und reproduzierbar:
+  1. **h2 statt PostgreSQL** – eine In-Memory-Datenbank, die pro Testlauf frisch angelegt
+     und verworfen wird (`ddl-auto: create-drop`).
+  2. **Job Executor aus** – die Continuations führst du selbst aus dem Testthread aus. Damit
+     bestimmst du, wie weit die Instanz ist, wenn du deine Assertion schreibst.
+- Gemockt werden **nur die Use Cases**. Delegates, Modell und Engine laufen echt – sonst
+  testest du deine Mocks statt deinen Prozess.
+- Die Element-IDs stehen in dieser Aufgabe noch als Strings im Test. Merk dir, wie viele es
+  sind – das [Add-on](exercise-05-addon.md) räumt sie gleich weg.
+
+## Erwartetes Ergebnis
+
+Führe nur diese eine Testklasse aus – aus dem Wurzelverzeichnis des Repositories:
 
 ```bash
-# Nur den Prozess-Test ausführen (kein PostgreSQL nötig):
-../../mvnw -pl services/process-application test -Dtest=MembershipProcessTest
+./mvnw -pl services/process-application test -Dtest=MembershipProcessTest
 ```
 
-> **Add-on:** Die Element-IDs stehen jetzt noch als handgetippte Strings im Test – fragil, sobald jemand
-> im Modeler umbenennt. Im [Add-on: bpmn-to-code](exercise-05-addon.md) generierst du daraus eine
-> typsichere Process-API und ersetzt die Strings durch geprüfte Konstanten. **Ab dann nutzen alle
-> Lösungen die generierte API.**
+Beide Tests laufen in wenigen Sekunden durch, ohne dass PostgreSQL läuft. Schlägt einer
+fehl, zeigt dir die Assertion, an welcher Aktivität die Instanz tatsächlich stand.
+
+## Selbstcheck
+
+- [ ] `application-test.yaml` existiert, der Job Executor ist im Testprofil abgeschaltet
+- [ ] `ProcessEngineTestUtils` bringt die Instanz bis zum nächsten Wait State
+- [ ] Der Happy-Path-Test prüft die Reihenfolge **und** die nicht genommenen Pfade
+- [ ] Der Ablehnungstest prüft, dass die Willkommens-Mail nie aufgerufen wurde
+- [ ] Beide Tests laufen grün, ohne dass der Docker-Stack läuft
 
 ## Referenzlösung
 
 `../solutions/exercise-05/`
 
----
+## Nächster Schritt
+
+Die Element-IDs stehen noch als handgetippte Strings im Test – fragil, sobald jemand im
+Modeler umbenennt. Das Add-on macht daraus geprüfte Konstanten.
 
 ➡️ [Weiter zum Add-on: bpmn-to-code](exercise-05-addon.md)

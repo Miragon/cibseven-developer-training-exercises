@@ -6,23 +6,21 @@ Praxisübungen für das CIB Seven Developer Training. Das Projekt implementiert 
 
 ### Hintergrund: Miravelo
 
-**Miravelo** ist ein Lifestyle-Online-Shop für Menschen in der Quarterlife-Crisis —
-Gravel Bikes für die Wochenenden, die zählen, und Rennräder für alle, die den
-Asphalt unter den Reifen spüren wollen.
+**Miravelo** ist ein Online-Shop für hochwertige Fahrräder — Gravel Bikes für lange
+Wochenendtouren, Rennräder für alle, die es auf dem Asphalt schnell mögen. Die Kundschaft
+ist jung, markenbewusst und ziemlich leidenschaftlich.
 
-Die Kundenbasis wächst. Neue Produkte kommen raus. Das Team beschließt:
-Wir bauen einen **Newsletter**. Damit Kunden über neue Drops, Produkt-Launches
-und exklusive Angebote informiert bleiben.
-Klassisch. Bodenständig. Kein Schnickschnack.
-Jemand trägt sich ein, kriegt eine Welcome Mail – fertig.
+Der Shop wächst, neue Produkte kommen laufend dazu. Das Team beschließt:
+Wir bauen einen **Newsletter**, damit Kundinnen und Kunden über Produkt-Launches und
+exklusive Angebote informiert bleiben. Jemand trägt sich ein, bekommt eine
+Willkommens-Mail – fertig.
 
 > *„Das ist doch in einer Stunde gebaut."*
 > — Jeder Entwickler, der einen Newsletter unterschätzt hat.
 
 Das Training findet im Kontext des **Newsletter-Anmeldeprozesses** statt.
 Ab Aufgabe 4 wird aus dem einfachen Newsletter der exklusive **Miravelo Inner Circle** —
-eine limitierte Membership für echte Fans der Marke. Gravel Bike in der Garage,
-Halbmarathon im Kalender – du weißt, wen wir meinen.
+eine auf tausend Plätze limitierte Membership für die treuesten Kundinnen und Kunden.
 
 Was folgt, ist eine Reise durch immer komplexere BPMN-Muster: Gateways, Boundary Events,
 Subprozesse, Parallel Gateways, Call Activities, DMN-Entscheidungstabellen und Kompensation —
@@ -37,16 +35,22 @@ Detaillierte Aufgabenbeschreibungen befinden sich in [`docs/`](docs/).
 | Aufgabe | Thema | Beschreibung |
 |---|---|---|
 | [0](docs/exercise-00.md) | Fachliche BPMN-Modellierung | Miragon BPMN Modeler kennenlernen, Prozess rein fachlich modellieren |
-| [1](docs/exercise-01.md) | Engine & Tooling | Lauffähigen Newsletter deployen, Cockpit & DB-Tabellen der Engine kennenlernen |
+| [1](docs/exercise-01.md) | Engine zum Laufen bringen | Modul scharf schalten, Cockpit und `act_*`-Tabellen der Engine kennenlernen |
 | [2](docs/exercise-02.md) | Technische Modellierung & Automatisierung | Technisch modellieren, JavaDelegate, RuntimeService, REST-Endpoint |
-| [3](docs/exercise-03.md) | Bestätigungs-Mail | Double-Opt-In-Pattern, weitere Service Tasks |
-| [4](docs/exercise-04.md) | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung, Domain-Refactoring |
+| [3](docs/exercise-03.md) | Double-Opt-In | Message Start Event, Nachrichten-Korrelation, Bestätigungsschritt |
+| [4](docs/exercise-04.md) | Kapazitätsprüfung mit Gateway | Exclusive Gateway, Domain-Refactoring, Transaktionsgrenzen, Business Key, Task-Formular |
 | [5](docs/exercise-05.md) | Prozess-Tests | Prozess-Unit-Test mit In-Memory-Engine, gemockten Use Cases, ohne PostgreSQL |
-| [6](docs/exercise-06.md) | Boundary Events & Subprozesse | Parallel Gateway, Timer- & Message-Boundary-Events, Subprocess |
-| [7](docs/exercise-07.md) | Kompensation (SAGA) | Compensation Boundary Events, Compensating End Event, automatisches Rollback |
+| [5 · Add-on](docs/exercise-05-addon.md) | bpmn-to-code | Element-IDs als generierte Konstanten statt handgetippter Strings |
+| [6](docs/exercise-06.md) | Subprozess, Boundary Events & Parallelität | Subprozess, Timer- und Message-Boundary-Events, Parallel Gateway, Teams-Anbindung |
+| [7](docs/exercise-07.md) | Kompensation (SAGA) | Compensation Boundary Event, Compensating End Event, Kompensations-Handler |
 | [8](docs/exercise-08.md) | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
 | [9](docs/exercise-09.md) | Remote Engine als geteilte Infrastruktur | Eine Abteilung besitzt einen **eigenen** kleinen Prozess (`sendWelcomeKit`) in ihrem Remote-Service: Modell, Worker, Deployment und Tests liegen dort; getriggert per Signal-Broadcast; die Engine über einen generierten OpenAPI-Client getrieben |
-| [Extra 1](docs/extra-task-1.md) | Process-Engine-API | Aufgabe 8 engine-neutral umbauen: Worker statt JavaDelegate, Adapter-Tausch statt Engine-Lock-in |
+| [Extra 1](docs/extra-task-1.md) | Process-Engine-API | Aufgabe 9 engine-neutral umbauen: Worker statt JavaDelegate, Adapter-Tausch statt Engine-Lock-in |
+
+> Aufbau, Sprache und Qualitätskriterien der Aufgaben sind in
+> [`docs/aufgaben-template.md`](docs/aufgaben-template.md) festgehalten. Neue oder geänderte
+> Aufgaben werden mit dem Skill `aufgaben-review` gegengeprüft
+> (`.claude/skills/aufgaben-review/SKILL.md`).
 
 ## Quick Start
 

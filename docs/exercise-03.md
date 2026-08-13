@@ -1,85 +1,144 @@
-# Aufgabe 3 – Bestätigungs-Mail
+# Aufgabe 3 – Double-Opt-In per Bestätigungs-Mail
 
-## Ziel-Modell
+> **Voraussetzung:** Aufgabe 2 ist abgeschlossen – der Prozess startet über `POST /api/subscriptions` und verschickt die Willkommens-Mail über einen Delegate.
+> **Arbeitsverzeichnis:** `services/process-application`
+> **Neu in dieser Aufgabe:** Message Start Event, Nachrichten-Korrelation, ein zweiter Service Task, ein Bestätigungs-User-Task.
 
-![BPMN Modell der Aufgabe](assets/exercise-03.svg)
+## Darum geht es
 
-## Lernziele
+Rose hat das neue **Backroad AL** auf den Markt gebracht, Miravelo launcht es exklusiv im
+Store. Social Media dreht durch, über Nacht kommen 500 Anmeldungen rein.
 
-- Einen bestehenden Prozess in Miragon BPMN Modeler erweitern
-- Mehrere Service Tasks implementieren
-- Sequenzielle Flows mit User Tasks kombinieren
-
-## Hintergrund
-
-Rose hat das neue **Backroad AL** auf den Markt gebracht – und Miravelo launcht es exklusiv im Store.
-Social Media dreht durch. Über Nacht: 500 Newsletter-Anmeldungen.
-
-Das Team starrt auf die Datenbank und beginnt, Fragen zu stellen:
+Das Team starrt auf die Datenbank und stellt Fragen:
 
 - Sind das echte E-Mail-Adressen?
-- Wer ist überhaupt diese `noreply@throwaway.xyz`?
+- Wer ist diese `noreply@throwaway.xyz`?
 - Irgendwer hat `admin@miravelo.com` eingetragen. Als Witz. Wahrscheinlich.
-
-Das Team beschließt: Wir bauen einen **Bestätigungsschritt**. Erst Mail bestätigen,
-dann Welcome Mail. Klassisches Double-Opt-In.
-
-Und während wir dabei sind – wenn schon so viele Menschen Miravelo-Produkte wollen,
-vielleicht wollen sie auch mehr als nur einen Newsletter. Vielleicht wollen sie dazugehören.
 
 > *„500 Sign-ups. Das ist entweder viral oder ein Bot-Angriff."*
 > — CTO, beim zweiten Kaffee
 
-### Neuer Prozessablauf
+Die Antwort ist ein **Double-Opt-In**: erst Mail bestätigen, dann Willkommens-Mail. Und
+weil die Anmeldedaten inzwischen ohnehin per REST hereinkommen, wandert das Ausfüllen des
+Formulars aus dem Prozess heraus – der Prozess startet ab jetzt mit einer **Nachricht**.
+
+## Lernziele
+
+Nach dieser Aufgabe kannst du
+
+- ein None Start Event durch ein **Message Start Event** ersetzen und begründen, warum,
+- eine Prozessinstanz über `createMessageCorrelation(...).correlateStartMessage()` starten,
+- mehrere Service Tasks in einem Prozess betreiben,
+- einen User Task als **Wait State** einsetzen (Begriff aus [Aufgabe 1](exercise-01.md)),
+  an dem die Prozessinstanz auf die Bestätigung wartet,
+- einen weiteren Use Case samt Service und Delegate nach bewährtem Muster ergänzen.
+
+## Ziel-Modell
+
+![BPMN-Modell der Aufgabe](assets/exercise-03.svg)
 
 ```
-[Newsletter wanted]
-        ↓
-[Send confirmation mail]   ← NEU (Service Task)
-        ↓
-[Confirm subscription]     ← NEU (User Task)
-        ↓
-[Send Welcome Mail]
-        ↓
-[User subscribed]
+(✉) [Submit registration form]     ← geändert: Message Start Event
+              ↓
+    [Send confirmation mail]       ← neu: Service Task
+              ↓
+    [Confirm subscription]         ← neu: User Task
+              ↓
+    [Send Welcome Mail]
+              ↓
+    [User subscribed]
 ```
 
-## Aufgaben
+Referenzmodell: `../models/exercise-03/newsletter.bpmn`
 
-### 1. BPMN erweitern
+**Achte auf drei Änderungen gegenüber Aufgabe 2**, nicht nur auf die beiden neuen Elemente:
 
-Öffne `src/main/resources/bpmn/newsletter.bpmn` im Miragon BPMN Modeler und erweitere den Prozess:
+1. Das Start Event heißt jetzt `startEvent_submitRegistration` („Submit registration form")
+   und ist ein **Message Start Event**.
+2. Der User Task `userTask_fillOutForm` **entfällt** samt seiner Formularfelder. Die
+   Anmeldedaten kommen über den REST-Aufruf herein und werden beim Start als
+   Prozessvariablen gesetzt – ein Formular in der Tasklist braucht es dafür nicht mehr.
+3. An seine Stelle tritt weiter hinten der neue User Task `userTask_confirmSubscription`.
+
+## Aufgabe
+
+### 1. Start Event auf eine Nachricht umstellen
+
+Öffne `src/main/resources/bpmn/newsletter.bpmn` im Miragon BPMN Modeler und ersetze das
+None Start Event durch ein Message Start Event:
+
+| Eigenschaft | Wert |
+|---|---|
+| ID | `startEvent_submitRegistration` |
+| Name | Submit registration form |
+| Typ | Message Start Event |
+| Message Name | `Message_SubscriptionRequested` |
+
+Lösche anschließend den User Task `userTask_fillOutForm` inklusive seiner Formularfelder und
+verbinde das Start Event mit dem neuen Bestätigungs-Service-Task.
+
+### 2. Prozess um Bestätigungsschritt erweitern
+
+Zwischen Message Start Event und Willkommens-Mail kommen zwei Elemente dazu: ein **Service
+Task**, der die Bestätigungs-Mail verschickt, und ein **User Task** als **Wait State** – dort
+bleibt die Prozessinstanz stehen, bis die Bestätigung als abgeschlossener Task
+zurückgemeldet wird. Das ist genau der Zustand, den du in Aufgabe 1 in `act_ru_task`
+gesehen hast.
 
 | Element | Typ | ID | Name | Konfiguration |
 |---|---|---|---|---|
 | Bestätigungs-Mail | Service Task | `serviceTask_sendConfirmationMail` | Send confirmation mail | Delegate Expression: `#{sendConfirmationMailDelegate}` |
 | Bestätigung | User Task | `userTask_confirmSubscription` | Confirm subscription | – |
 
-**Achtung:** Der Service Task `sendConfirmationMail` muss **vor** dem User Task stehen.
+Der Service Task steht **vor** dem User Task: erst die Mail verschicken, dann auf die
+Bestätigung warten.
 
-Referenz-Modell: `../models/exercise-03/newsletter.bpmn`
-
-### 2. `SendConfirmationMailUseCase` erstellen
+### 3. `SendConfirmationMailUseCase` anlegen
 
 **Neue Datei:** `application/port/inbound/SendConfirmationMailUseCase.java`
 
-Erstelle ein Interface mit einer Methode `sendConfirmationMail(SubscriptionId)`.
+Ein Interface mit der Methode `sendConfirmationMail(SubscriptionId)`.
 
-### 3. `SendConfirmationMailService` implementieren
+### 4. `SendConfirmationMailService` implementieren
 
 **Neue Datei:** `application/service/SendConfirmationMailService.java`
 
-Lade die Subscription über das Repository und logge die E-Mail-Adresse, an die die Bestätigungsmail gesendet wird.
+Lade die Subscription über das Repository und logge die E-Mail-Adresse, an die die
+Bestätigungs-Mail geht.
 
-### 4. `SendConfirmationMailDelegate` erstellen
+### 5. `SendConfirmationMailDelegate` anlegen
 
 **Neue Datei:** `adapter/inbound/cibseven/SendConfirmationMailDelegate.java`
 
-Orientiere dich an `SendWelcomeMailDelegate`. Der Delegate soll:
-- `subscriptionId` aus der `DelegateExecution` lesen
-- `useCase.sendConfirmationMail(...)` aufrufen
+Orientiere dich an `SendWelcomeMailDelegate`. Der Delegate liest `subscriptionId` aus der
+`DelegateExecution` und ruft `useCase.sendConfirmationMail(...)` auf.
 
-## Testen
+### 6. Prozessstart auf Korrelation umstellen
+
+**Datei:** `adapter/outbound/cibseven/SubscriptionProcessAdapter.java`
+
+Ein Message Start Event lässt sich nicht mehr über `startProcessInstanceByKey` auslösen.
+Stelle `startProcess(...)` auf die Korrelation der Nachricht um:
+
+```java
+runtimeService.createMessageCorrelation("Message_SubscriptionRequested")
+        .setVariables(Map.of(/* subscriptionId, email, name, age */))
+        .correlateStartMessage();
+```
+
+## Randbedingungen
+
+- Der Prozess-Key bleibt `subscribeNewsletter`, der Message-Name ist exakt
+  `Message_SubscriptionRequested` – Tippfehler führen zur Laufzeit zu
+  `MismatchingMessageCorrelationException`.
+- Die Prozessvariablen (`subscriptionId`, `email`, `name`, `age`) bleiben unverändert; sie
+  werden jetzt beim Korrelieren gesetzt statt beim Starten.
+- Der neue Use Case folgt demselben Schnitt wie die bestehenden: Port im `application/port/inbound`,
+  Implementierung im `application/service`, Engine-Anbindung im `adapter/inbound/cibseven`.
+
+## Erwartetes Ergebnis
+
+Starte die Anwendung neu und melde eine Person an:
 
 ```bash
 curl -X POST http://localhost:8080/api/subscriptions \
@@ -87,15 +146,39 @@ curl -X POST http://localhost:8080/api/subscriptions \
   -d '{"email": "bob@miravelo.com", "name": "Bob", "age": 25}'
 ```
 
-Im Cockpit:
-1. Service Task `Send confirmation mail` läuft durch → Log: "Sending confirmation mail to bob@miravelo.com"
-2. UserTask `Confirm subscription` erscheint in der Task List
-3. Nach Abschluss → Service Task `Send Welcome Mail` läuft durch
+1. Der Service Task `Send confirmation mail` läuft sofort durch – im Log erscheint
+   `Sending confirmation mail to bob@miravelo.com`.
+2. Der User Task `Confirm subscription` erscheint in der Tasklist und die Prozessinstanz wartet.
+3. Nach dem Abschließen läuft `Send Welcome Mail` durch und die Instanz endet.
+
+## Selbstcheck
+
+- [ ] Das Start Event ist ein Message Start Event mit dem Namen `Message_SubscriptionRequested`
+- [ ] `userTask_fillOutForm` ist aus dem Modell verschwunden
+- [ ] Der Prozess wird über `correlateStartMessage()` gestartet und der REST-Aufruf
+      liefert weiterhin eine ID zurück
+- [ ] Beide Log-Zeilen (Bestätigung, Willkommen) erscheinen in der richtigen Reihenfolge
+- [ ] Zwischen den beiden Mails wartet der Prozess am User Task
+
+## Hinweise
+
+**Warum ein Message Start Event?** Ein None Start Event sagt „irgendwer startet hier
+irgendwie". Ein Message Start Event benennt den fachlichen Auslöser – *eine Registrierung
+ist eingegangen* – und macht ihn im Modell sichtbar. Technisch bekommst du damit dieselbe
+Korrelations-API, die du ab Aufgabe 6 auch für Nachrichten **an laufende Instanzen**
+brauchst (Ablehnung per Message Boundary Event).
 
 ## Referenzlösung
 
-`../solutions/exercise-03/`
+`../solutions/exercise-03/` – oder direkt laden:
 
----
+```bash
+./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=03
+```
+
+## Nächster Schritt
+
+In Aufgabe 4 wird aus dem Newsletter eine echte Mitgliedschaft – mit Kapazitätsprüfung,
+Gateway und Transaktionsgrenzen.
 
 ➡️ [Weiter zu Aufgabe 4](exercise-04.md)

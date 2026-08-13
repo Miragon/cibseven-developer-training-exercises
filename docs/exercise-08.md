@@ -1,184 +1,226 @@
-# Aufgabe 8 – Call Activity & DMN
+# Aufgabe 8 – Call Activity und DMN-Entscheidung
 
-> **Voraussetzung:** Aufgabe 7 (Kompensation) ist abgeschlossen. Der Hauptprozess kennt bereits die Compensation-Boundary auf `serviceTask_claimMembership`.
+> **Voraussetzung:** Aufgabe 7 ist abgeschlossen – der Hauptprozess kennt die Compensation-Boundary an `serviceTask_claimMembership`.
+> **Arbeitsverzeichnis:** `services/process-application`
+> **Neu in dieser Aufgabe:** eigenständiger Prozess, Call Activity mit Variablen-Mapping, DMN-Entscheidungstabelle, Business Rule Task.
+
+## Darum geht es
+
+Die Kompensation läuft sauber: Wird eine Membership abgelehnt, gibt die Engine den Platz von
+selbst wieder frei. Aber Miravelo hat eine Erkenntnis gewonnen.
+
+Einige dieser Crisis-Aspiranten zwischen 21 und 29 sind viel zu wertvoll, um sie einfach
+ziehen zu lassen. Sie verdienen gut, stecken mitten in ihrer Quarterlife-Crisis und suchen
+genau das, was Miravelo bietet. Die muss jemand persönlich zurückholen.
+
+Damit der Hauptprozess davon nicht aufgebläht wird, wandert die gesamte Ablehnungsbehandlung
+in einen **eigenen Prozess**, den eine **Call Activity** aufruft. Wer die Zielgruppe ist,
+entscheidet keine `if`-Kaskade im Code, sondern eine **DMN-Entscheidungstabelle** – die kann
+der Fachbereich später selbst anfassen.
+
+> Man könnte das auch mit einem eingebetteten Subprozess lösen. Wir nehmen die Call
+> Activity, weil wir ihre Eigenheiten kennenlernen wollen: eigene Prozessdefinition, eigene
+> Instanz, explizites Variablen-Mapping.
+
+## Lernziele
+
+Nach dieser Aufgabe kannst du
+
+- einen Prozessteil in eine eigene Prozessdefinition auslagern,
+- ihn über eine Call Activity aufrufen und Variablen per In-Mapping übergeben,
+- eine DMN-Entscheidungstabelle modellieren, deployen und über einen Business Rule Task
+  auswerten,
+- das Ergebnis einer Entscheidung an einem Exclusive Gateway verzweigen,
+- den Unterschied zwischen Haupt- und aufgerufener Prozessinstanz im Test berücksichtigen.
 
 ## Ziel-Modell
 
 Hauptprozess:
 
-![BPMN Hauptprozess](assets/exercise-08-main.svg)
+![BPMN-Hauptprozess](assets/exercise-08-main.svg)
 
-Sub-Prozess `handleRejection`:
+Aufgerufener Prozess `handleRejection`:
 
-![BPMN Sub-Prozess](assets/exercise-08-sub.svg)
-
-## Lernziele
-
-- Call Activities modellieren und einsetzen
-- Subprozesse in eigenständige Prozesse auslagern
-- Datenaustausch zwischen Haupt- und Subprozess (Variable Mappings)
-- DMN-Entscheidungstabellen modellieren und einbinden
-- Business Rule Tasks in BPMN verwenden
-- User Tasks für manuelle Eingriffe basierend auf DMN-Ergebnissen
-
-## Hintergrund
-
-Nach Aufgabe 7 läuft die Kompensation sauber: Wird ein Membership abgelehnt, kümmert sich die Engine via `serviceTask_revokeClaim`. Aber das ist erst der Anfang.
-
-Miravelo hat eine wichtige Erkenntnis gewonnen: Einige dieser „Crisis-Aspiranten" im Alter von 21–30 sind viel zu wertvoll, um sie einfach ziehen zu lassen. Die verdienen gut, sind mitten in ihrer Quarterlife Crisis und suchen genau das, was Miravelo bietet. Die müssen wir nochmal kontaktieren!
-
-Um den Hauptprozess nicht aufzublähen, lagern wir die gesamte Rejection-Behandlung in einen eigenen Prozess aus und rufen ihn über eine **Call Activity** auf. Die Compensation-Logik aus Aufgabe 7 bleibt im Hauptprozess – die Call Activity steht zwischen den Decline-Boundary-Events und dem Compensating End Event.
-
-> In diesem Fall könnte man das auch in einem Embedded Subprocess lösen – aber wir wollen verschiedene BPMN-Elemente kennenlernen ;)
-
-Nachdem die Call Activity steht, kommt der nächste Schritt: Wir wollen automatisch erkennen, welche abgelehnten Bewerber besonders wertvoll sind. Die „Quarterlife-Crisis"-Zielgruppe (21–29 Jahre) soll per **DMN-Entscheidungstabelle** identifiziert werden. Wenn jemand als „high value" eingestuft wird, soll ein Mitarbeiter persönlich Kontakt aufnehmen – per **User Task**.
-
-### Prozessstruktur
+![BPMN-Subprozess](assets/exercise-08-sub.svg)
 
 ```
 Hauptprozess (newsletter.bpmn):
-  ...
-  [boundary_timer | event_confirmationRejected]
-        ↓
-  [CallActivity: handleRejection]
-        ↓
-  [Compensating End Event: Membership declined]
-        ↓ (Engine löst Compensation aus)
-  [serviceTask_revokeClaim]
+  [timer_abortAfter3HalfDays | event_confirmationRejected]
+                    ↓
+     [Call Activity: handleRejection]
+                    ↓
+     (◉ Membership declined – Compensating End Event)
+                    ↓
+        Engine kompensiert → [Revoke claim]
 
-Subprozess (membership-rejection.bpmn):
-  [Start] → [Categorize applicant (DMN)] → [Is high value?]
-                                                ↓ Yes              ↓ No
-                                          [Contact personally]  [End: accepted]
-                                           (User Task)
-                                                ↓
-                                          [End: tried to reaquire]
+Aufgerufener Prozess (membership-rejection.bpmn):
+  (Start) → [Categorize applicant (DMN)] → ◇ [High value?]
+                                            ↓ ja                ↓ nein (Default)
+                                  [Write regret mail]     (◉ Accept rejection)
+                                     (User Task)
+                                            ↓
+                                  (◉ Tried to reacquire applicant)
 ```
 
-## Aufgaben
+Referenzmodelle: `../models/exercise-08/newsletter.bpmn`,
+`../models/exercise-08/membership-rejection.bpmn`,
+`../models/exercise-08/categorize-applicant.dmn`
 
-### 1. Subprozess `membership-rejection.bpmn` erstellen
+## Aufgabe
 
-Neue Datei: `src/main/resources/bpmn/membership-rejection.bpmn`
+### 1. DMN-Tabelle ins Projekt holen
 
-Referenz: `../models/exercise-08/membership-rejection.bpmn`
+Die Entscheidungstabelle ist fertig modelliert – DMN selbst zu modellieren ist nicht das
+Lernziel dieser Aufgabe. Kopiere sie ins Modul:
 
-Struktur:
-- Process ID: `handleRejection`
-- Start Event → Business Rule Task `Categorize applicant` → Exclusive Gateway → User Task `Contact personally` (Yes-Pfad) → End Event "Tried to reacquire"
-- Default-Pfad (No): direkt → End Event "Accept rejection"
+```bash
+cp models/exercise-08/categorize-applicant.dmn \
+   services/process-application/src/main/resources/dmn/categorize-applicant.dmn
+```
 
-### 2. Hauptprozess anpassen
+| Eigenschaft | Wert |
+|---|---|
+| Decision ID | `categorizeApplicant` |
+| Input | `age` (integer) |
+| Output | `isHighValue` (boolean) |
+| Regel | Alter im Bereich `[21..29]` → `true`; Default `-` → `false` |
 
-Ersetze die direkten Decline-Pfade aus Aufgabe 7 durch eine **Call Activity**:
+Alle `*.dmn` unter `src/main/resources` werden wie die BPMN-Dateien beim Start automatisch
+deployt.
+
+### 2. Prozess `membership-rejection.bpmn` modellieren
+
+**Neue Datei:** `src/main/resources/bpmn/membership-rejection.bpmn`, Prozess-Key
+`handleRejection`.
 
 | Element | Typ | ID | Name | Konfiguration |
 |---|---|---|---|---|
-| Rejection-Handler | Call Activity | `callActivity_handleRejection` | Handle rejection | Called Element: `handleRejection` |
+| Start | None Start Event | `startEvent_confirmationRejected` | Confirmation rejected | – |
+| Kategorisierung | Business Rule Task | `serviceTask_categorizeApplicant` | Categorize applicant | Decision Ref `categorizeApplicant`, Result Variable `isHighValue`, Map Decision Result `singleEntry` |
+| Verzweigung | Exclusive Gateway | `gateway_highValue` | High value? | Default-Flow: Nein-Pfad |
+| Persönlicher Kontakt | User Task | `userTask_writeRegretMail` | Write an email expressing regret | `asyncAfter="true"` |
+| Ende ja-Pfad | End Event | `endEvent_triedToReacquire` | Tried to reaquire applicant | – |
+| Ende nein-Pfad | End Event | `endEvent_acceptRejection` | Accept rejection | – |
 
-- Eingehende Flows: `timer_abortAfter3HalfDays`, `event_confirmationRejected` Boundary
-- Ausgehender Flow: → `endEvent_membershipDeclined` (Compensating End Event aus Aufgabe 7)
+Bedingung am Ja-Pfad: `${isHighValue}`. Der Nein-Pfad ist der Default-Flow.
 
-Die Compensation aus Aufgabe 7 bleibt unangetastet. Nach Rückkehr aus der Call Activity feuert das Compensating End Event und die Engine ruft `serviceTask_revokeClaim` auf.
+> Der Business Rule Task trägt im Referenzmodell das Präfix `serviceTask_` statt
+> `businessRuleTask_`. Das ist gewachsen – übernimm die ID aus dem Referenzmodell, damit
+> Doku, Modell und generierte Konstanten zusammenpassen.
 
-Referenz: `../models/exercise-08/newsletter.bpmn`
+### 3. Call Activity im Hauptprozess einsetzen
 
-### 3. Variablen-Übergabe konfigurieren
-
-In der Call Activity müssen Variablen übergeben werden:
-
-**In-Mapping (Hauptprozess → Subprozess):**
-- `membershipId` → `membershipId`
-- `age` → `age` (wird für die DMN-Entscheidung benötigt)
-
-**Out-Mapping (Subprozess → Hauptprozess):** (optional, falls Ergebnis zurückgegeben werden soll)
-
-### 4. DMN-Entscheidungstabelle einbinden
-
-Kopiere die Referenz-DMN ins Projekt:
-
-```bash
-cp ../models/exercise-08/categorize-applicant.dmn src/main/resources/dmn/categorize-applicant.dmn
-```
-
-Inhalt der DMN-Tabelle:
-- **Decision ID:** `categorizeApplicant`
-- **Input:** `age` (Integer)
-- **Output:** `isHighValue` (Boolean)
-- **Regel:** Alter zwischen 21 und 29 → `true` (Quarter-Life-Crisis!), sonst `false`
-
-### 5. Business Rule Task im Subprozess konfigurieren
+Im Hauptprozess ersetzt ein einziges Element alle bisherigen Abbruchschritte. Die Call
+Activity verweist über ihr Attribut *Called Element* auf den Prozess-Key des aufgerufenen
+Prozesses:
 
 | Element | Typ | ID | Name | Konfiguration |
 |---|---|---|---|---|
-| Kategorisierung | Business Rule Task | `businessRuleTask_categorizeApplicant` | Categorize applicant | Decision Ref: `categorizeApplicant`, Result Variable: `isHighValue`, Map Decision Result: `singleEntry` |
-| VIP-Check | Exclusive Gateway | `gateway_highValue` | High value? | Default-Flow: No-Pfad |
-| Persönlicher Kontakt | User Task | `userTask_writeRegretMail` | Write an email expressing regret | `asyncAfter=true` |
+| Ablehnungsbehandlung | Call Activity | `callActivity_handleRejection` | Handle rejection | Called Element: `handleRejection` |
 
-Gateway-Bedingungen:
-- Yes-Pfad: `${isHighValue}`
-- No-Pfad: Default
+- Eingehende Flows: von `timer_abortAfter3HalfDays` und von `event_confirmationRejected`
+- Ausgehender Flow: auf `endEvent_membershipDeclined` (das Compensating End Event aus
+  Aufgabe 7)
 
-## Testen
+Die Kompensation bleibt unangetastet: Nach der Rückkehr aus der Call Activity feuert das
+Compensating End Event, und die Engine ruft `serviceTask_revokeClaim` auf.
 
-**Call Activity prüfen (einfache Ablehnung, Alter außerhalb 21–29):**
-```bash
-MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8080/api/memberships \
-  -d '{"email": "grace@miravelo.com", "name": "Grace", "age": 35}' | jq -r .id)
+### 4. Variablen übergeben
 
-# Confirmation-Rejected-Message triggern
-curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
+In-Mapping an der Call Activity (Hauptprozess → aufgerufener Prozess):
+
+```xml
+<bpmn:extensionElements>
+  <camunda:in source="membershipId" target="membershipId" />
+  <camunda:in source="age" target="age" />
+</bpmn:extensionElements>
 ```
 
-Im Cockpit:
-1. Hauptprozess hat eine Call Activity-Aufrufstelle
-2. Separate Instanz von `handleRejection` läuft kurz durch
-3. DMN evaluiert → `isHighValue = false` → direkt zu „Accept rejection" End Event
-4. Rückkehr in Hauptprozess → Compensating End Event → Log: „Revoking claim for [membershipId]"
+`age` ist die Eingabe der DMN-Entscheidung – ohne das Mapping läuft die Tabelle ins Leere.
+Ein Out-Mapping brauchst du hier nicht: Der Hauptprozess verarbeitet kein Ergebnis.
 
-**VIP-Bewerber (Alter 21–29):**
-```bash
-MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8080/api/memberships \
-  -d '{"email": "hanna@miravelo.com", "name": "Hanna", "age": 25}' | jq -r .id)
+### 5. Prozess-Test erweitern
 
-curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
-```
+Die Ablehnungsbehandlung liegt jetzt in der Call Activity. Ergänze beide DMN-Zweige:
 
-Im Cockpit:
-1. Im `handleRejection`-Subprozess → DMN → `isHighValue = true`
-2. **User Task „Write email expressing regret"** erscheint in der Task List
-3. Mitarbeiter füllt Notiz aus und schließt Task ab
-4. Sub-Prozess endet → Hauptprozess → Compensation triggert `revokeClaim`
-
-## Kontrolle
-
-- [ ] Sub-Prozess `handleRejection` ist als eigene Datei modelliert und im Cockpit als separate Process Definition deployed
-- [ ] Call Activity übergibt `membershipId` und `age` per In-Mapping
-- [ ] DMN-Tabelle ist in `src/main/resources/dmn/` und wird beim Deployment registriert
-- [ ] Bei Alter 21–29: User Task erscheint; bei anderem Alter: direkt zum End Event
-- [ ] Nach Sub-Prozess-Rückkehr: Compensation aus Aufgabe 7 löst `revokeClaim` aus
-
-## Prozess-Test erweitern
-
-Die Decline-Behandlung liegt jetzt in der Call Activity `callActivity_handleRejection`, die per DM
-`categorizeApplicant` (nach `age`) entscheidet. Erweitere den Test um beide DMN-Zweige:
-
-- **Low-Value-Bewerber** (z. B. `age = 40`): Nach Timer-/Message-Abbruch läuft die Call Activity
-  synchron durch (Accept Rejection), danach greift die Kompensation. Prüfe
-  `hasPassed(SubscribeNewsletterProcessApi.Elements.CALL_ACTIVITY_HANDLE_REJECTION.getValue(), SubscribeNewsletterProcessApi.Elements.SERVICE_TASK_REVOKE_CLAIM.getValue(), SubscribeNewsletterProcessApi.Elements.END_EVENT_MEMBERSHIP_DECLINED.getValue())`.
-- **High-Value-Bewerber** (`age` zwischen 21 und 29): Der aufgerufene Prozess wartet an
-  `userTask_writeRegretMail`. Weil das Element im **aufgerufenen** Prozess liegt, kommt seine Konstante
-  aus der zweiten generierten API: hole die Aufgabe über
+- **Alter außerhalb 21–29** (zum Beispiel `40`): Nach Timeout oder Rückzug läuft die Call
+  Activity ohne Wait State durch, danach greift die Kompensation. Prüfe
+  `hasPassed(Elements.CALL_ACTIVITY_HANDLE_REJECTION.getValue(), Elements.SERVICE_TASK_REVOKE_CLAIM.getValue(), Elements.END_EVENT_MEMBERSHIP_DECLINED.getValue())`.
+- **Alter zwischen 21 und 29:** Der aufgerufene Prozess wartet an `userTask_writeRegretMail`.
+  Weil das Element im **aufgerufenen** Prozess liegt, kommt seine Konstante aus der zweiten
+  generierten API: Hole die Aufgabe über
   `taskDefinitionKey(HandleRejectionProcessApi.Elements.USER_TASK_WRITE_REGRET_MAIL.getValue())`,
-  schließe sie ab, treibe weiter und prüfe denselben Abschluss.
+  schließe sie ab, führe die offenen Jobs aus und prüfe denselben Abschluss.
 
-> Assertions wie `hasPassed(...)` auf der Hauptinstanz sehen nur deren Aktivitäten (u. a. die Call
-> Activity selbst) – die internen Schritte des aufgerufenen Prozesses laufen in einer eigenen Instanz.
+## Randbedingungen
+
+- Der aufgerufene Prozess läuft als **eigene Prozessinstanz**. Assertions auf der
+  Hauptinstanz sehen nur deren Aktivitäten – darunter die Call Activity selbst, nicht deren
+  Innenleben.
+- `mapDecisionResult=singleEntry` funktioniert nur, solange die Tabelle genau eine Zeile
+  mit genau einer Ausgabespalte trifft. Bei mehreren Treffern brauchst du eine andere
+  Mapping-Strategie.
+- Die Compensation-Logik aus Aufgabe 7 bleibt im Hauptprozess; die Call Activity steht
+  **zwischen** den Abbruch-Boundary-Events und dem Compensating End Event.
+- `POST /api/memberships` liefert die Membership-ID als **reinen Text** zurück, nicht als
+  JSON – deshalb unten kein `jq`.
+
+## Erwartetes Ergebnis
+
+Prüfe beide Zweige der Entscheidungstabelle, indem du zwei Anmeldungen mit
+unterschiedlichem Alter ablehnen lässt.
+
+**Ablehnung außerhalb der Zielgruppe:**
+
+```bash
+MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8080/api/memberships \
+  -H "Content-Type: application/json" \
+  -d '{"email": "grace@miravelo.com", "name": "Grace", "age": 35}')
+
+curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
+```
+
+Im Cockpit: Die Hauptinstanz steht an der Call Activity `callActivity_handleRejection`,
+während eine **eigene Prozessinstanz** von `handleRejection` durchläuft. Der Business Rule
+Task wertet die DMN aus, `isHighValue` ist `false`, das Exclusive Gateway nimmt den
+Default-Flow und die aufgerufene Instanz endet an *Accept rejection*. Zurück in der
+Hauptinstanz feuert das Compensating End Event, im Log erscheint die Freigabe des Platzes.
+
+**Ablehnung innerhalb der Zielgruppe:**
+
+```bash
+MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8080/api/memberships \
+  -H "Content-Type: application/json" \
+  -d '{"email": "hanna@miravelo.com", "name": "Hanna", "age": 25}')
+
+curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
+```
+
+Diesmal liefert die DMN `isHighValue = true`, der User Task *Write an email expressing
+regret* erscheint in der Tasklist. Nach dem Abschließen endet der aufgerufene Prozess an
+*Tried to reaquire applicant*, der Hauptprozess kompensiert wie gehabt.
+
+## Selbstcheck
+
+- [ ] `handleRejection` ist eine eigene Datei und erscheint im Cockpit als eigene
+      Prozessdefinition
+- [ ] Die DMN liegt unter `src/main/resources/dmn/` und wird beim Start deployt
+- [ ] Die Call Activity übergibt `membershipId` **und** `age` per In-Mapping
+- [ ] Alter 21–29 führt zum User Task, jedes andere Alter direkt zum End Event
+- [ ] Nach Rückkehr aus der Call Activity löst das Compensating End Event `revokeClaim` aus
+- [ ] Beide neuen Testfälle sind grün
 
 ## Referenzlösung
 
-`../solutions/exercise-08/`
+`../solutions/exercise-08/` – oder direkt laden:
 
----
+```bash
+./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=08
+```
+
+## Nächster Schritt
+
+In Aufgabe 9 verlässt du das eine Modul: Eine andere Abteilung bekommt ihren eigenen Service –
+und ihren eigenen Prozess auf derselben Engine.
 
 ➡️ [Weiter zu Aufgabe 9](exercise-09.md)
