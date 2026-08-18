@@ -20,9 +20,9 @@
 
     <!--
       Nur der Hauptservice, an dem Teilnehmende von Anfang an arbeiten, plus die Referenzlösungen.
-      Der Aufgabe-9-Worker (logistics-service) taucht bewusst NICHT hier auf – er wird erst in Aufgabe 9
-      aus templates/exercise-09/ heraus angelegt. So bleibt services/ für die Aufgaben 0–8 aufgeräumt.
-      (Zum Bauen/Prüfen der Vorlage: Profil -Pexercise-9, siehe unten.)
+      Der Aufgabe-10-Worker (logistics-service) taucht bewusst NICHT hier auf – er wird erst in Aufgabe 10
+      aus templates/exercise-10/ heraus angelegt. So bleibt services/ für die Aufgaben 0–9 aufgeräumt.
+      (Zum Bauen/Prüfen der Vorlage: Profil -Pexercise-10, siehe unten.)
     -->
     <modules>
         <module>services/process-application</module>
@@ -34,7 +34,7 @@
         <postgresql.version>42.7.8</postgresql.version>
         <cib7.version>2.2.0</cib7.version>
         <archunit.version>1.5.0</archunit.version>
-        <bpmn-to-code.version>5.2.0</bpmn-to-code.version>
+        <bpmn-to-code.version>5.1.0</bpmn-to-code.version>
         <openapi-generator.version>7.24.0</openapi-generator.version>
     </properties>
 
@@ -56,7 +56,7 @@
                 <artifactId>cibseven-bpm-spring-boot-starter-rest-4</artifactId>
                 <version>${cib7.version}</version>
             </dependency>
-            <!-- External Task Client (remote worker connecting to the engine REST API, ab Aufgabe 9) -->
+            <!-- External Task Client (remote worker connecting to the engine REST API, ab Aufgabe 10) -->
             <dependency>
                 <groupId>org.cibseven.bpm.springboot</groupId>
                 <artifactId>cibseven-bpm-spring-boot-starter-external-task-client</artifactId>
@@ -75,7 +75,7 @@
                 <version>${cib7.version}</version>
                 <scope>test</scope>
             </dependency>
-            <!-- Engine core — a worker without an engine starter (Aufgabe 9) brings it explicitly
+            <!-- Engine core — a worker without an engine starter (Aufgabe 10) brings it explicitly
                  to spin up a standalone in-memory engine for its own process tests -->
             <dependency>
                 <groupId>org.cibseven.bpm</groupId>
@@ -133,15 +133,15 @@
 
     <profiles>
         <!--
-          Aufgabe 9 baut auf einem zweiten Service (dem logistics-service) auf, der erst dort angelegt
-          wird. Die Vorlage liegt unter templates/exercise-09/ und ist NICHT Teil des Standard-Builds.
+          Aufgabe 10 baut auf einem zweiten Service (dem logistics-service) auf, der erst dort angelegt
+          wird. Die Vorlage liegt unter templates/exercise-10/ und ist NICHT Teil des Standard-Builds.
           Mit diesem Profil lässt sich die Vorlage bauen/prüfen (CI nutzt es genau dafür):
-              ./mvnw -Pexercise-9 verify
+              ./mvnw -Pexercise-10 verify
         -->
         <profile>
-            <id>exercise-9</id>
+            <id>exercise-10</id>
             <modules>
-                <module>templates/exercise-09/logistics-service</module>
+                <module>templates/exercise-10/logistics-service</module>
             </modules>
         </profile>
     </profiles>

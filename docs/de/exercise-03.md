@@ -1,37 +1,29 @@
-# Aufgabe 3 – Double-Opt-In per Bestätigungs-Mail
+# Aufgabe 3 – Einen Schritt automatisieren
 
-> **Voraussetzung:** Aufgabe 2 ist abgeschlossen – der Prozess startet über `POST /api/memberships` und verschickt die Willkommens-Mail über einen Delegate.
+> **Voraussetzung:** Aufgabe 2 ist abgeschlossen – „Confirm membership" ist ein User Task mit Formular.
 > **Arbeitsverzeichnis:** `services/process-application`
-> **Neu in dieser Aufgabe:** Message Start Event, Nachrichten-Korrelation, ein zweiter Service Task, ein Bestätigungs-User-Task.
+> **Neu in dieser Aufgabe:** Manual Task → Service Task, JavaDelegate, Delegate Expression, hexagonale Architektur (Delegate → Use Case → Service).
 
 ## Darum geht es
 
-Rose hat das neue **Backroad AL** auf den Markt gebracht, Miravelo launcht es exklusiv im
-Store. Social Media dreht durch, über Nacht kommen 500 Anmeldungen rein.
+Ein Platzhalter ist noch übrig: „Send welcome mail" läuft bisher als Manual Task einfach durch.
+Jetzt soll er wirklich etwas tun. Dafür wird er zum **Service Task** – dem Element für Arbeit, die
+ein **System** erledigt.
 
-Das Team starrt auf die Datenbank und stellt Fragen:
+Damit die Engine weiß, *welchen* Code sie ausführen soll, bindest du den Service Task über eine
+**Delegate Expression** an eine Spring-Bean: den **JavaDelegate**. Der Delegate ist der Punkt, an
+dem die Engine in deinen Code zurückruft.
 
-- Sind das echte E-Mail-Adressen?
-- Wer ist diese `noreply@throwaway.xyz`?
-- Irgendwer hat `admin@miravelo.com` eingetragen. Als Witz. Wahrscheinlich.
-
-> *„500 Sign-ups. Das ist entweder viral oder ein Bot-Angriff."*
-> — CTO, beim zweiten Kaffee
-
-Die Antwort ist ein **Double-Opt-In**: erst Mail bestätigen, dann Willkommens-Mail. Und
-weil die Anmeldedaten inzwischen ohnehin per REST hereinkommen, wandert das Ausfüllen des
-Formulars aus dem Prozess heraus – der Prozess startet ab jetzt mit einer **Nachricht**.
+> *„Wir sind Entwickler. Ein Task, den niemand ausführt, ist eine To-do-Notiz, kein Prozess."*
 
 ## Lernziele
 
 Nach dieser Aufgabe kannst du
 
-- ein None Start Event durch ein **Message Start Event** ersetzen und begründen, warum,
-- eine Prozessinstanz über `createMessageCorrelation(...).correlateStartMessage()` starten,
-- mehrere Service Tasks in einem Prozess betreiben,
-- einen User Task als **Wait State** einsetzen (Begriff aus [Aufgabe 1](exercise-01.md)),
-  an dem die Prozessinstanz auf die Bestätigung wartet,
-- einen weiteren Use Case samt Service und Delegate nach bewährtem Muster ergänzen.
+- einen Manual Task in einen **Service Task** umwandeln,
+- einen Service Task über eine **Delegate Expression** an eine Spring-Bean binden,
+- einen **JavaDelegate** implementieren, der eine Prozessvariable liest und einen Use Case aufruft,
+- die Schichten der hexagonalen Architektur einer Ausführung entlang benennen (Delegate → Use Case → Service).
 
 ## Ziel-Modell
 
@@ -39,125 +31,86 @@ Nach dieser Aufgabe kannst du
 
 Referenzmodell: `../../models/exercise-03/membership.bpmn`
 
-**Achte auf drei Änderungen gegenüber Aufgabe 2**, nicht nur auf die beiden neuen Elemente:
-
-1. Das Start Event heißt jetzt `startEvent_submitRegistration` („Submit registration form")
-   und ist ein **Message Start Event**.
-2. Der User Task `userTask_fillOutForm` **entfällt** samt seiner Formularfelder. Die
-   Anmeldedaten kommen über den REST-Aufruf herein und werden beim Start als
-   Prozessvariablen gesetzt – ein Formular in der Tasklist braucht es dafür nicht mehr.
-3. An seine Stelle tritt weiter hinten der neue User Task `userTask_confirmMembership`.
+Gegenüber Aufgabe 2 ändert sich genau ein Element: aus dem Manual Task „Send welcome mail" wird der
+Service Task `serviceTask_sendWelcomeMail`, gebunden an `#{sendWelcomeMailDelegate}`. Der Prozess
+startet weiterhin über das Start-Formular im Cockpit.
 
 ## Aufgabe
 
-### 1. Start Event auf eine Nachricht umstellen
+### 1. Delegate-Schicht aktivieren
 
-Öffne `src/main/resources/bpmn/membership.bpmn` im Miragon BPMN Modeler und ersetze das
-None Start Event durch ein Message Start Event:
+Die Klassen für diese Aufgabe sind mit `TODO Exercise 3` auskommentiert. Kommentiere sie ein:
 
-| Eigenschaft | Wert |
-|---|---|
-| ID | `startEvent_submitRegistration` |
-| Name | Submit registration form |
-| Typ | Message Start Event |
-| Message Name | `Message_SubscriptionRequested` |
+- `application/port/inbound/SendWelcomeMailUseCase.java`
+- `application/service/SendWelcomeMailService.java`
+- `adapter/inbound/cibseven/BaseDelegate.java`
+- `adapter/inbound/cibseven/SendWelcomeMailDelegate.java`
 
-Lösche anschließend den User Task `userTask_fillOutForm` inklusive seiner Formularfelder und
-verbinde das Start Event mit dem neuen Bestätigungs-Service-Task.
+`SendWelcomeMailService` und `BaseDelegate` sind danach fertig; der Delegate trägt weiterhin ein
+`TODO` – die Engine-Anbindung schreibst du selbst.
 
-### 2. Prozess um Bestätigungsschritt erweitern
+### 2. „Send welcome mail" in einen Service Task umwandeln
 
-Zwischen Message Start Event und Willkommens-Mail kommen zwei Elemente dazu: ein **Service
-Task**, der die Bestätigungs-Mail verschickt, und ein **User Task** als **Wait State** – dort
-bleibt die Prozessinstanz stehen, bis die Bestätigung als abgeschlossener Task
-zurückgemeldet wird. Das ist genau der Zustand, den du in Aufgabe 1 in `act_ru_task`
-gesehen hast.
+Ändere im Modeler den Typ des Elements von **Manual Task** auf **Service Task** und binde ihn an
+den Delegate:
 
 | Element | Typ | ID | Name | Konfiguration |
 |---|---|---|---|---|
-| Bestätigungs-Mail | Service Task | `serviceTask_sendConfirmationMail` | Send confirmation mail | Delegate Expression: `#{sendConfirmationMailDelegate}` |
-| Bestätigung | User Task | `userTask_confirmMembership` | Confirm membership | – |
+| Willkommens-Mail | Service Task | `serviceTask_sendWelcomeMail` | Send Welcome Mail | Delegate Expression: `#{sendWelcomeMailDelegate}` |
 
-Der Service Task steht **vor** dem User Task: erst die Mail verschicken, dann auf die
-Bestätigung warten.
+### 3. `SendWelcomeMailService` implementieren
 
-### 3. `SendConfirmationMailUseCase` anlegen
+**Datei:** `application/service/SendWelcomeMailService.java`
 
-**Neue Datei:** `application/port/inbound/SendConfirmationMailUseCase.java`
+Der Service logt die E-Mail-Adresse, an die die Willkommens-Mail geht. Fachlogik gehört hierhin,
+nicht in den Delegate.
 
-Ein Interface mit der Methode `sendConfirmationMail(MembershipId)`.
+### 4. `SendWelcomeMailDelegate` implementieren
 
-### 4. `SendConfirmationMailService` implementieren
+**Datei:** `adapter/inbound/cibseven/SendWelcomeMailDelegate.java` – **selbst schreiben.**
 
-**Neue Datei:** `application/service/SendConfirmationMailService.java`
+Ersetze das `TODO` in `executeTask(execution)`:
 
-Lade die Membership über das Repository und logge die E-Mail-Adresse, an die die
-Bestätigungs-Mail geht.
+- Lies die Prozessvariable `email` über die `DelegateExecution` aus (sie stammt aus dem
+  Start-Formular).
+- Rufe damit `useCase.sendWelcomeMail(...)` auf.
 
-### 5. `SendConfirmationMailDelegate` anlegen
-
-**Neue Datei:** `adapter/inbound/cibseven/SendConfirmationMailDelegate.java`
-
-Orientiere dich an `SendWelcomeMailDelegate`. Der Delegate liest `membershipId` aus der
-`DelegateExecution` und ruft `useCase.sendConfirmationMail(...)` auf.
-
-### 6. Prozessstart auf Korrelation umstellen
-
-**Datei:** `adapter/outbound/cibseven/MembershipProcessAdapter.java`
-
-Ein Message Start Event lässt sich nicht mehr über `startProcessInstanceByKey` auslösen.
-Stelle `startProcess(...)` auf die Korrelation der Nachricht `Message_SubscriptionRequested`
-um. Der `RuntimeService` liefert dir über `createMessageCorrelation(...)` einen Correlation
-Builder; die vier Prozessvariablen (`membershipId`, `email`, `name`, `age`) bleiben dieselben
-wie in Aufgabe 2. Die konkreten Argumente füllst du selbst:
-
-```java
-runtimeService.createMessageCorrelation(/* Message-Name */)
-        .setVariables(/* membershipId, email, name, age */)
-        .correlateStartMessage();
-```
+Welche Methode der `DelegateExecution` die Variable liefert, findest du selbst heraus – der
+Aufgabentext nennt dir die API, nicht die fertige Zeile.
 
 ## Randbedingungen
 
-- Der Prozess-Key bleibt `subscribeNewsletter`, der Message-Name ist exakt
-  `Message_SubscriptionRequested` – Tippfehler führen zur Laufzeit zu
-  `MismatchingMessageCorrelationException`.
-- Die Prozessvariablen (`membershipId`, `email`, `name`, `age`) bleiben unverändert; sie
-  werden jetzt beim Korrelieren gesetzt statt beim Starten.
-- Der neue Use Case folgt demselben Schnitt wie die bestehenden: Port im `application/port/inbound`,
-  Implementierung im `application/service`, Engine-Anbindung im `adapter/inbound/cibseven`.
+- Der **Delegate** ist ein **Adapter**: Er liest Prozessvariablen und ruft einen Use Case auf.
+  Fachlogik gehört in den Service, nicht in den Delegate.
+- In dieser Aufgabe liest der Delegate die rohe `email` direkt aus der Prozessvariable. Eine
+  fachliche Membership mit eigener ID und Persistenz kommt erst in Aufgabe 4 dazu.
+- Gestartet und bestätigt wird weiterhin über das Cockpit – noch kein REST.
 
 ## Erwartetes Ergebnis
 
-Starte die Anwendung neu und melde eine Person an:
+Starte die Anwendung neu und starte über die Tasklist eine Instanz (Start-Formular ausfüllen).
+Schließe den User Task `Confirm membership` ab. Danach läuft der Service Task durch, und im Log
+erscheint:
 
-```bash
-curl -X POST http://localhost:8080/api/memberships \
-  -H "Content-Type: application/json" \
-  -d '{"email": "bob@miravelo.com", "name": "Bob", "age": 25}'
+```
+Sending welcome mail to alice@miravelo.com
 ```
 
-1. Der Service Task `Send confirmation mail` läuft sofort durch – im Log erscheint
-   `Sending confirmation mail to bob@miravelo.com`.
-2. Der User Task `Confirm membership` erscheint in der Tasklist und die Prozessinstanz wartet.
-3. Nach dem Abschließen läuft `Send Welcome Mail` durch und die Instanz endet.
+Die Instanz endet an `Member joined`.
 
 ## Selbstcheck
 
-- [ ] Das Start Event ist ein Message Start Event mit dem Namen `Message_SubscriptionRequested`
-- [ ] `userTask_fillOutForm` ist aus dem Modell verschwunden
-- [ ] Der Prozess wird über `correlateStartMessage()` gestartet und der REST-Aufruf
-      liefert weiterhin eine ID zurück
-- [ ] Beide Log-Zeilen (Bestätigung, Willkommen) erscheinen in der richtigen Reihenfolge
-- [ ] Zwischen den beiden Mails wartet der Prozess am User Task
+- [ ] `serviceTask_sendWelcomeMail` ist ein Service Task und nutzt `#{sendWelcomeMailDelegate}`
+- [ ] `SendWelcomeMailDelegate` ist selbst implementiert (kein `UnsupportedOperationException`-Stub mehr)
+- [ ] Der Delegate liest `email` aus der `DelegateExecution` und ruft den Use Case auf
+- [ ] Nach dem Abschließen des User Tasks steht die Log-Zeile mit der E-Mail-Adresse im Log
+- [ ] Die Instanz endet an `Member joined`
 
 ## Hinweise
 
-**Warum ein Message Start Event?** Ein None Start Event sagt „irgendwer startet hier
-irgendwie". Ein Message Start Event benennt den fachlichen Auslöser – *eine Registrierung
-ist eingegangen* – und macht ihn im Modell sichtbar. Technisch bekommst du damit dieselbe
-Korrelations-API, die du ab Aufgabe 6 auch für Nachrichten **an laufende Instanzen**
-brauchst (Ablehnung per Message Boundary Event).
+Warum die Trennung Delegate / Service? Der **Delegate** kennt die Engine (`DelegateExecution`,
+Prozessvariablen); der **Service** kennt nur die Fachlichkeit. So bleibt die Fachlogik testbar,
+ohne eine Engine zu starten – das nutzt du in Aufgabe 6 beim Prozess-Test aus.
 
 ## Referenzlösung
 
@@ -169,7 +122,7 @@ brauchst (Ablehnung per Message Boundary Event).
 
 ## Nächster Schritt
 
-In Aufgabe 4 bekommt der Inner Circle seine Exklusivität – mit Kapazitätsprüfung,
-Gateway und Transaktionsgrenzen.
+In Aufgabe 4 übernimmt die **Anwendung** den Prozess: Registrierung per REST, Start über eine
+Nachricht, Bestätigung über einen REST-Endpunkt.
 
 ➡️ [Weiter zu Aufgabe 4](exercise-04.md)

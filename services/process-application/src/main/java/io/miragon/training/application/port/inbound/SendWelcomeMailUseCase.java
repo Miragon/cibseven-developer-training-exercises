@@ -1,8 +1,9 @@
 package io.miragon.training.application.port.inbound;
 
-import io.miragon.training.domain.MembershipId;
-
+// TODO Exercise 3: Uncomment this class (remove the /* and */ lines).
+/*
 public interface SendWelcomeMailUseCase {
 
-    void sendWelcomeMail(MembershipId membershipId);
+    void sendWelcomeMail(String email);
 }
+*/

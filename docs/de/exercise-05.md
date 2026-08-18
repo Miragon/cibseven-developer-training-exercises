@@ -1,264 +1,270 @@
-# Aufgabe 5 – Den Prozess mit Tests absichern
+# Aufgabe 5 – Kapazitätsprüfung mit Gateway
 
-> **Voraussetzung:** Aufgabe 4 ist abgeschlossen – Gateway, Kapazitätsprüfung und beide Prozessausgänge laufen.
+> **Voraussetzung:** Aufgabe 4 ist abgeschlossen – Double-Opt-In läuft, der Prozess startet per Nachricht.
 > **Arbeitsverzeichnis:** `services/process-application`
-> **Neu in dieser Aufgabe:** In-Memory-Engine mit h2, abgeschalteter Job Executor, `@MockitoBean`, Assertions mit `BpmnAwareTests`.
+> **Neu in dieser Aufgabe:** Exclusive Gateway, alternativer Prozessausgang, Transaktionsgrenzen, Business Key, generiertes Task-Formular.
 
 ## Darum geht es
 
-**Montagmorgen. Der Prozess läuft. Angeblich.**
+**Strategie-Meeting, Freitagnachmittag. Jemand hat exklusiven Matcha Latte mitgebracht.**
 
-Du hast einen ordentlichen Prozess gebaut: Gateway, Bestätigungs-Mail, Ablehnung. In der
-Cockpit-Demo hat alles funktioniert – einmal. Aber woher weißt du, dass er **nächste Woche
-noch** funktioniert, wenn jemand ein Boundary Event anhängt, einen Sequenzfluss umbiegt oder
-eine Bedingung dreht?
+Der **Miravelo Inner Circle** bekommt seine harte Grenze: Tausend Plätze. Mehr nicht.
 
-Klickst du dann jedes Mal durchs Cockpit? Startest PostgreSQL, schickst curl-Aufrufe ab,
-liest Logs? Das macht niemand zuverlässig. Genau da sterben Prozesse leise: Ein Sequenzfluss
-zeigt nach dem Refactoring ins Leere, das Gateway nimmt den falschen Pfad – und keiner merkt
-es, bis jemand trotz freiem Platz eine Absage bekommt.
+Warum tausend? Weil Knappheit Wert erzeugt. Weil FOMO ein Geschäftsmodell ist. Weil
+irgendjemand ein Buch über Luxusmarken gelesen hat.
 
-> *„Works on my machine" ist kein Testkonzept. Es ist eine Ausrede mit besserer PR.*
+> *„Wir sind nicht exklusiv, weil wir gut sind. Wir sind exklusiv, weil der Counter in der
+> Datenbank auf 1000 steht."*
+> — Ehrlichster Kommentar im Sprint Planning
 
-Ein **Prozess-Test** startet den echten Prozess in einer In-Memory-Engine, lässt die echten
-Delegates laufen und ersetzt nur die Fachlogik dahinter durch Mocks. Welchen Weg die
-Prozessinstanz nehmen muss, steht danach als **Assertion** im Test – überprüfbar bei jedem
-Build statt einmalig in einer Demo.
+Aus Prozesssicht ist das ein **Gateway**: Platz bekommen? Weiter im Text. Kein Platz?
+Ablehnungsmail. Und weil jede Anmeldung ein fachliches Objekt mit eigener ID ist,
+bekommt jede Prozessinstanz einen **Business Key** – Schluss mit „welche der 40 laufenden
+Instanzen war noch mal Carol?".
 
 ## Lernziele
 
 Nach dieser Aufgabe kannst du
 
-- einen Prozess als Unit-Test absichern, ohne PostgreSQL und ohne laufende Infrastruktur,
-- die Engine im Test auf h2 und mit abgeschaltetem Job Executor betreiben,
-- die Use Cases hinter den Delegates mit `@MockitoBean` gezielt mocken,
-- die Async-Continuations im Test selbst ausführen und die Instanz damit kontrolliert bis
-  zum nächsten Wait State bringen,
-- Prozesspfade mit `BpmnAwareTests` prüfen (`isWaitingAt`, `hasPassedInOrder`, `isEnded`).
+- ein Exclusive Gateway modellieren, seine Bedingungen setzen und einen Default-Flow wählen,
+- einen alternativen Prozessausgang (Ablehnung) umsetzen,
+- eine Entscheidung aus Java-Code als Prozessvariable an das Gateway übergeben,
+- **Transaktionsgrenzen** bewusst setzen und begründen, warum ein nicht wiederholbarer
+  Schritt vor einem externen Effekt committen muss,
+- einer Prozessinstanz einen Business Key zuordnen,
+- einem User Task ein generiertes Task-Formular für einen Freigabeschritt geben.
 
 ## Ziel-Modell
 
 ![BPMN-Modell der Aufgabe](../assets/exercise-05.svg)
 
-Es kommt **kein neues Modell** dazu. Du testest den Prozess aus Aufgabe 4: Message Start →
-Claim → Gateway → Bestätigung → Willkommens-Mail beziehungsweise Ablehnung.
-
-Referenzmodell (unverändert gegenüber Aufgabe 4): `../../models/exercise-05/membership.bpmn`
+Referenzmodell: `../../models/exercise-05/membership.bpmn`
 
 ## Aufgabe
 
-### 1. Test-Dependency ergänzen
+### 1. Modell erweitern
 
-Die Assertions kommen aus dem CIB-Seven-Port von `camunda-bpm-assert`. Die Version ist
-zentral in der Root-`pom.xml` gemanagt:
+Vor dem Versand der Bestätigungs-Mail kommen ein **Service Task** für die Reservierung und
+ein **Exclusive Gateway** dazu, das den Sequenzfluss in zwei Pfade teilt. Insgesamt sind es
+vier neue Elemente.
+
+Elemente, Delegate Expressions und die Gateway-Bedingung legst du im **Miragon BPMN Modeler**
+an (Element auswählen → Properties Panel), nicht im XML.
+
+**Neue Elemente:**
+
+| Element | Typ | ID | Name | Konfiguration |
+|---|---|---|---|---|
+| Platz reservieren | Service Task | `serviceTask_claimMembership` | Claim membership | Delegate Expression: `#{claimMembershipDelegate}` |
+| Kapazitätsentscheidung | Exclusive Gateway | `gateway_hasEmptySpots` | Has empty spots | Default-Flow: Ja-Pfad |
+| Ablehnungs-Mail | Service Task | `serviceTask_sendRejectionMail` | Send rejection mail | Delegate Expression: `#{sendRejectionMailDelegate}` |
+| Ablehnung | End Event | `endEvent_membershipRejected` | Membership rejected | – |
+
+**Bedingung am Nein-Pfad:** `${!hasEmptySpots}`. Der Ja-Pfad ist der Default-Flow und
+braucht keine Bedingung.
+
+### 2. Use Cases und Services ergänzen
+
+Nach dem Muster aus Aufgabe 4:
+
+- **`ClaimMembershipUseCase` / `ClaimMembershipService`** – prüft die Kapazität und gibt
+  `true` zurück, wenn noch ein Platz frei war. Ein einfacher Zähler im Speicher genügt
+  (maximal 1000 Plätze); eine Datenbank brauchst du dafür nicht.
+- **`SendRejectionMailUseCase` / `SendRejectionMailService`** – lädt die Membership und
+  logget die Ablehnung mit der E-Mail-Adresse.
+
+> Die Kapazität ist bewusst schlicht gehalten. Die Referenzlösung nutzt einen
+> `AtomicInteger` samt Konstante `MAX_SPOTS` direkt im `ClaimMembershipService`. Wenn du
+> es sauberer magst, modelliere stattdessen ein Domain-Objekt `MembershipCapacity` mit
+> `maxSpots`, `claimedSpots`, `hasEmptySpots()` und `claim()` – fachlich ist beides gleichwertig.
+
+### 3. Delegates ergänzen
+
+- **`ClaimMembershipDelegate`** – liest `membershipId`, ruft den Use Case auf und schreibt
+  dessen Ergebnis als Prozessvariable `hasEmptySpots` auf die `DelegateExecution`.
+- **`SendRejectionMailDelegate`** – liest `membershipId` und ruft den Use Case auf.
+
+> Das Setzen der Prozessvariable gehört in den **Delegate**, nicht in den Service: Der
+> Service kennt die Engine nicht und gibt nur ein `boolean` zurück. Genau diese Trennung
+> prüft der `ArchitectureTest`.
+
+### 4. Transaktionsgrenzen setzen
+
+> Theorie dazu: Trainingskapitel **„Async & Transaction Boundaries"** (Topic 4, *Execution
+> Resilience*) – Save Points, Default- und manuelle Grenzen, Rollback in Aktion. Hier ist
+> die erste Stelle, an der du es anwendest.
+
+Bis hierher lief der Prozess komplett **synchron**. Ab diesem Modell setzt du
+Transaktionsgrenzen – in zwei Stufen.
+
+**a) Grenzen an den Wait States.** Die Engine committet automatisch an jedem Wait State –
+an einem User Task muss sie den Zustand ohnehin speichern. Überall sonst setzt du die Grenze
+selbst, mit einer **asynchronen Continuation**: Die Marker `asyncBefore` und `asyncAfter`
+sagen der Engine, dass sie an dieser Stelle committen, einen Job anlegen und die Arbeit
+danach in einer **neuen** Transaktion fortsetzen soll.
+
+Ergänze die beiden Continuations, die hier fehlen:
+
+- `asyncBefore` am Message Start Event `startEvent_submitRegistration` – saubere Grenze
+  nach der Korrelation; der `correlateMessage`-Aufruf legt nur die Instanz an und kehrt zurück.
+- `asyncAfter` am User Task `userTask_confirmMembership` – die Completion committet sofort.
+  Sonst laufen Completion **und** der nachgelagerte Service Task in **einer** Transaktion:
+  Wirft er, rollt die Completion mit zurück und der Task erscheint wieder in der Tasklist.
+
+**b) Grenzen an den Service Tasks.** Mit `claimMembership` steht erstmals ein **nicht
+wiederholbarer** Schritt – die Platzreservierung – direkt vor einem Mailversand. Zwischen
+Message Start und User Task liegt **kein** Wait State; ohne weitere Marker laufen
+`claimMembership` und `sendConfirmationMail` deshalb in **einer** Engine-Transaktion.
+
+Wirft der Mailversand eine Exception, rollt die Engine die *gesamte* Transaktion zurück und
+führt den Job erneut aus. Ergebnis: `claimMembership` läuft ein zweites Mal – ein doppelt
+reservierter Platz, obwohl nur der Mailversand fehlgeschlagen ist.
+
+**Regel:** Trenne die *nicht wiederholbare* Arbeit vom *externen, nicht zurückrollbaren*
+Effekt durch eine eigene Transaktionsgrenze. Setze `asyncBefore` an jeden Service Task mit
+externem Effekt:
+
+| Marker | Element | Warum |
+|---|---|---|
+| `asyncBefore` | `serviceTask_sendConfirmationMail` | committet die Reservierung zuerst; ein Mail-Fehler wiederholt nur den Versand |
+| `asyncBefore` | `serviceTask_sendRejectionMail` | liegt sonst in derselben Transaktion wie `claimMembership` |
+| `asyncBefore` | `serviceTask_sendWelcomeMail` | Konsistenz; ab Aufgabe 7 zusätzlich auf einem Parallelzweig relevant |
+
+`claimMembership` bekommt bewusst **keinen** Marker – es soll früh committen, gemeinsam mit
+dem Token, das im Modell weiterrückt (das *Token* ist die gedachte Spielfigur, die den
+aktuellen Stand einer Instanz im Prozessmodell markiert). Der Marker gehört auf den *nachgelagerten* Aufruf, der die
+Reservierung sonst mit zurückrollt. Im Modeler: Element auswählen → Properties Panel →
+*Asynchronous Before*.
+
+### 5. Business Key setzen
+
+Setze beim Start des Prozesses die `membershipId` als Business Key. Der Correlation Builder im
+`MembershipProcessAdapter` (den du in Aufgabe 4 auf `createMessageCorrelation(...)` umgestellt
+hast) bietet dafür `processInstanceBusinessKey(...)`. Häng den Aufruf mit der `membershipId` in
+die bestehende Kette ein – die konkreten Argumente füllst du selbst:
+
+```java
+runtimeService.createMessageCorrelation(/* Message-Name */)
+        .processInstanceBusinessKey(/* membershipId */)
+        .setVariables(/* ... */)
+        .correlateStartMessage();
+```
+
+Der Business Key verknüpft die Prozessinstanz mit dem fachlichen Objekt: Im Cockpit lässt
+sich jede Instanz eindeutig einer Anmeldung zuordnen und gezielt suchen.
+
+### 6. Task-Formular für die Freigabe
+
+Der User Task `userTask_confirmMembership` hat bisher kein Formular – wer ihn in der Tasklist
+öffnet, sieht keine einzige Prozessvariable und kann ihn nur blind abschließen. Gib ihm ein
+**generiertes Task-Formular** (*Generated Task Form*, ein Bordmittel von Camunda 7 – keine
+zusätzliche Datei, kein HTML), damit die freigebende Person die Anmeldedaten sieht:
+
+| Feld-ID | Label | Typ | Zweck |
+|---|---|---|---|
+| `name` | Name | string | Kontext, wird aus der Prozessvariable vorbefüllt |
+| `email` | E-Mail | string | Kontext, vorbefüllt |
+| `age` | Age | long | Kontext, vorbefüllt |
+| `confirmed` | Confirm membership | boolean | die eigentliche Freigabe (Checkbox) |
+
+`name`, `email` und `age` tragen dieselben IDs wie die Prozessvariablen und werden dadurch
+automatisch vorbefüllt. `confirmed` ist neu und wird beim Abschließen als boolesche
+Prozessvariable gespeichert.
+
+> **Hinweis: Warum hier noch eine Generated Form?** Generated Forms kennst du aus Aufgabe 1
+> und 2 – als einfachen Einstieg. Für einen internen Freigabeschritt wie diesen reichen sie
+> völlig und bleiben deshalb hier. Der eigentliche Prozess wird längst über fachliche
+> REST-Endpunkte gesteuert (Start in Aufgabe 4, Ablehnung in Aufgabe 7); eine
+> produktionsnahe Freigabeoberfläche wäre ein eigenes Frontend – im Training bleibt es
+> bewusst bei der Generated Form.
+
+Im Modeler: User Task auswählen → Properties Panel → Abschnitt **Forms** → Formularfelder
+anlegen. Im XML entsteht dabei ein `extensionElements`-Block mit `camunda:formData` direkt
+im User Task:
 
 ```xml
-<dependency>
-    <groupId>org.cibseven.bpm</groupId>
-    <artifactId>cibseven-bpm-assert</artifactId>
-    <scope>test</scope>
-</dependency>
+<bpmn:userTask id="userTask_confirmMembership" name="Confirm membership" camunda:asyncAfter="true">
+  <bpmn:extensionElements>
+    <camunda:formData>
+      <camunda:formField id="name" label="Name" type="string" />
+      <camunda:formField id="email" label="E-Mail" type="string" />
+      <camunda:formField id="age" label="Age" type="long" />
+      <camunda:formField id="confirmed" label="Confirm membership" type="boolean" />
+    </camunda:formData>
+  </bpmn:extensionElements>
+</bpmn:userTask>
 ```
-
-`spring-boot-starter-test` (JUnit 5, Mockito, AssertJ) und `h2` sind bereits vorhanden.
-
-### 2. Testprofil anlegen
-
-**Neue Datei:** `src/test/resources/application-test.yaml`
-
-```yaml
-spring:
-  main:
-    allow-bean-definition-overriding: true
-  datasource:
-    url: jdbc:h2:mem:cibseven-test;DB_CLOSE_DELAY=-1;INIT=CREATE SCHEMA IF NOT EXISTS exercise
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-        default_schema: exercise
-
-camunda:
-  bpm:
-    admin-user:
-      id: admin
-      password: admin
-    database:
-      type: h2
-      schema-update: true
-    job-execution:
-      enabled: false   # <-- der Kern: die Async-Continuations führen wir selbst aus
-    webapp:
-      enabled: false
-
-# Der Webapp-Bean validiert dieses Secret beim Start, auch wenn die Webapp aus ist:
-cibseven:
-  webclient:
-    authentication:
-      jwtSecret: M9nU3ORo3s+gK23D9mO5I2h+EIqnosCFDCJi+2bKoulKqZkeQT8pGYg5RhuORlf/fWhLu5meC/SPZCv9NNuj6SK/vE5Sid04UQGrnyh04EpBdiAosAO91xezjgmbSeALUtneibseGpS0tNE4RvLIl+gXiAKqNXyO
-```
-
-> **Begriff: Job Executor.** Der Hintergrund-Thread der Engine. Er holt sich die Jobs, die
-> bei einer asynchronen Continuation (`asyncBefore` / `asyncAfter` aus
-> [Aufgabe 4](exercise-04.md)) entstehen, und arbeitet sie ab – im Betrieb genau richtig,
-> im Test eine Quelle für Zufall: Der Test weiß nie, wie weit die Instanz gerade ist.
-> Deshalb schalten wir ihn ab und führen die Jobs selbst aus.
-
-### 3. Der Test-Helfer – bereits vorgegeben
-
-Diese Verdrahtung schreibst du weder selbst, noch kopierst du sie: Sie liegt schon im Test-Modul
-unter `src/test/java/io/miragon/training/process/util/ProcessEngineTestUtils.java`. Sie ist für
-jeden Prozess-Test gleich; du rufst nur ihre Methoden auf. Was sie dir gibt:
-
-- **`continueToNextWaitState(processEngine)`** – weil der Job Executor aus ist (Schritt 2), holt
-  niemand die Async-Continuation-Jobs ab (`asyncBefore`/`asyncAfter`). Diese Methode führt sie aus
-  dem Testthread aus, bis die Instanz ihren nächsten Wait State (User Task oder Ende) erreicht. Du
-  rufst sie direkt nach dem Start des Prozesses und erneut nach dem Abschließen einer Task auf.
-- **`fireTimer(processEngine, activityId)`** – führt einen Timer-Job direkt aus, unabhängig vom
-  Fälligkeitsdatum. Hier brauchst du ihn nicht; er kommt erst mit den Boundary Events in
-  [Aufgabe 6](exercise-06.md) ins Spiel.
-- **`findProcessInstance(runtimeService, membershipId)`** – sucht die laufende Instanz über den
-  Prozess-Key `subscribeNewsletter` und die Variable `membershipId`, damit dein Test gegen sie
-  prüfen kann.
-
-> Der Helfer braucht zum Kompilieren die Engine-Klassen. Das ist in der `pom.xml` des Moduls schon
-> verdrahtet (die Engine-CORE-Dependency `cibseven-engine`), er kompiliert also von Anfang an – du
-> ergänzt dafür nichts. Öffne die Datei einmal, um die zwei, drei Zeilen pro Methode zu sehen, und
-> nutze sie dann einfach.
-
-### 4. Happy-Path-Test selbst schreiben
-
-**Neue Datei:** `src/test/java/io/miragon/training/process/MembershipProcessTest.java`
-
-Diesen Teil schreibst du selbst. Starte vom Gerüst – die Klassen-Annotationen, die injizierten
-Engine-Services, die gemockten Use Cases und der `init(...)`-Aufruf sind für jeden Prozess-Test
-gleich:
-
-```java
-@SpringBootTest
-@ActiveProfiles("test")
-class MembershipProcessTest {
-
-    @Autowired private MembershipProcess membershipProcess;
-    @Autowired private RuntimeService runtimeService;
-    @Autowired private TaskService taskService;
-    @Autowired private ProcessEngine processEngine;
-
-    @MockitoBean private ClaimMembershipUseCase claimMembershipUseCase;
-    @MockitoBean private SendConfirmationMailUseCase sendConfirmationMailUseCase;
-    @MockitoBean private SendRejectionMailUseCase sendRejectionMailUseCase;
-    @MockitoBean private SendWelcomeMailUseCase sendWelcomeMailUseCase;
-
-    @BeforeEach
-    void setUp() {
-        init(processEngine); // BpmnAwareTests.init(...)
-    }
-}
-```
-
-Jeder Prozess-Test folgt derselben **Given – When – Then**-Form. Hier ein **generisches
-Beispiel** des Happy Path: Es zeigt die konkreten API-Aufrufe, aber die Element-IDs sind
-Platzhalter – jeden `"<…>"` ersetzt du durch die echte ID aus deinem Modell.
-
-```java
-@Test
-void happyPath_membershipIsConfirmedAndWelcomeMailIsSent() {
-    // Given: die Kapazitätsprüfung gewährt einen Platz
-    when(claimMembershipUseCase.claimMembership(any())).thenReturn(true);
-
-    // When: der Prozess wird gestartet und bis zum ersten Wait State getrieben
-    Membership membership = new Membership(new Email("jane@example.com"), new Name("Jane"), new Age(30));
-    membershipProcess.startProcess(membership);
-    ProcessInstance instance = findProcessInstance(runtimeService, membership.id().value().toString());
-    continueToNextWaitState(processEngine);
-
-    // Then: die Instanz wartet am User Task
-    assertThat(instance).isWaitingAt("<user-task-id>");
-
-    // When: dieser User Task wird abgeschlossen und der Prozess läuft weiter
-    String taskId = taskService.createTaskQuery()
-            .processInstanceId(instance.getProcessInstanceId()).singleResult().getId();
-    taskService.complete(taskId);
-    continueToNextWaitState(processEngine);
-
-    // Then: er endet über den Bestätigungspfad und berührt den Ablehnungspfad nie
-    assertThat(instance)
-            .isEnded()
-            .hasPassedInOrder("<start>", "<…Aktivitäten des Bestätigungspfads, in Reihenfolge…>", "<confirmed-end>")
-            .hasNotPassed("<reject-activity>", "<rejected-end>");
-
-    // And: der Willkommens-Mail-Use-Case wurde aufgerufen
-    verify(sendWelcomeMailUseCase).sendWelcomeMail(membership.id());
-}
-```
-
-Alles Weitere hast du beisammen:
-
-- **Assertion-Vokabular** (aus `BpmnAwareTests`, über das statisch importierte `assertThat`):
-  `isWaitingAt(id)`, `isEnded()`, `hasPassedInOrder(ids…)`, `hasNotPassed(ids…)` – dazu Mockitos
-  `when(...)`/`verify(...)` für die Use Cases.
-- **Treiben und Suchen** kommen aus dem vorgegebenen Helfer:
-  `continueToNextWaitState(processEngine)` und
-  `findProcessInstance(runtimeService, membership.id().value().toString())`.
-- **Die Element-IDs** stehen hier bewusst nicht – lies sie im Modeler aus `membership.bpmn` ab.
-  Der Bestätigungspfad ist Start → Claim → Gateway → Bestätigungs-Mail → User Task →
-  Willkommens-Mail → Bestätigungs-Ende; am Gateway zweigt der Ablehnungspfad zur Ablehnungs-Mail
-  → Ablehnungs-Ende ab.
-
-### 5. Ablehnungspfad selbst testen
-
-Jetzt der zweite Test, `noCapacity_membershipIsRejected` – gleicher Ansatz, du schreibst ihn:
-
-- `claimMembership` liefert `false`.
-- Die Prozessinstanz läuft ohne Wait State direkt bis zum Ablehnungs-Ende.
-- Geprüft wird: die Ablehnungs-Mail-Aktivität wurde durchlaufen, Bestätigung und
-  Willkommens-Mail **nicht**, und `sendWelcomeMailUseCase` wurde nie aufgerufen
-  (`verify(..., never())`).
 
 ## Randbedingungen
 
-- Der Test läuft **ohne** PostgreSQL und ohne laufenden Stack. Zwei Stellschrauben machen
-  ihn schnell und reproduzierbar:
-  1. **h2 statt PostgreSQL** – eine In-Memory-Datenbank, die pro Testlauf frisch angelegt
-     und verworfen wird (`ddl-auto: create-drop`).
-  2. **Job Executor aus** – die Continuations führst du selbst aus dem Testthread aus. Damit
-     bestimmst du, wie weit die Instanz ist, wenn du deine Assertion schreibst.
-- Gemockt werden **nur die Use Cases**. Delegates, Modell und Engine laufen echt – sonst
-  testest du deine Mocks statt deinen Prozess.
-- Die Element-IDs stehen in dieser Aufgabe noch als Strings im Test. Merk dir, wie viele es
-  sind – das [Add-on](exercise-05-addon.md) räumt sie gleich weg.
+- Der Prozess-Key bleibt `subscribeNewsletter` und der Message-Name `Message_SubscriptionRequested`
+  – historische Namen, die stabil bleiben, auch wenn der Prozess fachlich weiterwächst
+  (in [Aufgabe 4](exercise-04.md) einmal erwähnt).
+- Der Feldtyp muss zum Typ der Prozessvariable passen, sonst greift die Vorbefüllung nicht
+  (`age` ist `long`, nicht `string`).
+- `confirmed` steuert in dieser Aufgabe noch keinen Prozessfluss – es wird nur erfasst.
+- Die Kapazität lebt im Arbeitsspeicher und ist nach einem Neustart wieder bei null. Das
+  ist für das Training gewollt.
+- Element-IDs und Variablennamen kannst du jederzeit aus dem Referenzmodell übernehmen.
 
 ## Erwartetes Ergebnis
 
-Führe nur diese eine Testklasse aus – aus dem Wurzelverzeichnis des Repositories:
+Der Prozess hat jetzt zwei Ausgänge – prüfe beide. Zuerst den Weg, den fast alle nehmen:
+
+**Freier Platz vorhanden:**
 
 ```bash
-./mvnw -pl services/process-application test -Dtest=MembershipProcessTest
+curl -X POST http://localhost:8080/api/memberships \
+  -H "Content-Type: application/json" \
+  -d '{"email": "carol@miravelo.com", "name": "Carol", "age": 27}'
 ```
 
-Beide Tests laufen in wenigen Sekunden durch, ohne dass PostgreSQL läuft. Schlägt einer
-fehl, zeigt dir die Assertion, an welcher Aktivität die Instanz tatsächlich stand.
+Der Prozess reserviert einen Platz, nimmt den Ja-Pfad und wartet am User Task
+`Confirm membership`. Öffne ihn in der Tasklist (`http://localhost:8080/webapp/#/seven/auth/start`,
+admin/admin): Name, E-Mail und Alter sind vorbefüllt. Setze den Haken bei *Confirm
+membership* und schließe den Task ab – die Instanz läuft über `Send Welcome Mail` bis
+`Membership confirmed`, und `confirmed` steht in der History auf `true`.
+
+**Kein Platz mehr frei:** Setze die maximale Platzzahl vorübergehend auf `0` (in der
+Referenzlösung die Konstante `MAX_SPOTS` in `ClaimMembershipService`), starte die Anwendung
+neu und schicke:
+
+```bash
+curl -X POST http://localhost:8080/api/memberships \
+  -H "Content-Type: application/json" \
+  -d '{"email": "dave@miravelo.com", "name": "Dave", "age": 30}'
+```
+
+Erwartetes Log: `Sending rejection mail to dave@miravelo.com`. Die Instanz endet an
+`Membership rejected`, ohne je an einem User Task zu warten.
 
 ## Selbstcheck
 
-- [ ] `application-test.yaml` existiert, der Job Executor ist im Testprofil abgeschaltet
-- [ ] `ProcessEngineTestUtils` bringt die Instanz bis zum nächsten Wait State
-- [ ] Der Happy-Path-Test prüft die Reihenfolge **und** die nicht genommenen Pfade
-- [ ] Der Ablehnungstest prüft, dass die Willkommens-Mail nie aufgerufen wurde
-- [ ] Beide Tests laufen grün, ohne dass der Docker-Stack läuft
+- [ ] Das Gateway hat einen Default-Flow und genau eine Bedingung (`${!hasEmptySpots}`)
+- [ ] Der Ja-Pfad endet an `Membership confirmed`, der Nein-Pfad an `Membership rejected`
+- [ ] `asyncBefore` steht am Message Start Event und an den drei Mail-Tasks,
+      `asyncAfter` am User Task, `claimMembership` hat **keinen** Marker
+- [ ] Im Cockpit trägt die Instanz die `membershipId` als Business Key
+- [ ] Das Task-Formular zeigt die vorbefüllten Felder plus die Checkbox `confirmed`
+
+## Hinweise
+
+**Idempotenz-Merksatz:** Ein Retry darf einen Service Task erneut ausführen. Sobald eine
+Aktion nur *einmal* passieren darf (Reservierung, Zahlung), muss sie entweder vor der Grenze
+committen oder idempotent sein. Bei externen Schnittstellen begegnet dir dasselbe Muster in
+[Aufgabe 10](exercise-10.md) und in [Extra-Aufgabe 1](extra-task-1.md) wieder.
 
 ## Referenzlösung
 
-`../../solutions/exercise-05/`
+`../../solutions/exercise-05/` – oder direkt laden:
+
+```bash
+./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=05
+```
 
 ## Nächster Schritt
 
-Die Element-IDs stehen noch als handgetippte Strings im Test – fragil, sobald jemand im
-Modeler umbenennt. Das Add-on macht daraus geprüfte Konstanten.
+Der Prozess hat jetzt zwei Ausgänge – und niemand prüft automatisch, ob er den richtigen
+nimmt. In Aufgabe 6 sicherst du ihn mit einem Prozess-Test ab.
 
-➡️ [Weiter zum Add-on: bpmn-to-code](exercise-05-addon.md)
+➡️ [Weiter zu Aufgabe 6](exercise-06.md)

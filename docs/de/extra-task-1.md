@@ -1,6 +1,6 @@
 # Extra-Aufgabe 1 – Raus aus dem Engine-Lock-in
 
-> **Voraussetzung:** Aufgabe 9 ist abgeschlossen – der Membership-Prozess läuft vollständig, inklusive Signal-End-Event „Membership activated".
+> **Voraussetzung:** Aufgabe 10 ist abgeschlossen – der Membership-Prozess läuft vollständig, inklusive Signal-End-Event „Membership activated".
 > **Arbeitsverzeichnis:** `services/process-application`
 > **Neu in dieser Aufgabe:** Process-Engine-API von bpm-crafters, Worker-Pattern statt JavaDelegate, engine-neutraler Outbound-Adapter, ArchUnit-Guardrail.
 
@@ -43,7 +43,7 @@ Nach dieser Aufgabe kannst du
 
 ## Ziel-Modell
 
-Das Prozessmodell ändert sich **fachlich nicht**. Es ist exakt der Prozess aus Aufgabe 9 –
+Das Prozessmodell ändert sich **fachlich nicht**. Es ist exakt der Prozess aus Aufgabe 10 –
 nur die technische Anbindung der Service Tasks wechselt. Das Signal-End-Event „Membership
 activated" bleibt ein natives BPMN-Throw ohne Delegate und passt damit ohnehin in die
 engine-neutrale Welt.
@@ -58,7 +58,7 @@ Aufgerufener Prozess `handleRejection`:
 
 Was sich ändert – und was nicht:
 
-| Schicht | Aufgabe 9 (nativ CIB Seven) | Extra-Aufgabe 1 |
+| Schicht | Aufgabe 10 (nativ CIB Seven) | Extra-Aufgabe 1 |
 |---|---|---|
 | `domain/`, `application/` | unverändert | **unverändert** |
 | Inbound Service Tasks | `JavaDelegate` + `DelegateExecution` | `@ProcessEngineWorker`-Worker |
@@ -73,7 +73,7 @@ keine Worker.
 ## Aufgabe
 
 > Am einfachsten kopierst du deine Aufgabe-9-Lösung und baust sie Schritt für Schritt um.
-> Der Logistik-Service aus Aufgabe 9 bleibt dabei **unverändert** und ist nicht Teil dieser
+> Der Logistik-Service aus Aufgabe 10 bleibt dabei **unverändert** und ist nicht Teil dieser
 > Aufgabe.
 
 ### 1. Dependencies einbinden
@@ -209,7 +209,7 @@ public EngineCommandExecutor engineCommandExecutor() {
 
 `Runnable::run` führt den Engine-Command synchron im aufrufenden Thread aus – Engine-Fortschritt
 und Fachdaten committen oder rollen gemeinsam. Ein eigener Thread-Pool würde diese Grenze
-zerschneiden. Das ist die direkte Fortsetzung des Themas aus [Aufgabe 4](exercise-04.md).
+zerschneiden. Das ist die direkte Fortsetzung des Themas aus [Aufgabe 5](exercise-05.md).
 
 Ergänze in der `application.yaml` den Worker- und Adapter-Block:
 
@@ -249,17 +249,17 @@ das, was bei einem Wechsel angefasst werden müsste.
 
 - **Die `asyncBefore`-Marker entfallen.** Ein External Task ist von Natur aus ein Wait
   State: Die Engine committet, sobald sie den Task anlegt, und wartet, bis ein Worker ihn
-  fetcht und completet. Die Transaktionsgrenze, die du in Aufgabe 4 und 6 von Hand gesetzt
+  fetcht und completet. Die Transaktionsgrenze, die du in Aufgabe 5 und 7 von Hand gesetzt
   hast, bringt der External Task eingebaut mit. Darin liegt ein Teil des Gewinns.
 - Die Topic-Konstanten (`ServiceTasks.SEND_CONFIRMATION_MAIL`) stammen aus der generierten
-  Process-API, die du seit [Aufgabe 5](exercise-05.md) kennst. Das Plugin ist bereits
+  Process-API, die du seit [Aufgabe 6](exercise-06.md) kennst. Das Plugin ist bereits
   eingerichtet; zur Not gehen auch schlichte Strings.
-- Die REST-Schnittstelle bleibt identisch zu Aufgabe 9 (Port `8080`). Service Tasks werden
+- Die REST-Schnittstelle bleibt identisch zu Aufgabe 10 (Port `8080`). Service Tasks werden
   jetzt per Polling abgearbeitet (etwa alle 5 Sekunden) – es kann also einen Moment dauern.
 
 ## Erwartetes Ergebnis
 
-Fahre dieselben beiden Szenarien wie in Aufgabe 8 – das Ergebnis muss identisch sein, nur
+Fahre dieselben beiden Szenarien wie in Aufgabe 9 – das Ergebnis muss identisch sein, nur
 die Ausführung läuft jetzt über Worker statt über Delegates.
 
 **Ablehnung außerhalb der Zielgruppe:**
@@ -297,7 +297,7 @@ regret*.
 - [ ] Der Outbound-Adapter nutzt `StartProcessApi` / `CorrelationApi` statt `RuntimeService`
 - [ ] `@EnableProcessApplication` ist entfernt, der `EngineCommandExecutor`-Bean ist gesetzt
 - [ ] Der ArchUnit-Test meldet **null** Abhängigkeiten auf `org.cibseven.bpm`
-- [ ] Das fachliche Verhalten ist identisch zu Aufgabe 9
+- [ ] Das fachliche Verhalten ist identisch zu Aufgabe 10
 
 ## Hinweise
 

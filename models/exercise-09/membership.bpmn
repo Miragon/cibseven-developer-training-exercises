@@ -126,41 +126,19 @@
       <bpmn:outgoing>Flow_1yc0f2l</bpmn:outgoing>
     </bpmn:parallelGateway>
     <bpmn:sequenceFlow id="Flow_0arsuyz" sourceRef="serviceTask_sendWelcomeMail" targetRef="gateway_notifyJoin" />
-    <bpmn:endEvent id="endEvent_membershipActivated" name="Membership activated" camunda:asyncBefore="true">
+    <bpmn:endEvent id="endEvent_membershipActivated" name="Membership activated">
       <bpmn:incoming>Flow_1yc0f2l</bpmn:incoming>
-      <bpmn:signalEventDefinition id="SignalEventDefinition_memberActivated" signalRef="Signal_MemberActivated">
-        <bpmn:extensionElements>
-          <camunda:in source="name" target="name" />
-        </bpmn:extensionElements>
-      </bpmn:signalEventDefinition>
     </bpmn:endEvent>
     <bpmn:association id="association_compensateClaim" associationDirection="One" sourceRef="boundary_compensateClaim" targetRef="serviceTask_revokeClaim" />
   </bpmn:process>
   <bpmn:message id="Message_3p5jpc1" name="Message_SubscriptionRequested" />
   <bpmn:message id="Message_ConfirmationRejected" name="Message_ConfirmationRejected" />
-  <bpmn:signal id="Signal_MemberActivated" name="Signal_MemberActivated" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="subscribeNewsletter">
       <bpmndi:BPMNShape id="Event_11n7oe2_di" bpmnElement="startEvent_submitRegistration">
         <dc:Bounds x="-1038" y="-738" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="-1059" y="-695" width="80" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0h80alm_di" bpmnElement="serviceTask_sendWelcomeMail">
-        <dc:Bounds x="10" y="-810" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_0cxisnj_di" bpmnElement="gateway_notifyJoin">
-        <dc:Bounds x="155" y="-745" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_00n5mgj_di" bpmnElement="serviceTask_notifyCommunity">
-        <dc:Bounds x="10" y="-710" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0lnyyv6_di" bpmnElement="endEvent_membershipActivated">
-        <dc:Bounds x="252" y="-738" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="240" y="-687" width="61" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0h6nlhr_di" bpmnElement="subProcess_confirmMembership" isExpanded="true">
@@ -198,6 +176,9 @@
         <di:waypoint x="-300" y="-717" />
         <di:waypoint x="-238" y="-717" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Activity_0h80alm_di" bpmnElement="serviceTask_sendWelcomeMail">
+        <dc:Bounds x="20" y="-820" width="100" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_1fodv6z" bpmnElement="serviceTask_claimMembership">
         <dc:Bounds x="-940" y="-760" width="100" height="80" />
       </bpmndi:BPMNShape>
@@ -242,6 +223,19 @@
       <bpmndi:BPMNShape id="Gateway_13d1co3_di" bpmnElement="gateway_notifyFork">
         <dc:Bounds x="-85" y="-745" width="50" height="50" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_00n5mgj_di" bpmnElement="serviceTask_notifyCommunity">
+        <dc:Bounds x="20" y="-700" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0cxisnj_di" bpmnElement="gateway_notifyJoin">
+        <dc:Bounds x="175" y="-745" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0lnyyv6_di" bpmnElement="endEvent_membershipActivated">
+        <dc:Bounds x="282" y="-738" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="270" y="-687" width="61" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_08wx372_di" bpmnElement="timer_resendEveryDay">
         <dc:Bounds x="-238" y="-628" width="36" height="36" />
         <bpmndi:BPMNLabel>
@@ -263,7 +257,7 @@
       <bpmndi:BPMNShape id="BPMNShape_boundaryCompensateClaim_di" bpmnElement="boundary_compensateClaim">
         <dc:Bounds x="-908" y="-778" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="-871" y="-804" width="61" height="27" />
+          <dc:Bounds x="-881" y="-804" width="61" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="BPMNEdge_01oybl0" bpmnElement="Flow_0ho2dhw">
@@ -322,27 +316,27 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1a6of9c_di" bpmnElement="Flow_1a6of9c">
         <di:waypoint x="-60" y="-745" />
-        <di:waypoint x="-60" y="-770" />
-        <di:waypoint x="10" y="-770" />
+        <di:waypoint x="-60" y="-780" />
+        <di:waypoint x="20" y="-780" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1an5chz_di" bpmnElement="Flow_1an5chz">
         <di:waypoint x="-60" y="-695" />
-        <di:waypoint x="-60" y="-670" />
-        <di:waypoint x="10" y="-670" />
+        <di:waypoint x="-60" y="-660" />
+        <di:waypoint x="20" y="-660" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_12q7mbd_di" bpmnElement="Flow_12q7mbd">
-        <di:waypoint x="110" y="-670" />
-        <di:waypoint x="180" y="-670" />
-        <di:waypoint x="180" y="-695" />
+        <di:waypoint x="120" y="-660" />
+        <di:waypoint x="200" y="-660" />
+        <di:waypoint x="200" y="-695" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1yc0f2l_di" bpmnElement="Flow_1yc0f2l">
-        <di:waypoint x="205" y="-720" />
-        <di:waypoint x="252" y="-720" />
+        <di:waypoint x="225" y="-720" />
+        <di:waypoint x="282" y="-720" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0arsuyz_di" bpmnElement="Flow_0arsuyz">
-        <di:waypoint x="110" y="-770" />
-        <di:waypoint x="180" y="-770" />
-        <di:waypoint x="180" y="-745" />
+        <di:waypoint x="120" y="-780" />
+        <di:waypoint x="200" y="-780" />
+        <di:waypoint x="200" y="-745" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="BPMNEdge_associationCompensateClaim" bpmnElement="association_compensateClaim">
         <di:waypoint x="-890" y="-778" />

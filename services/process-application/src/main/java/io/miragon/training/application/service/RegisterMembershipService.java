@@ -1,7 +1,6 @@
 package io.miragon.training.application.service;
 
-// TODO Exercise 2: Uncomment this class (remove the /* and */ lines)
-//  and then implement the TODOs in the method body.
+// TODO Exercise 4: Uncomment this class (remove the /* and */ lines).
 /*
 import io.miragon.training.application.port.inbound.RegisterMembershipUseCase;
 import io.miragon.training.application.port.outbound.MembershipProcess;
@@ -33,13 +32,10 @@ public class RegisterMembershipService implements RegisterMembershipUseCase {
     @Override
     public MembershipId register(Command command) {
         log.info("Registering membership for {}", command.email());
-
-        // TODO Exercise 2:
-        //  1. Create a Membership object from the Command (Email, Name, Age)
-        //  2. Save it with repository.save(...)
-        //  3. Start the process with process.startProcess(...)
-        //  4. Return the MembershipId
-        throw new UnsupportedOperationException("Exercise 2: Implement the membership registration");
+        var membership = new Membership(new Email(command.email()), new Name(command.name()), new Age(command.age()));
+        repository.save(membership);
+        process.startProcess(membership);
+        return membership.id();
     }
 }
 */

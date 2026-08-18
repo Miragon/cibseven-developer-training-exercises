@@ -92,7 +92,7 @@ Prozess starten, Nachrichten oder Signale korrelieren, einen External-Task-Worke
   Message-, Signal- und Topic-Namen, IDs) gehören weiterhin in Tabellen oder Backticks – das ist
   Datenvorgabe, kein Lösungsweg. Ein vollständig ausgeschriebenes Beispiel mit echten Argumenten
   ist nur dort in Ordnung, wo eine unbekannte API *einmal* vorgeführt und danach selbst
-  wiederholt wird (etwa der erste Prozess-Test in Aufgabe 5 oder der erste Worker in Extra-Aufgabe 1).
+  wiederholt wird (etwa der erste Prozess-Test in Aufgabe 6 oder der erste Worker in Extra-Aufgabe 1).
 
 ### Terminologie
 
@@ -169,7 +169,7 @@ Weitere Festlegungen:
 ### Umfang
 
 - Eine Aufgabe passt auf 2–4 Bildschirmseiten. Wird es länger, gehört Theorie in einen
-  Hinweis-Block oder in ein Add-on (siehe `exercise-05-addon.md`).
+  Hinweis-Block oder in ein Add-on (siehe `exercise-06-addon.md`).
 - Maximal drei Verschachtelungsebenen (`###`).
 - Tabellen für Element-Spezifikationen, Fließtext für Begründungen, Codeblöcke für
   alles, was wörtlich übernommen wird.
@@ -189,7 +189,7 @@ Weitere Festlegungen:
   Timer- und Message-Boundaries im Bestandsmodell heißen abweichend `timer_` bzw.
   `event_` – das ist gewachsen und bleibt so, damit Doku und Modell übereinstimmen.
 - **Jede Aufgabe nennt ihr Referenzmodell** unter `../models/exercise-NN/`.
-- **Ab Aufgabe 5 (Add-on)** referenziert jeder Test Element-IDs über die generierte
+- **Ab Aufgabe 6 (Add-on)** referenziert jeder Test Element-IDs über die generierte
   Process-API, nicht über Strings.
 
 ---
@@ -212,16 +212,17 @@ fachliche Vorgriff in Aufgabe 0 gilt nicht als doppelte Einführung.
 | Aufgabe | Wird hier eingeführt |
 |---|---|
 | 0 | fachliche Modellierung; Anwendung aller BPMN-Grundformen aus Kapitel 1 – Start/End Event, User Task, Service Task, Sequenzfluss, eingebetteter Subprozess, Boundary Event, Exclusive/Parallel Gateway, Kompensation (rein fachlich) |
-| 1 | Engine, Deployment, Cockpit, Tasklist, Prozessdefinition, **Prozessinstanz**, Prozessvariable, **Wait State**, **Generated Form** (vorhandene nutzen), `act_*`-Tabellen (`re` / `ru` / `hi`) |
-| 2 | Prozess-Key, Element-ID, `isExecutable`, `historyTimeToLive`, **Generated Form selbst erstellen**, Delegate Expression, JavaDelegate, `RuntimeService`, hexagonale Architektur |
-| 3 | Message Start Event, Nachricht, Korrelation (`correlateStartMessage`) |
-| 4 | Exclusive Gateway (technisch: Default-Flow, Flow-Bedingung), **Transaktionsgrenze**, **asynchrone Continuation** (`asyncBefore` / `asyncAfter`), Commit und Rollback, **Token**, Business Key, generiertes Task-Formular (Freigabe), Idempotenz |
-| 5 | Prozess-Test, In-Memory-Engine (h2), **Job Executor**, Mock (`@MockitoBean`), Assertion (`BpmnAwareTests`) |
-| 5 · Add-on | generierte Process-API, `bpmn-to-code` |
-| 6 | eingebetteter Subprozess (technisch), Boundary Event (unterbrechend / nicht unterbrechend), Timer als Duration und als Cycle, Message Boundary Event, Parallel Gateway (Fork / Join) |
-| 7 | Kompensation (technisch), Compensation Boundary Event, Kompensations-Handler (`isForCompensation`), Association, Compensating End Event, SAGA-Muster |
-| 8 | Call Activity, Called Element, In-/Out-Mapping, DMN, Entscheidungstabelle, Business Rule Task, `mapDecisionResult` |
-| 9 | **Signal** und **Broadcast**, Signal-Start-Event, Signal-End-Event, External Task, Worker, `fetchAndLock`, Deployment per REST, OpenAPI-Client |
+| 1 | Engine, Deployment, Cockpit, Tasklist, Prozessdefinition, **Prozessinstanz**, Prozessvariable, **Start-Formular** (Generated Form am Start Event, vorhanden), **Manual Task** (Durchlauf ohne Code), `act_*`-Tabellen (`re` / `ru` / `hi`) |
+| 2 | Prozess-Key, Element-ID, `isExecutable`, `historyTimeToLive`, **User Task**, **Wait State**, **Generated Form selbst erstellen** (am User Task) |
+| 3 | Manual Task → **Service Task**, **JavaDelegate**, **Delegate Expression**, hexagonale Architektur (Delegate → Use Case → Service), Prozessvariable im Delegate lesen |
+| 4 | Message Start Event, Nachricht, **Korrelation** (`createMessageCorrelation` / `correlateStartMessage`), **`RuntimeService`** (Prozessstart aus Java), **REST-Endpunkt**, **Persistenz** (Repository), Task-Completion per REST (Confirm-Endpunkt), `membershipId` als Prozessreferenz |
+| 5 | Exclusive Gateway (Default-Flow, Flow-Bedingung), **Transaktionsgrenze**, **asynchrone Continuation** (`asyncBefore` / `asyncAfter`), Commit und Rollback, **Token**, Business Key, generiertes Task-Formular (Freigabe), Idempotenz |
+| 6 | Prozess-Test, In-Memory-Engine (h2), **Job Executor**, Mock (`@MockitoBean`), Assertion (`BpmnAwareTests`) |
+| 6 · Add-on | generierte Process-API, `bpmn-to-code` |
+| 7 | eingebetteter Subprozess (technisch), Boundary Event (unterbrechend / nicht unterbrechend), Timer als Duration und als Cycle, Message Boundary Event, Parallel Gateway (Fork / Join) |
+| 8 | Kompensation (technisch), Compensation Boundary Event, Kompensations-Handler (`isForCompensation`), Association, Compensating End Event, SAGA-Muster |
+| 9 | Call Activity, Called Element, In-/Out-Mapping, DMN, Entscheidungstabelle, Business Rule Task, `mapDecisionResult` |
+| 10 | **Signal** und **Broadcast**, Signal-Start-Event, Signal-End-Event, External Task, Worker, `fetchAndLock`, Deployment per REST, OpenAPI-Client |
 | Extra 1 | Process-Engine-API, `@ProcessEngineWorker`, Topic, `EngineCommandExecutor`, ArchUnit-Guardrail |
 
 Zwei Regeln dazu:
@@ -230,7 +231,7 @@ Zwei Regeln dazu:
   steht kein Begriff, der erst später eingeführt wird. Erlaubt sind Vorgriffe dagegen in
   *Nächster Schritt*, in Hinweis-Kästen, in Ausblicken und in Referenztabellen (etwa der
   ID-Präfix-Konvention in Aufgabe 2) – dort ist erkennbar, dass der Begriff noch kommt. Wer
-  vorgreift, markiert es: „(ab Aufgabe 9)".
+  vorgreift, markiert es: „(ab Aufgabe 10)".
 - **Nicht doppelt einführen.** Taucht ein Begriff später wieder auf, wird auf die
   einführende Aufgabe verlinkt statt neu erklärt.
 

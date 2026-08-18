@@ -2,7 +2,7 @@
 
 > 🇩🇪 **Deutsch** · [🇬🇧 English](README.md)
 
-Praxisübungen für das CIB Seven Developer Training. Das Projekt implementiert einen Newsletter-Anmeldeprozess mit CIB Seven als Process Engine und einer hexagonalen Architektur, die Business-Logik von Infrastruktur entkoppelt.
+Praxisübungen für das CIB Seven Developer Training. Das Projekt implementiert einen Inner-Circle-Membership-Prozess mit CIB Seven als Process Engine und einer hexagonalen Architektur, die Business-Logik von Infrastruktur entkoppelt.
 
 ## Übungen
 
@@ -20,9 +20,9 @@ Willkommens-Mail – fertig.
 > *„Das ist doch in einer Stunde gebaut."*
 > — Jeder Entwickler, der einen Newsletter unterschätzt hat.
 
-Das Training findet im Kontext des **Newsletter-Anmeldeprozesses** statt.
-Ab Aufgabe 4 wird aus dem einfachen Newsletter der exklusive **Miravelo Inner Circle** —
-eine auf tausend Plätze limitierte Membership für die treuesten Kundinnen und Kunden.
+Das Training findet im Kontext des exklusiven **Miravelo Inner Circle** statt — einer auf
+tausend Plätze limitierten Membership für die treuesten Kundinnen und Kunden. Du modellierst
+zuerst den kompletten Sollprozess fachlich und automatisierst ihn dann Schritt für Schritt.
 
 Was folgt, ist eine Reise durch immer komplexere BPMN-Muster: Gateways, Boundary Events,
 Subprozesse, Parallel Gateways, Call Activities, DMN-Entscheidungstabellen und Kompensation —
@@ -37,17 +37,18 @@ Detaillierte Aufgabenbeschreibungen befinden sich in [`docs/`](docs/).
 | Aufgabe | Thema | Beschreibung |
 |---|---|---|
 | [0](docs/de/exercise-00.md) | Fachliche BPMN-Modellierung | Den kompletten Inner-Circle-Membership-Prozess rein fachlich modellieren — die gemeinsame Vorlage für das ganze Training |
-| [1](docs/de/exercise-01.md) | Engine zum Laufen bringen | Das bewusst rudimentäre Startmodell zum Laufen bringen (Generated Form inklusive), Cockpit und `act_*`-Tabellen der Engine kennenlernen |
-| [2](docs/de/exercise-02.md) | Technische Modellierung & Automatisierung | Den ersten Ausschnitt von Grund auf neu bauen, die Generated Form selbst erstellen, JavaDelegate, RuntimeService, REST-Endpoint |
-| [3](docs/de/exercise-03.md) | Double-Opt-In | Message Start Event, Nachrichten-Korrelation, Bestätigungsschritt |
-| [4](docs/de/exercise-04.md) | Kapazitätsprüfung mit Gateway | Exclusive Gateway, Transaktionsgrenzen, Business Key, Task-Formular |
-| [5](docs/de/exercise-05.md) | Prozess-Tests | Prozess-Unit-Test mit In-Memory-Engine, gemockten Use Cases, ohne PostgreSQL |
-| [5 · Add-on](docs/de/exercise-05-addon.md) | bpmn-to-code | Element-IDs als generierte Konstanten statt handgetippter Strings |
-| [6](docs/de/exercise-06.md) | Subprozess, Boundary Events & Parallelität | Subprozess, Timer- und Message-Boundary-Events, Parallel Gateway, Teams-Anbindung |
-| [7](docs/de/exercise-07.md) | Kompensation (SAGA) | Compensation Boundary Event, Compensating End Event, Kompensations-Handler |
-| [8](docs/de/exercise-08.md) | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
-| [9](docs/de/exercise-09.md) | Remote Engine als geteilte Infrastruktur | Eine Abteilung besitzt einen **eigenen** kleinen Prozess (`sendWelcomeKit`) in ihrem Remote-Service: Modell, Worker, Deployment und Tests liegen dort; getriggert per Signal-Broadcast; die Engine über einen generierten OpenAPI-Client getrieben |
-| [Extra 1](docs/de/extra-task-1.md) | Process-Engine-API | Aufgabe 9 engine-neutral umbauen: Worker statt JavaDelegate, Adapter-Tausch statt Engine-Lock-in |
+| [1](docs/de/exercise-01.md) | Engine zum Laufen bringen | Das vorgegebene Start-Formular-/Manual-Task-Modell durchlaufen lassen, Cockpit und `act_*`-Tabellen der Engine kennenlernen |
+| [2](docs/de/exercise-02.md) | Der erste Wartepunkt | Aus dem Manual Task „Confirm" einen User Task machen und ihm eine selbst erstellte Generated Form geben |
+| [3](docs/de/exercise-03.md) | Einen Schritt automatisieren | Aus dem Manual Task „Send welcome mail" einen Service Task mit JavaDelegate machen (Start über Cockpit) |
+| [4](docs/de/exercise-04.md) | Die Anwendung übernimmt | Message Start Event, REST-Endpunkte für Register + Confirm, Nachrichten-Korrelation, Persistenz |
+| [5](docs/de/exercise-05.md) | Kapazitätsprüfung mit Gateway | Exclusive Gateway, Transaktionsgrenzen, Business Key, Task-Formular |
+| [6](docs/de/exercise-06.md) | Prozess-Tests | Prozess-Unit-Test mit In-Memory-Engine, gemockten Use Cases, ohne PostgreSQL |
+| [6 · Add-on](docs/de/exercise-06-addon.md) | bpmn-to-code | Element-IDs als generierte Konstanten statt handgetippter Strings |
+| [7](docs/de/exercise-07.md) | Subprozess, Boundary Events & Parallelität | Subprozess, Timer- und Message-Boundary-Events, Parallel Gateway, Teams-Anbindung |
+| [8](docs/de/exercise-08.md) | Kompensation (SAGA) | Compensation Boundary Event, Compensating End Event, Kompensations-Handler |
+| [9](docs/de/exercise-09.md) | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
+| [10](docs/de/exercise-10.md) | Remote Engine als geteilte Infrastruktur | Eine Abteilung besitzt einen **eigenen** kleinen Prozess (`sendWelcomeKit`) in ihrem Remote-Service: Modell, Worker, Deployment und Tests liegen dort; getriggert per Signal-Broadcast; die Engine über einen generierten OpenAPI-Client getrieben |
+| [Extra 1](docs/de/extra-task-1.md) | Process-Engine-API | Aufgabe 10 engine-neutral umbauen: Worker statt JavaDelegate, Adapter-Tausch statt Engine-Lock-in |
 
 > Aufbau, Sprache und Qualitätskriterien der Aufgaben sind in
 > [`docs/aufgaben-template.md`](docs/aufgaben-template.md) festgehalten. Neue oder geänderte
@@ -77,7 +78,7 @@ eine Aufgabe nicht ganz fertig bekommst, kannst du die Referenzlösung in dein `
 kopieren und mit ihr weiterarbeiten:
 
 ```bash
-# solutions/exercise-02 in das process-application-Modul kopieren (gültige Werte: 01–09, zweistellig)
+# solutions/exercise-02 in das process-application-Modul kopieren (gültige Werte: 01–10, zweistellig)
 ./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=02
 ```
 
@@ -108,11 +109,11 @@ cibseven-developer-training-exercises/
 │   │       │   │   └── outbound/     # Repository- und Prozess-Port-Interfaces
 │   │       │   └── service/          # Use-Case-Implementierungen
 │   │       └── domain/               # Domain-Modell (reines Java, keine Framework-Abhängigkeiten)
-│   └── (logistics-service/)          # erst in Aufgabe 9 aus templates/ angelegt (Remote-Owner)
+│   └── (logistics-service/)          # erst in Aufgabe 10 aus templates/ angelegt (Remote-Owner)
 ├── templates/
-│   └── exercise-09/logistics-service/ # Vorlage für den Aufgabe-9-Worker (in services/ kopieren)
-├── solutions/                        # Kumulative Lösungen pro Aufgabe (exercise-01 … exercise-09, extra-task-1)
-│   ├── exercise-{01-09}/             # exercise-09/ ist verschachtelt: process-application/ + logistics-service/
+│   └── exercise-10/logistics-service/ # Vorlage für den Aufgabe-10-Worker (in services/ kopieren)
+├── solutions/                        # Kumulative Lösungen pro Aufgabe (exercise-01 … exercise-10, extra-task-1)
+│   ├── exercise-{01-10}/             # exercise-10/ ist verschachtelt: process-application/ + logistics-service/
 │   └── extra-task-1/
 ├── models/                           # Referenz-BPMN-/DMN-Modelle
 ├── stack/
@@ -136,7 +137,7 @@ cibseven-developer-training-exercises/
 
 [CIB Seven](https://cibseven.org) ist eine community-gepflegte Distribution von Camunda Platform 7. Sie bietet volle Kompatibilität mit der Camunda-7-API und wird unabhängig als Open Source weiterentwickelt.
 
-In diesem Projekt läuft CIB Seven eingebettet in Spring Boot, stellt die Camunda-Webanwendung unter `http://localhost:8080/webapp/#/seven/auth/start` bereit und übernimmt die BPMN-Prozessausführung für den Newsletter-Anmeldeprozess.
+In diesem Projekt läuft CIB Seven eingebettet in Spring Boot, stellt die Camunda-Webanwendung unter `http://localhost:8080/webapp/#/seven/auth/start` bereit und übernimmt die BPMN-Prozessausführung für den Inner-Circle-Membership-Prozess.
 
 Service Tasks werden über das `JavaDelegate`-Pattern mit `DelegateExpression` angebunden:
 

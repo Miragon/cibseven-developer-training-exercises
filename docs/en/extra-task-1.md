@@ -1,6 +1,6 @@
 # Extra Task 1 – Breaking Free from Engine Lock-in
 
-> **Prerequisite:** Exercise 9 is complete – the Membership process runs end to end, including the "Membership activated" signal end event.
+> **Prerequisite:** Exercise 10 is complete – the Membership process runs end to end, including the "Membership activated" signal end event.
 > **Working directory:** `services/process-application`
 > **New in this exercise:** Process-Engine-API from bpm-crafters, worker pattern instead of JavaDelegate, engine-neutral outbound adapter, ArchUnit guardrail.
 
@@ -43,7 +43,7 @@ After this exercise you can
 
 ## Target model
 
-The process model does **not change functionally**. It is exactly the process from Exercise 9 –
+The process model does **not change functionally**. It is exactly the process from Exercise 10 –
 only the technical wiring of the service tasks changes. The "Membership
 activated" signal end event stays a native BPMN throw without a delegate and therefore fits into the
 engine-neutral world anyway.
@@ -58,7 +58,7 @@ Called process `handleRejection`:
 
 What changes – and what doesn't:
 
-| Layer | Exercise 9 (native CIB Seven) | Extra Task 1 |
+| Layer | Exercise 10 (native CIB Seven) | Extra Task 1 |
 |---|---|---|
 | `domain/`, `application/` | unchanged | **unchanged** |
 | Inbound service tasks | `JavaDelegate` + `DelegateExecution` | `@ProcessEngineWorker` worker |
@@ -71,8 +71,8 @@ structurally the same. DMN and user tasks still run inside the engine; they need
 
 ## The task
 
-> The easiest path is to copy your Exercise 9 solution and refactor it step by step.
-> The logistics service from Exercise 9 stays **unchanged** and is not part of this
+> The easiest path is to copy your Exercise 10 solution and refactor it step by step.
+> The logistics service from Exercise 10 stays **unchanged** and is not part of this
 > exercise.
 
 ### 1. Add the dependencies
@@ -207,7 +207,7 @@ public EngineCommandExecutor engineCommandExecutor() {
 
 `Runnable::run` executes the engine command synchronously on the calling thread – engine progress
 and business data commit or roll back together. A dedicated thread pool would cut through this boundary.
-This is the direct continuation of the topic from [Exercise 4](exercise-04.md).
+This is the direct continuation of the topic from [Exercise 5](exercise-05.md).
 
 Add the worker and adapter block to `application.yaml`:
 
@@ -247,17 +247,17 @@ what you would have to touch during a switch.
 
 - **The `asyncBefore` markers are gone.** An external task is a wait
   state by nature: the engine commits as soon as it creates the task, and waits until a worker
-  fetches and completes it. The transaction boundary you set by hand in Exercise 4 and 6
+  fetches and completes it. The transaction boundary you set by hand in Exercise 5 and 7
   comes built into the external task. That's part of the payoff.
 - The topic constants (`ServiceTasks.SEND_CONFIRMATION_MAIL`) come from the generated
-  Process-API you've known since [Exercise 5](exercise-05.md). The plugin is already
+  Process-API you've known since [Exercise 6](exercise-06.md). The plugin is already
   set up; in a pinch, plain strings work too.
-- The REST interface stays identical to Exercise 9 (port `8080`). Service tasks are now
+- The REST interface stays identical to Exercise 10 (port `8080`). Service tasks are now
   processed via polling (roughly every 5 seconds) – so it may take a moment.
 
 ## Expected result
 
-Run the same two scenarios as in Exercise 8 – the result must be identical, only
+Run the same two scenarios as in Exercise 9 – the result must be identical, only
 the execution now runs through workers instead of delegates.
 
 **Rejection outside the target group:**
@@ -295,7 +295,7 @@ regret* user task.
 - [ ] The outbound adapter uses `StartProcessApi` / `CorrelationApi` instead of `RuntimeService`
 - [ ] `@EnableProcessApplication` is removed, the `EngineCommandExecutor` bean is in place
 - [ ] The ArchUnit test reports **zero** dependencies on `org.cibseven.bpm`
-- [ ] The functional behavior is identical to Exercise 9
+- [ ] The functional behavior is identical to Exercise 10
 
 ## Hints
 

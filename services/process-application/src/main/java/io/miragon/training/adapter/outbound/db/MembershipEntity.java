@@ -1,5 +1,7 @@
 package io.miragon.training.adapter.outbound.db;
 
+// TODO Exercise 4: Uncomment this class (remove the /* and */ lines).
+/*
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -38,3 +40,4 @@ public class MembershipEntity {
     public String getName() { return name; }
     public int getAge() { return age; }
 }
+*/

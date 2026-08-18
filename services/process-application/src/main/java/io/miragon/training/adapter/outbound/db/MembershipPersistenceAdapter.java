@@ -1,5 +1,7 @@
 package io.miragon.training.adapter.outbound.db;
 
+// TODO Exercise 4: Uncomment this class (remove the /* and */ lines).
+/*
 import io.miragon.training.application.port.outbound.MembershipRepository;
 import io.miragon.training.domain.Membership;
 import io.miragon.training.domain.MembershipId;
@@ -32,3 +34,4 @@ public class MembershipPersistenceAdapter implements MembershipRepository {
         return membership;
     }
 }
+*/
