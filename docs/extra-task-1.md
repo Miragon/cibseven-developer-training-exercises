@@ -270,7 +270,7 @@ MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8080/api/memberships \
 curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
 ```
 
-Im Cockpit (`http://localhost:8080/camunda`, admin/admin): Der Worker
+Im Cockpit (`http://localhost:8080/webapp/#/seven/auth/start`, admin/admin): Der Worker
 `sendConfirmationMail` feuert, der User Task *Confirm membership* erscheint. Nach dem
 Rückzug läuft die Call Activity `handleRejection`, danach feuert über die Kompensation der
 Worker `revokeClaim`.

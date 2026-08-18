@@ -27,7 +27,7 @@ cd solutions/exercise-01 && ../../mvnw spring-boot:run
 ./mvnw test -Dtest=<TestClassName>
 ```
 
-CIB Seven Cockpit: `http://localhost:8080/camunda` (admin/admin)
+CIB Seven Cockpit: `http://localhost:8080/webapp/#/seven/auth/start` (admin/admin)
 
 ## Architecture
 

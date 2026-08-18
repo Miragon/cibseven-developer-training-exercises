@@ -198,7 +198,7 @@ curl -X POST http://localhost:8080/api/subscriptions \
 ```
 
 Der Aufruf liefert die ID der Subscription. Im Cockpit
-(`http://localhost:8080/camunda`, admin/admin) läuft daraufhin eine Instanz von
+(`http://localhost:8080/webapp/#/seven/auth/start`, admin/admin) läuft daraufhin eine Instanz von
 `Subscribe Newsletter`, in der **Tasklist** steht `Fill out form`. Nach dem Abschließen des
 Tasks läuft der Service Task durch und im Log erscheint
 `Sending welcome mail to alice@miravelo.com`.

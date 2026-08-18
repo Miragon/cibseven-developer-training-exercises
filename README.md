@@ -65,7 +65,7 @@ cd stack && docker-compose up -d
 cd services/process-application && ../../mvnw spring-boot:run
 
 # CIB Seven Cockpit
-open http://localhost:8080/camunda    # admin / admin
+open http://localhost:8080/webapp/#/seven/auth/start    # admin / admin
 ```
 
 ### Lösung einer Aufgabe laden
@@ -134,7 +134,7 @@ cibseven-developer-training-exercises/
 
 [CIB Seven](https://cibseven.org) ist eine community-gepflegte Distribution von Camunda Platform 7. Sie bietet volle Kompatibilität mit der Camunda-7-API und wird unabhängig als Open Source weiterentwickelt.
 
-In diesem Projekt läuft CIB Seven eingebettet in Spring Boot, stellt die Camunda-Webanwendung unter `http://localhost:8080/camunda` bereit und übernimmt die BPMN-Prozessausführung für den Newsletter-Anmeldeprozess.
+In diesem Projekt läuft CIB Seven eingebettet in Spring Boot, stellt die Camunda-Webanwendung unter `http://localhost:8080/webapp/#/seven/auth/start` bereit und übernimmt die BPMN-Prozessausführung für den Newsletter-Anmeldeprozess.
 
 Service Tasks werden über das `JavaDelegate`-Pattern mit `DelegateExpression` angebunden:
 

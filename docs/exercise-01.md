@@ -134,7 +134,7 @@ schaust gleich noch einmal hin.
 Dieselben Daten gibt es auch mit Oberfläche: Das Cockpit ist die Weboberfläche der Engine
 und dein wichtigstes Werkzeug für die kommenden Aufgaben.
 
-Öffne [http://localhost:8080/camunda](http://localhost:8080/camunda) (admin / admin). Unter
+Öffne [http://localhost:8080/webapp/#/seven/auth/start](http://localhost:8080/webapp/#/seven/auth/start) (admin / admin). Unter
 **Processes** erscheint `Subscribe Newsletter`. Klick dich durch **Cockpit** (laufende
 Instanzen), **Tasklist** (offene User Tasks) und **Admin** (Benutzerverwaltung).
 
@@ -145,9 +145,14 @@ führe sie von Hand bis zum Ende – so siehst du, wo die Instanz wartet und wo 
 weiterläuft:
 
 1. **Tasklist** → **Start process** → `Subscribe Newsletter`
-2. Den User Task **„Fill out form"** öffnen, `email`, `name` und `age` ausfüllen, abschließen
-3. Der Service Task setzt danach per Expression die Variable `welcomeMailSentTo`
-4. Die Instanz ist am End Event „User subscribed" angekommen – in der History steht sie auf
+2. **Filter anlegen (nur beim ersten Mal):** Die CIB-Seven-Tasklist zeigt offene Aufgaben nur
+   über einen Filter an – solange keiner existiert, bleibt die Liste leer, obwohl deine Instanz
+   bereits am User Task wartet. Klick oben links neben **Filters** auf das **+**
+   („Create a filter"), vergib einen Namen (z. B. `Alle Aufgaben`) und speichere. Ab jetzt
+   erscheinen die offenen Tasks.
+3. Den User Task **„Fill out form"** öffnen, `email`, `name` und `age` ausfüllen, abschließen
+4. Der Service Task setzt danach per Expression die Variable `welcomeMailSentTo`
+5. Die Instanz ist am End Event „User subscribed" angekommen – in der History steht sie auf
    `COMPLETED`
 
 ### 10. Noch einmal in die Datenbank schauen
