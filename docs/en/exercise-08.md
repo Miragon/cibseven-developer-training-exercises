@@ -59,23 +59,29 @@ Reference models: `../../models/exercise-08/newsletter.bpmn`,
 
 ## The task
 
-### 1. Bring the DMN table into the project
+### 1. Model the DMN decision table
 
-The decision table is already fully modeled – modeling DMN itself isn't the learning goal of this exercise. Copy it into the module:
+The new rejection process makes a business decision: which of the rejected applicants is high value and thus worth a personal reacquisition attempt? You model this decision as a DMN decision table – your first one. That way you get to know the DMN editor, the hit policy, and the FEEL range notation. You have two options:
 
-```bash
-cp models/exercise-08/categorize-applicant.dmn \
-   services/process-application/src/main/resources/dmn/categorize-applicant.dmn
-```
+- **Model it yourself (recommended):** In a DMN modeler, create the new file `src/main/resources/dmn/categorize-applicant.dmn` and build the table from the specification below.
+- **Fallback – copy the finished model:** If you want to skip the DMN editor, copy the reference model into the module:
+
+  ```bash
+  cp models/exercise-08/categorize-applicant.dmn \
+     services/process-application/src/main/resources/dmn/categorize-applicant.dmn
+  ```
+
+The specification for the model-it-yourself path – the IDs and types have to match exactly so that the Business Rule Task in step 2 finds the decision:
 
 | Property | Value |
 |---|---|
 | Decision ID | `categorizeApplicant` |
+| Hit Policy | `FIRST` |
 | Input | `age` (integer) |
 | Output | `isHighValue` (boolean) |
 | Rule | Age in range `[21..29]` → `true`; default `-` → `false` |
 
-Just like the BPMN files, all `*.dmn` files under `src/main/resources` are deployed automatically at start-up.
+The FEEL range `[21..29]` is inclusive on both ends (21 and 29 are included). Just like the BPMN files, all `*.dmn` files under `src/main/resources` are deployed automatically at start-up.
 
 ### 2. Model the process `membership-rejection.bpmn`
 
