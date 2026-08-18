@@ -1,20 +1,19 @@
 package io.miragon.training;
 
 import org.springframework.boot.SpringApplication;
-// TODO Aufgabe 1: Imports einkommentieren
+// TODO Exercise 1: Uncomment the imports
 // import org.springframework.boot.autoconfigure.SpringBootApplication;
 // import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 /**
- * Einstiegspunkt der Anwendung.
+ * Application entry point.
  *
- * <p>TODO Aufgabe 1: Aktiviere die Annotationen {@code @SpringBootApplication} und
- * {@code @EnableJpaRepositories}. Erst dadurch greifen Spring-Boot-Auto-Configuration und
- * das automatische BPMN-Deployment der CIB-Seven-Engine (alle {@code *.bpmn} unter
- * {@code src/main/resources} werden beim Start deployt). Ohne die Annotationen startet nur
- * ein leerer Kontext – keine Engine, kein Cockpit.
+ * <p>TODO Exercise 1: Enable the {@code @SpringBootApplication} and {@code @EnableJpaRepositories}
+ * annotations. Only then do Spring Boot auto-configuration and the CIB Seven engine's automatic
+ * BPMN deployment kick in (all {@code *.bpmn} files under {@code src/main/resources} are deployed
+ * on start-up). Without the annotations only an empty context starts – no engine, no Cockpit.
  */
-// TODO Aufgabe 1: Annotationen einkommentieren
+// TODO Exercise 1: Uncomment the annotations
 // @SpringBootApplication
 // @EnableJpaRepositories
 public class TrainingApplication {

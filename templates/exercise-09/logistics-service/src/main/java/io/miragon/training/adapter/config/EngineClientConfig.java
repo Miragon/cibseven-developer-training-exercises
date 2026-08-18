@@ -19,7 +19,7 @@ public class EngineClientConfig {
         return RestClient.builder().baseUrl(engineBaseUrl).build();
     }
 
-    // TODO Aufgabe 9: once the client is generated (see pom.xml), expose the typed ProcessDefinitionApi
+    // TODO Exercise 9: once the client is generated (see pom.xml), expose the typed ProcessDefinitionApi
     // as a bean so RemoteWelcomeKitProcessAdapter can drive the engine. Imports:
     //   org.cibseven.rest.client.invoker.ApiClient, org.cibseven.rest.client.api.ProcessDefinitionApi
     //

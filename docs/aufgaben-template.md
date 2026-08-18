@@ -69,6 +69,31 @@ beobachtbare Verhalten, Letzteres ist die abhakbare Abnahme.
 - Vorgaben, die exakt stimmen müssen (IDs, Topics, Keys), stehen in einer **Tabelle**
   oder in Backticks – nie nur im Fließtext.
 
+### Engine-Kontext: selbst implementieren, nicht einkommentieren
+
+Wo das Lernziel die Anbindung an die Process Engine ist, schreibt die teilnehmende Person den
+Code **selbst** – sie aktiviert ihn nicht nur. Das betrifft alles, was direkt mit der Engine
+spricht: ein JavaDelegate implementieren, mit `DelegateExecution` arbeiten, Prozessvariablen
+lesen oder setzen, den `RuntimeService` (oder einen anderen Engine-Service) nutzen, einen
+Prozess starten, Nachrichten oder Signale korrelieren, einen External-Task-Worker schreiben.
+
+- **Engine-Kontext** wird als *Write-it-yourself-Stub* ausgeliefert: Imports, Klassenrumpf und
+  Methodensignatur dürfen vorgegeben sein, der Methodenkörper ist ein
+  `throw new UnsupportedOperationException(...)`, den die teilnehmende Person ersetzt.
+- **Nicht-Engine-Plumbing** darf komplett auskommentiert ausgeliefert und per Einkommentieren
+  aktiviert werden: REST-Controller, JPA-/DB-Adapter, Spring-/Maven-Konfiguration, Build-Plugins,
+  vorbereitende technische Verdrahtung. Das lenkt nicht vom Engine-Lernziel ab.
+- **Hinweise** nennen Service und Methode konzeptionell (der Methodenname wie
+  `startProcessInstanceByKey` oder `createMessageCorrelation` ist erlaubt), geben aber **keine
+  paste-fertige Aufruf- oder Cast-Zeile**. Ein **abstraktes Code-Skelett** – die Aufrufkette mit
+  Platzhaltern statt echten Argumenten (`.processInstanceBusinessKey(/* membershipId */)`) – ist
+  oft besser als reine Prosa: Es zeigt die Form der API (etwa den Fluent Builder einer
+  Korrelation), ohne die Lösung vorwegzunehmen. Exakte Daten (Prozess-Key, Variablennamen,
+  Message-, Signal- und Topic-Namen, IDs) gehören weiterhin in Tabellen oder Backticks – das ist
+  Datenvorgabe, kein Lösungsweg. Ein vollständig ausgeschriebenes Beispiel mit echten Argumenten
+  ist nur dort in Ordnung, wo eine unbekannte API *einmal* vorgeführt und danach selbst
+  wiederholt wird (etwa der erste Prozess-Test in Aufgabe 5 oder der erste Worker in Extra-Aufgabe 1).
+
 ### Terminologie
 
 Englische Fachbegriffe bleiben englisch, wenn sie im Werkzeug so heißen. Sie werden
@@ -221,4 +246,7 @@ Zwei Regeln dazu:
 - [ ] Alle Befehle sind aus dem angegebenen Verzeichnis lauffähig
 - [ ] Der Selbstcheck ist ohne Trainer prüfbar
 - [ ] Lösungswege stehen nicht im Aufgabentext (nur Hinweise + Referenzlösung)
+- [ ] Engine-Kontext (Delegate, `DelegateExecution`, `RuntimeService`, Prozessvariablen,
+      Korrelation, External Task) wird selbst implementiert; Hinweise nennen die API, nicht die
+      fertige Aufrufzeile
 - [ ] Link auf die Folgeaufgabe gesetzt, Eintrag in der README-Tabelle vorhanden

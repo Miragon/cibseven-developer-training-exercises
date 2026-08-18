@@ -14,9 +14,9 @@ public class ArchitectureTest {
     @ArchTest
     static final ArchRule hexagonal_architecture = layeredArchitecture()
             .consideringAllDependencies()
-            // Optionale Layer: In Aufgabe 1 ist die Business-Schicht noch auskommentiert,
-            // sodass einzelne Layer leer sein dürfen. Sobald sie (ab Aufgabe 2) gefüllt ist,
-            // greifen die Zugriffsregeln unverändert.
+            // Optional layers: in Exercise 1 the business layer is still commented out,
+            // so individual layers are allowed to be empty. Once it is filled (from Exercise 2 on),
+            // the access rules apply unchanged.
             .withOptionalLayers(true)
             .layer("Domain").definedBy("..domain..")
             .layer("InPorts").definedBy("..application.port.inbound..")
@@ -24,8 +24,8 @@ public class ArchitectureTest {
             .layer("Application").definedBy("..application.service..")
             .layer("InAdapters").definedBy("..adapter.inbound..")
             .layer("OutAdapters").definedBy("..adapter.outbound..")
-            // bpmn-to-code generierte Process-API-Konstanten (ab Aufgabe 5). In Aufgabe 1-4 leer
-            // → dank withOptionalLayers(true) unkritisch.
+            // bpmn-to-code generated Process-API constants (from Exercise 5). Empty in Exercise 1-4
+            // → harmless thanks to withOptionalLayers(true).
             .layer("ProcessApi").definedBy("..adapter.process..")
             .whereLayer("Domain").mayOnlyBeAccessedByLayers("InPorts", "OutPorts", "Application", "InAdapters", "OutAdapters")
             .whereLayer("InPorts").mayOnlyBeAccessedByLayers("Application", "InAdapters")

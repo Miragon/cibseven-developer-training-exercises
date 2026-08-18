@@ -1,7 +1,7 @@
 package io.miragon.training.application.service;
 
-// TODO Aufgabe 2: Diese Klasse einkommentieren (die Zeilen mit /* und */ entfernen)
-//  und anschließend das TODO im Methodenrumpf implementieren.
+// TODO Exercise 2: Uncomment this class (remove the /* and */ lines)
+//  and then implement the TODO in the method body.
 /*
 import io.miragon.training.application.port.inbound.SendWelcomeMailUseCase;
 import io.miragon.training.application.port.outbound.SubscriptionRepository;
@@ -27,10 +27,10 @@ public class SendWelcomeMailService implements SendWelcomeMailUseCase {
     public void sendWelcomeMail(SubscriptionId subscriptionId) {
         var subscription = repository.find(subscriptionId);
 
-        // TODO Aufgabe 2:
-        //  Logge eine Nachricht im Format "Sending welcome mail to [email]"
-        //  In späteren Aufgaben wird hier eine echte Mail gesendet.
-        throw new UnsupportedOperationException("Aufgabe 2: Logge 'Sending welcome mail to " + subscription.email().value() + "'");
+        // TODO Exercise 2:
+        //  Log a message in the format "Sending welcome mail to [email]"
+        //  In later exercises a real mail will be sent here.
+        throw new UnsupportedOperationException("Exercise 2: Log 'Sending welcome mail to " + subscription.email().value() + "'");
     }
 }
 */

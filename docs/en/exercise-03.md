@@ -105,11 +105,14 @@ Use `SendWelcomeMailDelegate` as a template. The delegate reads `subscriptionId`
 **File:** `adapter/outbound/cibseven/SubscriptionProcessAdapter.java`
 
 A Message Start Event can no longer be triggered via `startProcessInstanceByKey`. Switch
-`startProcess(...)` to correlating the message:
+`startProcess(...)` to correlating the message `Message_SubscriptionRequested`. The
+`RuntimeService` gives you a correlation builder via `createMessageCorrelation(...)`; the four
+process variables (`subscriptionId`, `email`, `name`, `age`) stay the same as in Exercise 2.
+You assemble the finished call chain yourself:
 
 ```java
-runtimeService.createMessageCorrelation("Message_SubscriptionRequested")
-        .setVariables(Map.of(/* subscriptionId, email, name, age */))
+runtimeService.createMessageCorrelation(/* message name */)
+        .setVariables(/* subscriptionId, email, name, age */)
         .correlateStartMessage();
 ```
 

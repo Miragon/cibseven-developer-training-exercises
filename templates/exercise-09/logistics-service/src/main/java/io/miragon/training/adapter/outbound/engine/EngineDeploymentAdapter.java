@@ -33,12 +33,12 @@ public class EngineDeploymentAdapter {
 
     @EventListener(ApplicationReadyEvent.class)
     public void deployProcessModel() {
-        // TODO Aufgabe 9: deploy the OWNED model (src/main/resources/bpmn/*.bpmn) into the remote engine.
+        // TODO Exercise 9: deploy the OWNED model (src/main/resources/bpmn/*.bpmn) into the remote engine.
         //   Resolve the resources (classpath*:bpmn/*.bpmn), then POST them as multipart/form-data to
         //   /deployment/create with the idempotency flags enable-duplicate-filtering + deploy-changed-only.
         //   Retry a few times so the worker may start before the engine is ready. See the deploy(...) hint
         //   below and ProcessModelDeploymentAdapter in miragon-blueprints/cibseven-remote-example.
-        log.warn("TODO Aufgabe 9: EngineDeploymentAdapter does not deploy the owned model yet");
+        log.warn("TODO Exercise 9: EngineDeploymentAdapter does not deploy the owned model yet");
     }
 
     // Hint: this is the idempotent multipart deployment call the TODO above should make.

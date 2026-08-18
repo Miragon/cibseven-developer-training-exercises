@@ -4,29 +4,30 @@ import org.cibseven.bpm.client.task.ExternalTask;
 import org.cibseven.bpm.client.task.ExternalTaskService;
 
 /**
- * TODO Aufgabe 9: Implementiere den External-Task-Worker für den "Ship welcome kit"-Task.
+ * TODO Exercise 9: Implement the external-task worker for the "Ship welcome kit" task.
  *
- * <p>Hier steht bewusst nur das Gerüst – der Worker ist deine Aufgabe (nachdem du den Prozess angepasst
- * und die Process-API generiert hast):
+ * <p>Only the skeleton is here on purpose – the worker is your job (after you have adapted the process
+ * and generated the Process-API):
  * <ol>
- *   <li>Mach die Klasse zu einer Spring-Bean ({@code @Component}) und abonniere den Topic mit
+ *   <li>Make the class a Spring bean ({@code @Component}) and subscribe to the topic with
  *       {@code @ExternalTaskSubscription(topicName = SendWelcomeKitProcessApi.ServiceTasks.SHIP_WELCOME_KIT)}.
- *       Die Konstante entsteht erst, wenn du den Service-Task im Modell als External Task mit Topic
- *       markiert und die Process-API neu generiert hast.</li>
- *   <li>Lies die Variable {@code name}, verschicke das Kit über {@code ShipWelcomeKitUseCase} (per
- *       Konstruktor injizieren) und schließe den Task ab:
+ *       The constant only comes into being once you have marked the service task in the model as an
+ *       external task with a topic and regenerated the Process-API.</li>
+ *   <li>Read the process variable {@code name} from the {@link ExternalTask}, ship the kit via
+ *       {@code ShipWelcomeKitUseCase} (inject it via the constructor) and complete the task via the
+ *       {@link ExternalTaskService}. You fill in the concrete arguments yourself:
  *       <pre>
- *   String name = task.getVariable("name");
- *   shipWelcomeKit.shipWelcomeKit(new Member(name));
- *   taskService.complete(task);
+ *   String name = task.getVariable(...);   // process variable "name"
+ *   shipWelcomeKit.shipWelcomeKit(...);    // ship the kit via the use case
+ *   taskService.complete(...);             // complete the external task
  *       </pre></li>
  * </ol>
- * Die gemeinsame Fehlerbehandlung steckt schon in {@link BaseExternalTaskWorker} – lass deinen Worker davon erben.
+ * The shared error handling is already in {@link BaseExternalTaskWorker} – let your worker inherit from it.
  */
 public class ShipWelcomeKitWorker extends BaseExternalTaskWorker {
 
     @Override
     protected void executeTask(ExternalTask task, ExternalTaskService taskService) {
-        throw new UnsupportedOperationException("TODO Aufgabe 9: implement the shipWelcomeKit worker");
+        throw new UnsupportedOperationException("TODO Exercise 9: implement the shipWelcomeKit worker");
     }
 }

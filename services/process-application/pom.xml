@@ -39,11 +39,11 @@
             <scope>runtime</scope>
         </dependency>
         <!--
-          TODO Aufgabe 1: Die CIB-Seven-Starter einkommentieren, damit die Engine mit
-          Web-Cockpit und REST-API startet. Die Versionen kommen zentral aus der Root-pom.xml
-          (dependencyManagement) – du fügst die Deps also OHNE <version> hinzu.
+          TODO Exercise 1: Uncomment the CIB Seven starters so the engine starts with
+          the web Cockpit and REST API. The versions come centrally from the root pom.xml
+          (dependencyManagement) – so you add the deps WITHOUT a <version>.
         -->
-        <!-- CIB Seven engine + Cockpit-Webapp + REST-API (Version zentral gemanagt)
+        <!-- CIB Seven engine + Cockpit webapp + REST API (version managed centrally)
         <dependency>
             <groupId>org.cibseven.bpm.springboot</groupId>
             <artifactId>cibseven-bpm-spring-boot-starter-webapp-4</artifactId>
@@ -64,14 +64,14 @@
             <scope>test</scope>
         </dependency>
         <!--
-          Engine-CORE (nur Klassen), damit der vorgegebene Prozess-Test-Helfer
-          src/test/.../process/util/ProcessEngineTestUtils.java auch kompiliert, solange die
-          CIB-Seven-Starter noch auskommentiert sind (vor Aufgabe 1). Version zentral gemanagt.
-          Wichtig: KEIN test-Scope – die Starter ziehen dieselbe Engine ab Aufgabe 1 transitiv als
-          compile; ein direkter test-Scope würde diese per Maven-Nearest-Wins auf test herabstufen
-          und der laufenden App die Engine entziehen. Die Engine STARTET weiterhin erst mit den
-          Startern aus Aufgabe 1 (Autoconfiguration + Cockpit + REST) – dieser Eintrag bringt nur
-          die Klassen auf den Klassenpfad, kein laufendes Verhalten.
+          Engine CORE (classes only) so the provided process-test helper
+          src/test/.../process/util/ProcessEngineTestUtils.java compiles while the CIB Seven
+          starters are still commented out (before Exercise 1). Version managed centrally.
+          Important: NO test scope – from Exercise 1 the starters pull the same engine transitively
+          as compile; a direct test scope would downgrade it to test via Maven nearest-wins and
+          take the engine away from the running app. The engine STILL only starts with the starters
+          from Exercise 1 (autoconfiguration + Cockpit + REST) – this entry only puts the classes
+          on the classpath, no runtime behavior.
         -->
         <dependency>
             <groupId>org.cibseven.bpm</groupId>
@@ -89,8 +89,8 @@
                 </configuration>
             </plugin>
 
-            <!-- "Lösung laden": ersetzt src/main und übernimmt Tests.
-                 Aufruf mit:
+            <!-- "Load solution": replaces src/main and also brings over the tests.
+                 Call with:
                  mvn -pl services/process-application antrun:run@load-solution -Dsolution=NN   (NN = 01–09) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -105,21 +105,21 @@
                         <configuration>
                             <target xmlns:if="ant:if" xmlns:unless="ant:unless">
                                 <fail unless="solution"
-                                      message="Bitte die Solution-Nummer zweistellig angeben, z.B.: mvn -pl services/process-application antrun:run@load-solution -Dsolution=02"/>
+                                      message="Please provide the solution number as two digits, e.g.: mvn -pl services/process-application antrun:run@load-solution -Dsolution=02"/>
                                 <condition property="solutionModuleDir" value="exercise-09/process-application">
                                     <equals arg1="${solution}" arg2="09"/>
                                 </condition>
                                 <property name="solutionModuleDir" value="exercise-${solution}"/>
                                 <property name="solutionSrc"
                                           location="${maven.multiModuleProjectDirectory}/solutions/${solutionModuleDir}/src"/>
-                                <fail message="Solution '${solutionModuleDir}' nicht gefunden (gültige Werte: 01-09, zweistellig). Erwarteter Pfad: ${solutionSrc}">
+                                <fail message="Solution '${solutionModuleDir}' not found (valid values: 01-09, two-digit). Expected path: ${solutionSrc}">
                                     <condition>
                                         <not>
                                             <available file="${solutionSrc}" type="dir"/>
                                         </not>
                                     </condition>
                                 </fail>
-                                <echo message="Lade Solution ${solution} in das process-application-Modul ..."/>
+                                <echo message="Loading solution ${solution} into the process-application module ..."/>
                                 <delete dir="${project.basedir}/src/main"/>
                                 <copy todir="${project.basedir}/src/main">
                                     <fileset dir="${solutionSrc}/main"/>
@@ -130,8 +130,8 @@
                                 <copy todir="${project.basedir}/src/test" overwrite="true" if:set="solutionHasTests">
                                     <fileset dir="${solutionSrc}/test"/>
                                 </copy>
-                                <echo if:set="solutionHasTests" message="Fertig. Solution ${solution} (src/main + Prozess-Test) wurde nach services/process-application kopiert; ArchitectureTest bleibt erhalten."/>
-                                <echo unless:set="solutionHasTests" message="Fertig. Solution ${solution} (src/main) wurde kopiert; src/test unverändert (kein Solution-Test, Platzhalter bleibt)."/>
+                                <echo if:set="solutionHasTests" message="Done. Solution ${solution} (src/main + process test) was copied to services/process-application; ArchitectureTest is preserved."/>
+                                <echo unless:set="solutionHasTests" message="Done. Solution ${solution} (src/main) was copied; src/test unchanged (no solution test, placeholder stays)."/>
                             </target>
                         </configuration>
                     </execution>

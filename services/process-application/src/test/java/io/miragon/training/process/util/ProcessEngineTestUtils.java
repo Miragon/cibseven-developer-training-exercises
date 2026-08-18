@@ -7,15 +7,15 @@ import org.cibseven.bpm.engine.runtime.Job;
 import org.cibseven.bpm.engine.runtime.ProcessInstance;
 
 /**
- * Kleine Helfer, um eine Prozessinstanz im Unit-Test deterministisch zu treiben.
+ * Small helpers to drive a process instance deterministically in a unit test.
  *
- * <p>Der Job Executor ist im {@code test}-Profil aus (siehe {@code application-test.yaml}).
- * Dadurch wartet der Prozess an jeder {@code camunda:asyncBefore/After}: kein Hintergrund-Thread
- * holt den Job ab. Diese Helfer schieben den Prozess stattdessen aus dem Testthread vorwärts –
- * das Timing bleibt vollständig unter Kontrolle und der Test schnell und reproduzierbar.
+ * <p>The job executor is off in the {@code test} profile (see {@code application-test.yaml}).
+ * As a result the process waits at every {@code camunda:asyncBefore/After}: no background thread
+ * picks up the job. These helpers instead push the process forward from the test thread –
+ * the timing stays fully under control and the test fast and reproducible.
  *
- * <p>Diese Klasse ist in Aufgabe 5 <b>vorgegeben</b> – du schreibst damit deine Tests, musst sie
- * aber nicht selbst bauen. Siehe {@code docs/de/exercise-05.md}.
+ * <p>This class is <b>provided</b> in Exercise 5 – you use it to write your tests, you don't have
+ * to build it yourself. See {@code docs/en/exercise-05.md}.
  */
 public final class ProcessEngineTestUtils {
 
@@ -25,17 +25,17 @@ public final class ProcessEngineTestUtils {
     }
 
     /**
-     * Führt die offenen Async-Continuation-("message")-Jobs nacheinander aus, bis die Instanz
-     * ihren nächsten Wait State (User/Receive Task, Timer oder Ende) erreicht.
+     * Executes the open async-continuation ("message") jobs one after another until the instance
+     * reaches its next wait state (User/Receive Task, timer, or end).
      */
     public static void continueToNextWaitState(ProcessEngine processEngine) {
         continueToNextWaitState(processEngine, null);
     }
 
     /**
-     * Wie {@link #continueToNextWaitState(ProcessEngine)}, treibt aber nur die Jobs einer einzelnen
-     * Instanz. Nützlich, sobald eine Aktivität ein Signal wirft, das eine zweite, unabhängige
-     * Instanz startet, die von diesem Aufruf <em>nicht</em> mitgetrieben werden soll (ab Aufgabe 7).
+     * Like {@link #continueToNextWaitState(ProcessEngine)}, but drives only the jobs of a single
+     * instance. Useful once an activity throws a signal that starts a second, independent instance
+     * which should <em>not</em> be driven along by this call (from Exercise 7).
      */
     public static void continueToNextWaitState(ProcessEngine processEngine, String processInstanceId) {
         ManagementService managementService = processEngine.getManagementService();
@@ -53,8 +53,8 @@ public final class ProcessEngineTestUtils {
     }
 
     /**
-     * Feuert den Timer-Job des angegebenen Boundary-/Catch-Events direkt, unabhängig vom
-     * Fälligkeitsdatum. Prüft die Timer-Verdrahtung, ohne echte Zeit abzuwarten (ab Aufgabe 6).
+     * Fires the timer job of the given boundary/catch event directly, independent of its due date.
+     * Checks the timer wiring without waiting for real time (from Exercise 6).
      */
     public static void fireTimer(ProcessEngine processEngine, String timerActivityId) {
         Job timer = processEngine.getManagementService().createJobQuery()
@@ -68,8 +68,8 @@ public final class ProcessEngineTestUtils {
     }
 
     /**
-     * Findet die laufende Membership-Prozessinstanz mit der gegebenen membershipId.
-     * Lässt den Test scheitern, wenn keine solche Instanz existiert.
+     * Finds the running membership process instance with the given membershipId.
+     * Fails the test if no such instance exists.
      */
     public static ProcessInstance findProcessInstance(RuntimeService runtimeService, String membershipId) {
         ProcessInstance instance = runtimeService.createProcessInstanceQuery()

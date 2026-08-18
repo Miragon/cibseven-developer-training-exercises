@@ -10,7 +10,7 @@
         <artifactId>cibseven-developer-training-exercises</artifactId>
         <version>1.0-SNAPSHOT</version>
         <!-- Correct once the module lives at services/logistics-service (its home after you copy it in
-             Aufgabe 9): ../../pom.xml is the repo root. While it still sits under templates/ (only the CI
+             Exercise 9): ../../pom.xml is the repo root. While it still sits under templates/ (only the CI
              check builds it there), CI installs the root pom first so the parent resolves from the repo. -->
         <relativePath>../../pom.xml</relativePath>
     </parent>
@@ -19,16 +19,16 @@
     <name>logistics-service</name>
 
     <!--
-      Aufgabe 9 – Skeleton des Logistik-Services (Remote-Owner des sendWelcomeKit-Prozesses).
+      Exercise 9 – skeleton of the logistics service (remote owner of the sendWelcomeKit process).
 
-      Fülle die TODO Aufgabe 9-Stellen:
-        1. Den typisierten /engine-rest-Client generieren  -> der auskommentierte Plugin-Block unten.
-        2. Die Client-Beans verdrahten                      -> EngineClientConfig.
-        3. Das Modell selbst deployen                       -> EngineDeploymentAdapter.
-        4. Den External-Task-Worker implementieren          -> ShipWelcomeKitWorker.
-        5. Die Engine über den Client starten               -> RemoteWelcomeKitProcessAdapter.
+      Fill in the TODO Exercise 9 spots:
+        1. Generate the typed /engine-rest client   -> the commented-out plugin block below.
+        2. Wire up the client beans                  -> EngineClientConfig.
+        3. Deploy the model yourself                 -> EngineDeploymentAdapter.
+        4. Implement the external-task worker        -> ShipWelcomeKitWorker.
+        5. Start the engine via the client           -> RemoteWelcomeKitProcessAdapter.
 
-      Referenzlösung: solutions/exercise-09/logistics-service.
+      Reference solution: solutions/exercise-09/logistics-service.
     -->
 
     <properties>
@@ -37,8 +37,8 @@
     </properties>
 
     <dependencies>
-        <!-- spring-web: RestClient (Deployment + generierter Client) + der kleine REST-Controller.
-             Ein leichter HTTP-Server läuft auf :8090 (kollidiert nicht mit der Engine auf :8080). -->
+        <!-- spring-web: RestClient (deployment + generated client) + the small REST controller.
+             A lightweight HTTP server runs on :8090 (does not collide with the engine on :8080). -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -48,13 +48,13 @@
             <artifactId>spring-boot-devtools</artifactId>
             <optional>true</optional>
         </dependency>
-        <!-- CIB Seven External Task Client (Richtung 1: Engine -> Worker) -->
+        <!-- CIB Seven External Task Client (Direction 1: Engine -> Worker) -->
         <dependency>
             <groupId>org.cibseven.bpm.springboot</groupId>
             <artifactId>cibseven-bpm-spring-boot-starter-external-task-client</artifactId>
         </dependency>
-        <!-- Der generierte Client ist self-contained auf Jackson 2 (Spring Boot 4 nutzt Jackson 3),
-             daher die Jackson-2-Artefakte + jakarta.annotation explizit (BOM-verwaltete Versionen). -->
+        <!-- The generated client is self-contained on Jackson 2 (Spring Boot 4 uses Jackson 3),
+             hence the Jackson 2 artifacts + jakarta.annotation explicitly (BOM-managed versions). -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -67,7 +67,7 @@
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
         </dependency>
-        <!-- Runtime-Typen der bpmn-to-code generierten Process-API -->
+        <!-- Runtime types of the bpmn-to-code generated Process-API -->
         <dependency>
             <groupId>io.miragon</groupId>
             <artifactId>bpmn-to-code-runtime</artifactId>
@@ -82,23 +82,23 @@
     <build>
         <plugins>
             <!-- ============================================================================
-                 TODO Aufgabe 9 (Schritt 1): Typisierten /engine-rest-Client generieren.
+                 TODO Exercise 9 (step 1): Generate the typed /engine-rest client.
 
-                 Statt REST-Calls von Hand zu schreiben (fehleranfällig: URIs, das typisierte
-                 Variablen-Format {"value": …, "type": …}), generieren wir einen fertigen, typisierten
-                 Client aus der OFFIZIELLEN OpenAPI-Spec von CIB seven. Die Spec steckt als
-                 openapi.json im Artefakt org.cibseven.bpm:cibseven-engine-rest-openapi (an
-                 ${cib7.version} gepinnt -> Client und Engine driften nie auseinander).
+                 Instead of writing REST calls by hand (error-prone: URIs, the typed
+                 variable format {"value": …, "type": …}), we generate a ready-made, typed
+                 client from CIB seven's OFFICIAL OpenAPI spec. The spec ships as
+                 openapi.json in the artifact org.cibseven.bpm:cibseven-engine-rest-openapi (pinned
+                 to ${cib7.version} -> client and engine never drift apart).
 
-                 Ablauf: (1) openapi.json aus dem Artefakt entpacken, (2) den OpenAPI-Generator laufen
-                 lassen. Die generierten Klassen landen unter target/generated-sources und werden
-                 automatisch mitkompiliert (org.cibseven.rest.client.api.* / .model.*).
+                 Flow: (1) unpack openapi.json from the artifact, (2) run the OpenAPI generator.
+                 The generated classes land under target/generated-sources and are compiled along
+                 automatically (org.cibseven.rest.client.api.* / .model.*).
 
-                 So aktivierst du ihn:
-                   1. Diesen Block einkommentieren.
-                   2. Die beiden mit TODO markierten Werte setzen (siehe docs/de/exercise-09.md bzw. Slide 7.5).
-                   3. `./mvnw -pl services/logistics-service generate-sources` -> Client erscheint.
-                   4. Danach EngineClientConfig + RemoteWelcomeKitProcessAdapter verdrahten.
+                 How to enable it:
+                   1. Uncomment this block.
+                   2. Set the two values marked with TODO (see docs/en/exercise-09.md or slide 7.5).
+                   3. `./mvnw -pl services/logistics-service generate-sources` -> the client appears.
+                   4. Then wire up EngineClientConfig + RemoteWelcomeKitProcessAdapter.
                  ============================================================================ -->
             <!--
             <plugin>
@@ -139,9 +139,9 @@
                         </goals>
                         <configuration>
                             <inputSpec>${project.build.directory}/openapi/openapi.json</inputSpec>
-                            <!- - TODO Aufgabe 9: den Java-Generator wählen (Wert: java) - ->
+                            <!- - TODO Exercise 9: choose the Java generator (value: java) - ->
                             <generatorName>TODO-GENERATOR-NAME</generatorName>
-                            <!- - TODO Aufgabe 9: die Client-Library wählen, die auf Springs RestClient aufsetzt (Wert: restclient) - ->
+                            <!- - TODO Exercise 9: choose the client library that builds on Spring's RestClient (value: restclient) - ->
                             <library>TODO-CLIENT-LIBRARY</library>
                             <apiPackage>${cibseven-client.package}.api</apiPackage>
                             <modelPackage>${cibseven-client.package}.model</modelPackage>
@@ -164,18 +164,18 @@
             </plugin>
             -->
 
-            <!-- bpmn-to-code: typsichere Process-API aus dem EIGENEN BPMN-Modell (schon aktiv). -->
+            <!-- bpmn-to-code: type-safe Process-API from the OWNED BPMN model (already active). -->
             <!-- ============================================================================
-                 TODO Aufgabe 9 (Schritt 2): Die typsichere Process-API generieren.
+                 TODO Exercise 9 (step 2): Generate the type-safe Process-API.
 
-                 bpmn-to-code erzeugt aus deinem BPMN-Modell Konstanten für Element-IDs, Topics usw.
-                 Es generiert eine Topic-Konstante (SendWelcomeKitProcessApi.ServiceTasks.SHIP_WELCOME_KIT)
-                 aber ERST, wenn du den Prozess modelliert hast (inkl. External Service Task mit Topic) –
-                 deshalb ist dieser Block auskommentiert. Reihenfolge:
-                   1. Den sendWelcomeKit-Prozess in send-welcome-kit.bpmn modellieren (siehe docs/de/exercise-09.md).
-                   2. Diesen Block einkommentieren.
+                 From your BPMN model, bpmn-to-code produces constants for element IDs, topics, etc.
+                 It generates a topic constant (SendWelcomeKitProcessApi.ServiceTasks.SHIP_WELCOME_KIT)
+                 but ONLY once you have modelled the process (incl. an external service task with a topic) –
+                 that is why this block is commented out. Order:
+                   1. Model the sendWelcomeKit process in send-welcome-kit.bpmn (see docs/en/exercise-09.md).
+                   2. Uncomment this block.
                    3. `./mvnw -pl services/logistics-service generate-sources`
-                      -> SendWelcomeKitProcessApi erscheint; der Worker kann die Topic-Konstante abonnieren.
+                      -> SendWelcomeKitProcessApi appears; the worker can subscribe to the topic constant.
                  ============================================================================ -->
             <!--
             <plugin>

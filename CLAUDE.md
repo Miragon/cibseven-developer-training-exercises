@@ -62,8 +62,8 @@ REST / JavaDelegates           Application              CIB7 / Database
 
 Multi-module Maven project:
 - `services/process-application/` — The main module participants work in. Ships in the Aufgabe-1 (Hybrid) state:
-  full hexagonal skeleton present, but CIB deps/config/`@SpringBootApplication` (`TODO Aufgabe 1`)
-  and the business-layer beans (`TODO Aufgabe 2`) are commented out. Exercise 1 = switch the
+  full hexagonal skeleton present, but CIB deps/config/`@SpringBootApplication` (`TODO Exercise 1`)
+  and the business-layer beans (`TODO Exercise 2`) are commented out. Exercise 1 = switch the
   engine on; Exercise 2 = uncomment the business layer + fill the TODOs.
 - `templates/exercise-09/logistics-service/` — Aufgabe 9 starter for the remote-owner service, kept OUT of
   `services/` (and the default reactor) so `services/` stays clean for exercises 0–8. In Aufgabe 9 the
@@ -71,7 +71,7 @@ Multi-module Maven project:
   `sendWelcomeKit` process (Signal-Start → external task `shipWelcomeKit` → End), deploys its own BPMN into
   the engine at start-up, fulfils the task via the external-task client, and drives the engine via a typed
   client it **generates itself** (`openapi-generator-maven-plugin`, spec `cibseven-engine-rest-openapi`,
-  package `org.cibseven.rest.client.*`). Runs on :8090. Ships dormant/compilable with `TODO Aufgabe 9`
+  package `org.cibseven.rest.client.*`). Runs on :8090. Ships dormant/compilable with `TODO Exercise 9`
   (the generator block + client wiring are commented out). Verified in CI via the `-Pexercise-9` profile.
   (Replaces the former `notification-service` / the separate `cibseven-engine-client` module.)
 - `docs/` — Per-exercise instructions (`exercise-00.md … exercise-09.md`) + assets.
