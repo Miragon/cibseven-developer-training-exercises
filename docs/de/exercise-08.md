@@ -105,6 +105,9 @@ unter `src/main/resources` werden wie die BPMN-Dateien beim Start automatisch de
 **Neue Datei:** `src/main/resources/bpmn/membership-rejection.bpmn`, Prozess-Key
 `handleRejection`.
 
+Alle Attribute unten setzt du im **Miragon BPMN Modeler** (Element auswählen → Properties
+Panel), nicht im XML.
+
 | Element | Typ | ID | Name | Konfiguration |
 |---|---|---|---|---|
 | Start | None Start Event | `startEvent_confirmationRejected` | Confirmation rejected | – |
@@ -139,7 +142,10 @@ Compensating End Event, und die Engine ruft `serviceTask_revokeClaim` auf.
 
 ### 4. Variablen übergeben
 
-In-Mapping an der Call Activity (Hauptprozess → aufgerufener Prozess):
+Das Variablen-Mapping legst du im **Miragon BPMN Modeler** an, nicht direkt im XML: Call
+Activity auswählen → Properties Panel → Abschnitt **In Mapping** → für `membershipId` und
+`age` je ein *Source/Target*-Paar anlegen (Hauptprozess → aufgerufener Prozess). Im XML
+entsteht dabei ein `extensionElements`-Block mit `camunda:in`-Einträgen an der Call Activity:
 
 ```xml
 <bpmn:extensionElements>

@@ -52,6 +52,9 @@ First you tell the model *what* undoes the reservation. That takes three things:
 Boundary Event on the reserving task, the handler itself, and the association that connects the
 two.
 
+You model and configure all three in the **Miragon BPMN Modeler** (select the element →
+Properties Panel), not in the XML.
+
 | Element | Type | ID | Configuration |
 |---|---|---|---|
 | Compensation boundary | Compensation Boundary Event | `boundary_compensateClaim` | attaches to `serviceTask_claimMembership` |

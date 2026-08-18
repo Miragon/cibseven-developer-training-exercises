@@ -78,6 +78,9 @@ ein **Exclusive Gateway** dazu, das den Sequenzfluss in zwei Pfade teilt. Insges
 vier neue Elemente – und zwei bestehende bekommen neue Element-IDs und Namen, weil aus der
 Subscription eine Membership geworden ist.
 
+Elemente, Delegate Expressions und die Gateway-Bedingung legst du im **Miragon BPMN Modeler**
+an (Element auswählen → Properties Panel), nicht im XML.
+
 **Neue Elemente:**
 
 | Element | Typ | ID | Name | Konfiguration |

@@ -88,15 +88,16 @@ a different adapter when switching engines – workers and ports stay as they ar
 
 ### 2. Switch service tasks to external tasks
 
-From
+This too is modeling work in the **Miragon BPMN Modeler**, not in the XML: select the service
+task → Properties Panel → set **Implementation** to **External** → set the topic → add an
+input mapping under the **Input/Output** section so the worker gets the `membershipId`. From
 
 ```xml
 <bpmn:serviceTask id="serviceTask_sendConfirmationMail" name="Send confirmation mail"
                   camunda:delegateExpression="#{sendConfirmationMailDelegate}">
 ```
 
-becomes an external task with a topic – plus an input mapping so that the worker gets the
-`membershipId`:
+this becomes an external task with a topic and input mapping – in the XML:
 
 ```xml
 <bpmn:serviceTask id="serviceTask_sendConfirmationMail" name="Send confirmation mail"

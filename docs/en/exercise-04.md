@@ -78,6 +78,9 @@ Before the confirmation mail is sent, a **Service Task** for the reservation and
 four new elements in total – and two existing ones get new element IDs and names, because
 the subscription has become a membership.
 
+You create the elements, delegate expressions and the gateway condition in the **Miragon BPMN
+Modeler** (select the element → Properties Panel), not in the XML.
+
 **New elements:**
 
 | Element | Type | ID | Name | Configuration |
