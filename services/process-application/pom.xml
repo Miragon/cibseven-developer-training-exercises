@@ -75,23 +75,9 @@
                 </configuration>
             </plugin>
 
-            <!--
-              "Lösung laden"-Task (Gradle-Task-Analogon). Kopiert die Referenzlösung einer
-              Aufgabe in dieses Modul – so kann man mit der korrekten Lösung weitermachen,
-              falls die eigene Umsetzung nicht ganz passt.
-
-                mvn -pl services/process-application antrun:run@load-solution -Dsolution=02
-                (aus dem process-application-Verzeichnis: ../../mvnw antrun:run@load-solution -Dsolution=02)
-
-              Ersetzt komplett src/main (Java + Ressourcen inkl. application.yaml + BPMN/DMN).
-              Alle Module teilen sich denselben Port (8080) und dasselbe DB-Schema (exercise),
-              daher kann die application.yaml einfach mitkopiert werden. src/test bleibt
-              unberührt. Gültige Werte: 01–09 (zweistellig). Hinweis: Aufgabe 9 besteht aus zwei
-              Services – geladen wird der Hauptservice solutions/exercise-09/process-application/;
-              der Worker-Service solutions/exercise-09/logistics-service/ läuft separat (Arbeitsmodul
-              services/logistics-service/, in Aufgabe 9 aus templates/ angelegt) und wird von diesem
-              Task nicht mitkopiert.
-            -->
+            <!-- "Lösung laden": ersetzt src/main und übernimmt Tests.
+                 Aufruf mit:
+                 mvn -pl services/process-application antrun:run@load-solution -Dsolution=NN   (NN = 01–09) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
@@ -103,14 +89,12 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <target>
+                            <target xmlns:if="ant:if" xmlns:unless="ant:unless">
                                 <fail unless="solution"
                                       message="Bitte die Solution-Nummer zweistellig angeben, z.B.: mvn -pl services/process-application antrun:run@load-solution -Dsolution=02"/>
-                                <!-- Aufgabe 9 ist verschachtelt (zwei Services): der ladbare Hauptservice liegt unter process-application/ -->
                                 <condition property="solutionModuleDir" value="exercise-09/process-application">
                                     <equals arg1="${solution}" arg2="09"/>
                                 </condition>
-                                <!-- Alle übrigen Aufgaben: solutions/exercise-<NN> (Property ist immutable, greift nur wenn oben nicht gesetzt) -->
                                 <property name="solutionModuleDir" value="exercise-${solution}"/>
                                 <property name="solutionSrc"
                                           location="${maven.multiModuleProjectDirectory}/solutions/${solutionModuleDir}/src"/>
@@ -122,12 +106,18 @@
                                     </condition>
                                 </fail>
                                 <echo message="Lade Solution ${solution} in das process-application-Modul ..."/>
-                                <!-- src/main komplett ersetzen (Java + Ressourcen inkl. application.yaml + BPMN/DMN); src/test bleibt unberührt -->
                                 <delete dir="${project.basedir}/src/main"/>
                                 <copy todir="${project.basedir}/src/main">
                                     <fileset dir="${solutionSrc}/main"/>
                                 </copy>
-                                <echo message="Fertig. Solution ${solution} wurde nach services/process-application/src/main kopiert."/>
+                                <available file="${solutionSrc}/test" type="dir" property="solutionHasTests"/>
+                                <delete dir="${project.basedir}/src/test/java/io/miragon/training/process" if:set="solutionHasTests"/>
+                                <delete dir="${project.basedir}/src/test/resources" if:set="solutionHasTests"/>
+                                <copy todir="${project.basedir}/src/test" overwrite="true" if:set="solutionHasTests">
+                                    <fileset dir="${solutionSrc}/test"/>
+                                </copy>
+                                <echo if:set="solutionHasTests" message="Fertig. Solution ${solution} (src/main + Prozess-Test) wurde nach services/process-application kopiert; ArchitectureTest bleibt erhalten."/>
+                                <echo unless:set="solutionHasTests" message="Fertig. Solution ${solution} (src/main) wurde kopiert; src/test unverändert (kein Solution-Test, Platzhalter bleibt)."/>
                             </target>
                         </configuration>
                     </execution>
