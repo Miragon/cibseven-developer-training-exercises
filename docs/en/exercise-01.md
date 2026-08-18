@@ -135,8 +135,8 @@ The process is deployed, but has never run. Start it via the start form:
 
 > **Term: Manual Task.** A task the engine does **not** execute and does **not** wait at – it
 > simply runs through. A placeholder for "something happens here later". That's why the instance
-> runs through the model in one go. From Exercise 2 on the first placeholder becomes a real wait
-> point.
+> runs through the model in one go. From Exercise 2 on the first placeholder becomes a real User
+> Task.
 
 ## Constraints
 
@@ -149,8 +149,8 @@ The process is deployed, but has never run. Start it via the start form:
 
 The log shows `Auto-Deploying resources: [... membership.bpmn]` and
 `Started TrainingApplication`. The Cockpit is reachable, `Join Inner Circle` appears under
-**Processes**, and an instance started via the start form runs to the End Event without a wait
-point.
+**Processes**, and an instance started via the start form runs to the End Event without
+stopping.
 
 ## Self-check
 
@@ -179,7 +179,7 @@ point.
 
 ## Next step
 
-In Exercise 2 the placeholder "Confirm" becomes a real **User Task** – the first wait point,
-which you model yourself with a form.
+In Exercise 2 the placeholder "Confirm" becomes a real **User Task**, which you model yourself
+with a form.
 
 ➡️ [Next: Exercise 2](exercise-02.md)

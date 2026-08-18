@@ -86,8 +86,8 @@ Model the subprocess **Confirm membership** and inside it:
 | User Task | Confirm membership |
 | End Event (inside the subprocess) | Membership confirmed |
 
-Route the **Yes** path of the gateway from step 2 into this subprocess. The *User Task* is the
-waiting point: here the process stops until a human confirms.
+Route the **Yes** path of the gateway from step 2 into this subprocess. At the *User Task* the
+process stops: here it waits until a human confirms.
 
 ### 4. Add reminder, deadline and rejection
 
@@ -162,7 +162,7 @@ business side could read the flow out loud without asking what a single element 
 - [ ] The model has exactly one start and ends in *Membership activated*, *Membership rejected*
       or *Membership declined*
 - [ ] Capacity is checked via an Exclusive Gateway with a **No** path to the rejection
-- [ ] The confirmation lives in an embedded subprocess with a User Task as the waiting point
+- [ ] The confirmation lives in an embedded subprocess with a User Task
 - [ ] Three boundary events hang on the subprocess: a daily (non-interrupting) timer, a 3½-day
       timer (interrupting) and a message event (interrupting)
 - [ ] The activation runs through a Parallel Gateway (welcome mail and community notification
