@@ -64,24 +64,15 @@ logistics-service  (Remote-Owner — eigene JVM, :8090)
 Zwei Prozessmodelle, die sich nur über ein Signal kennen – der Host weiß nicht, dass es die
 Logistik gibt, und die Logistik kennt den Membership-Prozess nicht:
 
-```mermaid
-flowchart TD
-    subgraph host["Membership · subscribeNewsletter (Engine-Host)"]
-        direction LR
-        c["… bestätigt"] --> fk{{Fork}}
-        fk --> swm["Send Welcome Mail"] --> jn{{Join}}
-        fk --> nc["Notify community"] --> jn
-        jn --> ma(("Membership activated<br/>Signal-End-Event"))
-    end
-    subgraph log["Logistik · sendWelcomeKit (Remote-Service)"]
-        direction LR
-        ss(("Signal-Start:<br/>Signal_MemberActivated")) --> ship["Ship welcome kit<br/>external · topic shipWelcomeKit"]
-        ms(("manueller Start:<br/>Test / erneut senden")) --> ship
-        ship --> done(("Welcome kit shipped"))
-    end
-    ma -. "wirft Signal_MemberActivated {name}" .-> ss
-    ship -. "fetch & lock / complete" .-> worker["ShipWelcomeKitWorker → WelcomeKitShipmentOutPort"]
-```
+Membership-Prozess (`subscribeNewsletter`, Engine-Host) – das terminale End Event „Membership
+activated" wirft `Signal_MemberActivated`:
+
+![BPMN Membership-Prozess](../assets/exercise-09-main.svg)
+
+Logistik-Prozess (`sendWelcomeKit`, im logistics-service modelliert und deployt) – Signal-Start
+plus manueller Start, dann der External Task `shipWelcomeKit`:
+
+![BPMN send-welcome-kit](../assets/exercise-09-sub.svg)
 
 Referenzmodelle: `../../models/exercise-09/newsletter.bpmn`,
 `../../models/exercise-09/send-welcome-kit.bpmn`
