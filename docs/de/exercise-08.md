@@ -68,25 +68,37 @@ Referenzmodelle: `../../models/exercise-08/newsletter.bpmn`,
 
 ## Aufgabe
 
-### 1. DMN-Tabelle ins Projekt holen
+### 1. DMN-Entscheidungstabelle modellieren
 
-Die Entscheidungstabelle ist fertig modelliert – DMN selbst zu modellieren ist nicht das
-Lernziel dieser Aufgabe. Kopiere sie ins Modul:
+Der neue Ablehnungsprozess trifft eine fachliche Entscheidung: Wer von den abgelehnten
+Aspiranten ist High Value und damit einen persönlichen Rückholversuch wert? Diese Entscheidung
+modellierst du als DMN-Entscheidungstabelle – deine erste. So lernst du den DMN-Editor, die
+Hit Policy und die FEEL-Range-Schreibweise kennen. Du hast zwei Wege:
 
-```bash
-cp models/exercise-08/categorize-applicant.dmn \
-   services/process-application/src/main/resources/dmn/categorize-applicant.dmn
-```
+- **Selbst modellieren (empfohlen):** Lege in einem DMN-Modeler die neue Datei
+  `src/main/resources/dmn/categorize-applicant.dmn` an und baue die Tabelle nach der
+  Spezifikation unten.
+- **Fallback – fertiges Modell kopieren:** Wer den DMN-Editor überspringen will, kopiert das
+  Referenzmodell ins Modul:
+
+  ```bash
+  cp models/exercise-08/categorize-applicant.dmn \
+     services/process-application/src/main/resources/dmn/categorize-applicant.dmn
+  ```
+
+Die Spezifikation für den Selbst-modellieren-Weg – IDs und Typen müssen exakt stimmen, damit
+der Business Rule Task in Schritt 2 die Entscheidung findet:
 
 | Eigenschaft | Wert |
 |---|---|
 | Decision ID | `categorizeApplicant` |
+| Hit Policy | `FIRST` |
 | Input | `age` (integer) |
 | Output | `isHighValue` (boolean) |
 | Regel | Alter im Bereich `[21..29]` → `true`; Default `-` → `false` |
 
-Alle `*.dmn` unter `src/main/resources` werden wie die BPMN-Dateien beim Start automatisch
-deployt.
+Die FEEL-Range `[21..29]` schließt beide Grenzen ein (21 und 29 gehören dazu). Alle `*.dmn`
+unter `src/main/resources` werden wie die BPMN-Dateien beim Start automatisch deployt.
 
 ### 2. Prozess `membership-rejection.bpmn` modellieren
 
