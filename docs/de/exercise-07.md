@@ -33,7 +33,7 @@ Nach dieser Aufgabe kannst du
 
 ## Ziel-Modell
 
-![BPMN-Modell der Aufgabe](assets/exercise-07.svg)
+![BPMN-Modell der Aufgabe](../assets/exercise-07.svg)
 
 ```
 serviceTask_claimMembership ──[Compensation Boundary]--- - -→ serviceTask_revokeClaim
@@ -45,7 +45,7 @@ event_confirmationRejected ─┘              ↓
                                   Engine ruft revokeClaim auf
 ```
 
-Referenzmodell: `../models/exercise-07/newsletter.bpmn`
+Referenzmodell: `../../models/exercise-07/newsletter.bpmn`
 
 ## Aufgabe
 
@@ -138,7 +138,7 @@ funktioniert das auch über Subprozessgrenzen hinweg.
 
 ## Referenzlösung
 
-`../solutions/exercise-07/` – oder direkt laden:
+`../../solutions/exercise-07/` – oder direkt laden:
 
 ```bash
 ./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=07

@@ -163,7 +163,7 @@ dieser API an die Service Tasks.
 
 ## Referenzlösung
 
-`../solutions/exercise-05/`
+`../../solutions/exercise-05/`
 
 ## Nächster Schritt
 

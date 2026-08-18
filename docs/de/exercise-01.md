@@ -29,7 +29,7 @@ Nach dieser Aufgabe kannst du
 
 ## Ziel-Modell
 
-![BPMN-Modell der Aufgabe](assets/exercise-01.svg)
+![BPMN-Modell der Aufgabe](../assets/exercise-01.svg)
 
 Das Modell ist bereits fertig und liegt unter
 `services/process-application/src/main/resources/bpmn/newsletter.bpmn`. Du modellierst in
@@ -229,8 +229,8 @@ unter **Processes**, und eine von dir gestartete Instanz läuft bis zum End Even
 
 ## Referenzlösung
 
-- Fertiges Modul: `../solutions/exercise-01/`
-- Modell: `../models/exercise-01/newsletter.bpmn`
+- Fertiges Modul: `../../solutions/exercise-01/`
+- Modell: `../../models/exercise-01/newsletter.bpmn`
 - Direkt ins Arbeitsmodul laden (ersetzt `src/main` inklusive `application.yaml`; die
   `pom.xml` und damit deine Dependencies aus Schritt 3 bleiben bestehen):
 

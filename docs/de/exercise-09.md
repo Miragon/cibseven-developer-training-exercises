@@ -77,8 +77,8 @@ Logistik (sendWelcomeKit, im Remote-Service modelliert und deployt):
                           logistics-service: ShipWelcomeKitWorker → WelcomeKitShipmentOutPort
 ```
 
-Referenzmodelle: `../models/exercise-09/newsletter.bpmn`,
-`../models/exercise-09/send-welcome-kit.bpmn`
+Referenzmodelle: `../../models/exercise-09/newsletter.bpmn`,
+`../../models/exercise-09/send-welcome-kit.bpmn`
 
 Das Parallel Gateway aus Aufgabe 6 bleibt unverändert – nur das terminale End Event
 „Membership activated" wird zum Signal-End-Event. Es beendet den Prozess **und** wirft das
@@ -299,8 +299,8 @@ Engine, viele Abteilungen" live vor.
 
 ## Referenzlösung
 
-- Engine-Host: `../solutions/exercise-09/process-application/`
-- Logistik-Service: `../solutions/exercise-09/logistics-service/` (enthält auch den
+- Engine-Host: `../../solutions/exercise-09/process-application/`
+- Logistik-Service: `../../solutions/exercise-09/logistics-service/` (enthält auch den
   generierten Engine-Client – ein separates Client-Modul gibt es nicht)
 - Nur das fertige Ergebnis im Arbeitsmodul laufen lassen:
   `./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=09`

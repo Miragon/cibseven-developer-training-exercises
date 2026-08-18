@@ -1,60 +1,62 @@
 # CIB Seven Developer Training – Exercises
 
-Willkommen zum CIB Seven Developer Training!
+> [🇩🇪 Deutsch](README.de.md) · 🇬🇧 **English**
 
-**Miravelo** ist ein Lifestyle-Online-Shop für Menschen in der Quarterlife-Crisis – Siebträger,
-Laufausrüstung, Gravel Bikes, Rennräder. Das Unternehmen wächst, die Kundenbasis wächst,
-und die Prozesse müssen mithalten.
+Welcome to the CIB Seven Developer Training!
 
-In diesem Modul arbeitest du dich Schritt für Schritt durch 9 Aufgaben, die ein vollständiges
-Newsletter- und Membership-System auf Basis von CIB Seven (Camunda Platform 7) aufbauen.
+**Miravelo** is a lifestyle online shop for people in a quarterlife crisis – portafilter machines,
+running gear, gravel bikes, road bikes. The company is growing, the customer base is growing,
+and the processes have to keep up.
 
-## Der vollständige Zielprozess
+In this module you work your way step by step through 9 exercises that build a complete
+newsletter and membership system on top of CIB Seven (Camunda Platform 7).
 
-So sieht der Prozess am Ende von Aufgabe 9 aus – mit allen Konzepten, die du Schritt für Schritt aufbaust:
+## The complete target process
 
-![Vollständiger Membership-Prozess](../../docs/assets/exercise-09-main.svg)
+Here is what the process looks like at the end of Exercise 9 – with all the concepts you build up step by step:
 
-Der ausgelagerte Sub-Prozess für die Ablehnung (Call Activity + DMN):
+![Complete membership process](../../docs/assets/exercise-09-main.svg)
 
-![Membership-Rejection Sub-Prozess](../../docs/assets/exercise-09-sub.svg)
+The extracted sub-process for the rejection (Call Activity + DMN):
 
-## Voraussetzungen
+![Membership rejection sub-process](../../docs/assets/exercise-09-sub.svg)
+
+## Prerequisites
 
 ```bash
-# PostgreSQL und MailHog starten (im Stack-Verzeichnis)
+# Start PostgreSQL and MailHog (in the stack directory)
 cd ../../stack && docker-compose up -d
 
-# Anwendung starten (aus diesem process-application-Verzeichnis)
+# Start the application (from this process-application directory)
 ../../mvnw spring-boot:run
 
 # CIB Seven Cockpit
 http://localhost:8080/webapp/#/seven/auth/start  (admin / admin)
 ```
 
-> Im Auslieferungszustand startet dieses Modul im Zustand von **Aufgabe 1** – die
-> CIB-Seven-Engine ist noch auskommentiert. In Aufgabe 1 schaltest du sie scharf.
+> On delivery this module starts in the state of **Exercise 1** – the
+> CIB Seven engine is still commented out. In Exercise 1 you switch it on.
 
-## Aufgaben-Übersicht
+## Exercise overview
 
-| Aufgabe | Thema | Beschreibung |
+| Exercise | Topic | Description |
 |---|---|---|
-| [0](../../docs/exercise-00.md) | Fachliche BPMN-Modellierung | Prozess rein fachlich mit Miragon BPMN Modeler erstellen |
-| [1](../../docs/exercise-01.md) | Engine & Tooling | Lauffähigen Newsletter deployen, Cockpit & DB-Tabellen kennenlernen |
-| [2](../../docs/exercise-02.md) | Technische Modellierung & Automatisierung | Technisch modellieren & mit Java-Code verbinden |
-| [3](../../docs/exercise-03.md) | Bestätigungs-Mail | Service Tasks erweitern, Confirmation-Flow |
-| [4](../../docs/exercise-04.md) | Membership & Gateway | Exclusive Gateway, Kapazitätsprüfung |
-| [5](../../docs/exercise-05.md) | Prozess-Tests | Prozess-Unit-Test: In-Memory-Engine, gemockte Use Cases, ohne PostgreSQL |
-| [5 · Add-on](../../docs/exercise-05-addon.md) | bpmn-to-code | Typsichere Process-API aus dem BPMN generieren – Strings raus, Konstanten rein |
-| [6](../../docs/exercise-06.md) | Boundary Events & Subprozesse | Parallel Gateway, Timer- und Message-Boundary-Events, Subprozesse |
-| [7](../../docs/exercise-07.md) | Kompensation (SAGA) | Automatisches Rollback via BPMN-Kompensation |
-| [8](../../docs/exercise-08.md) | Call Activity & DMN | Prozess-Modularisierung mit Entscheidungstabellen |
-| [9](../../docs/exercise-09.md) | Remote Engine & External Task | Notify-Community-Delegate als External Task in einen eigenen Remote-Worker auslagern, Benachrichtigung in einen Teams-Kanal |
-| [Extra 1](../../docs/extra-task-1.md) | Process-Engine-API | Engine-Lock-in lösen: Worker statt Delegates, engine-neutraler Adapter-Layer |
+| [0](../../docs/en/exercise-00.md) | Business BPMN modeling | Create the process purely on the business level with the Miragon BPMN Modeler |
+| [1](../../docs/en/exercise-01.md) | Engine & tooling | Deploy a runnable newsletter, get to know the Cockpit & DB tables |
+| [2](../../docs/en/exercise-02.md) | Technical modeling & automation | Model technically & wire it up with Java code |
+| [3](../../docs/en/exercise-03.md) | Confirmation mail | Extend service tasks, confirmation flow |
+| [4](../../docs/en/exercise-04.md) | Membership & gateway | Exclusive gateway, capacity check |
+| [5](../../docs/en/exercise-05.md) | Process tests | Process unit test: in-memory engine, mocked use cases, without PostgreSQL |
+| [5 · Add-on](../../docs/en/exercise-05-addon.md) | bpmn-to-code | Generate a type-safe process API from the BPMN – strings out, constants in |
+| [6](../../docs/en/exercise-06.md) | Boundary events & subprocesses | Parallel gateway, timer and message boundary events, subprocesses |
+| [7](../../docs/en/exercise-07.md) | Compensation (SAGA) | Automatic rollback via BPMN compensation |
+| [8](../../docs/en/exercise-08.md) | Call Activity & DMN | Process modularization with decision tables |
+| [9](../../docs/en/exercise-09.md) | Remote engine & external task | Extract the notify-community delegate as an external task into a dedicated remote worker, notification into a Teams channel |
+| [Extra 1](../../docs/en/extra-task-1.md) | Process engine API | Break the engine lock-in: workers instead of delegates, engine-neutral adapter layer |
 
-## Architektur
+## Architecture
 
-Das Projekt folgt der **hexagonalen Architektur** (Ports & Adapters):
+The project follows the **hexagonal architecture** (Ports & Adapters):
 
 ```
 REST / CIB7 Delegates     Application              CIB7 / Database
@@ -64,38 +66,38 @@ REST / CIB7 Delegates     Application              CIB7 / Database
                      (engine-neutral)
 ```
 
-**Pakete unter `src/main/java/io/miragon/training/`:**
+**Packages under `src/main/java/io/miragon/training/`:**
 
-- `adapter/inbound/rest/` – Spring MVC REST-Controller
-- `adapter/inbound/cibseven/` – JavaDelegate-Implementierungen (`BaseDelegate`)
-- `adapter/outbound/cibseven/` – Prozess-Adapter (Prozess starten, Nachrichten korrelieren)
-- `adapter/outbound/db/` – JPA-Persistenz-Adapter
-- `application/port/inbound/` – Use-Case-Interfaces
-- `application/port/outbound/` – Repository- und Prozess-Port-Interfaces
-- `application/service/` – Use-Case-Implementierungen
-- `domain/` – Reines Java Domain-Modell, keine Framework-Abhängigkeiten
+- `adapter/inbound/rest/` – Spring MVC REST controllers
+- `adapter/inbound/cibseven/` – JavaDelegate implementations (`BaseDelegate`)
+- `adapter/outbound/cibseven/` – Process adapter (start process, correlate messages)
+- `adapter/outbound/db/` – JPA persistence adapter
+- `application/port/inbound/` – Use case interfaces
+- `application/port/outbound/` – Repository and process port interfaces
+- `application/service/` – Use case implementations
+- `domain/` – Pure Java domain model, no framework dependencies
 
-## Architektur-Tests
+## Architecture tests
 
 ```bash
 ../../mvnw test -Dtest=ArchitectureTest
 ```
 
-Die ArchUnit-Tests prüfen zur Testzeit, ob die Architekturregeln eingehalten werden.
+The ArchUnit tests verify at test time that the architecture rules are being observed.
 
-## Lösungen
+## Solutions
 
-Für jede Aufgabe gibt es eine Referenzlösung unter `../../solutions/exercise-X/`.
-Jede Lösung ist eine eigenständige, lauffähige Spring Boot Anwendung.
+For every exercise there is a reference solution under `../../solutions/exercise-X/`.
+Each solution is a self-contained, runnable Spring Boot application.
 
-Wenn du eine Aufgabe nicht ganz fertig bekommst, kannst du die Referenzlösung direkt in
-dieses Modul kopieren und mit ihr weiterarbeiten (gültige Werte: 1–9):
+If you don't quite manage to finish an exercise, you can copy the reference solution directly into
+this module and continue working with it (valid values: 1–9):
 
 ```bash
 ../../mvnw antrun:run@load-solution -Dsolution=02
 ```
 
-Der Task ersetzt `src/main` komplett (Java, `application.yaml`, BPMN/DMN); `src/test` bleibt
-unberührt. Alle Module laufen auf demselben Port (`8080`) und DB-Schema (`exercise`), es läuft
-also immer nur ein Modul zur Zeit. Voraussetzung ist, dass du in **Aufgabe 1** die
-CIB-Seven-Abhängigkeiten aktiviert hast (die `pom.xml` wird nicht mitkopiert).
+The task replaces `src/main` completely (Java, `application.yaml`, BPMN/DMN); `src/test` stays
+untouched. All modules run on the same port (`8080`) and DB schema (`exercise`), so only ever
+one module runs at a time. The prerequisite is that you enabled the CIB Seven dependencies in
+**Exercise 1** (the `pom.xml` is not copied along).

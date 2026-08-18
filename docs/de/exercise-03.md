@@ -35,7 +35,7 @@ Nach dieser Aufgabe kannst du
 
 ## Ziel-Modell
 
-![BPMN-Modell der Aufgabe](assets/exercise-03.svg)
+![BPMN-Modell der Aufgabe](../assets/exercise-03.svg)
 
 ```
 (✉) [Submit registration form]     ← geändert: Message Start Event
@@ -49,7 +49,7 @@ Nach dieser Aufgabe kannst du
     [User subscribed]
 ```
 
-Referenzmodell: `../models/exercise-03/newsletter.bpmn`
+Referenzmodell: `../../models/exercise-03/newsletter.bpmn`
 
 **Achte auf drei Änderungen gegenüber Aufgabe 2**, nicht nur auf die beiden neuen Elemente:
 
@@ -170,7 +170,7 @@ brauchst (Ablehnung per Message Boundary Event).
 
 ## Referenzlösung
 
-`../solutions/exercise-03/` – oder direkt laden:
+`../../solutions/exercise-03/` – oder direkt laden:
 
 ```bash
 ./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=03

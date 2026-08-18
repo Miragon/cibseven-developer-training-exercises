@@ -31,9 +31,9 @@ Nach dieser Aufgabe kannst du
 
 ## Ziel-Modell
 
-![BPMN-Modell der Aufgabe](assets/exercise-02.svg)
+![BPMN-Modell der Aufgabe](../assets/exercise-02.svg)
 
-Referenzmodell: `../models/exercise-02/newsletter.bpmn`
+Referenzmodell: `../../models/exercise-02/newsletter.bpmn`
 
 Der Ablauf bleibt derselbe wie in Aufgabe 1. Was sich ändert, ist die **Anbindung**: Der
 Service Task ruft nicht mehr eine Inline-Expression auf, sondern deinen Java-Code.
@@ -220,7 +220,7 @@ unter `src/test/java/io/miragon/training/process/MembershipProcessTest.java`.
 
 ## Referenzlösung
 
-`../solutions/exercise-02/` – oder direkt laden:
+`../../solutions/exercise-02/` – oder direkt laden:
 
 ```bash
 ./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=02

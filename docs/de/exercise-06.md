@@ -31,7 +31,7 @@ Nach dieser Aufgabe kannst du
 
 ## Ziel-Modell
 
-![BPMN-Modell der Aufgabe](assets/exercise-06.svg)
+![BPMN-Modell der Aufgabe](../assets/exercise-06.svg)
 
 ```
 [Claim membership] → ◇ [Has empty spots?]
@@ -48,7 +48,7 @@ Nach dieser Aufgabe kannst du
                                             [Membership activated]   [Membership declined]
 ```
 
-Referenzmodell: `../models/exercise-06/newsletter.bpmn`
+Referenzmodell: `../../models/exercise-06/newsletter.bpmn`
 
 ## Aufgabe
 
@@ -246,7 +246,7 @@ seinen Prozess besitzt – inklusive Isolation seiner Secrets. Für jetzt reicht
 
 ## Referenzlösung
 
-`../solutions/exercise-06/` – oder direkt laden:
+`../../solutions/exercise-06/` – oder direkt laden:
 
 ```bash
 ./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=06

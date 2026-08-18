@@ -37,7 +37,7 @@ Nach dieser Aufgabe kannst du
 
 ## Ziel-Modell
 
-![BPMN-Modell der Aufgabe](assets/exercise-04.svg)
+![BPMN-Modell der Aufgabe](../assets/exercise-04.svg)
 
 ```
 (✉) [Submit registration form]
@@ -55,7 +55,7 @@ Nach dieser Aufgabe kannst du
 [Membership confirmed]
 ```
 
-Referenzmodell: `../models/exercise-04/newsletter.bpmn`
+Referenzmodell: `../../models/exercise-04/newsletter.bpmn`
 
 ## Aufgabe
 
@@ -279,7 +279,7 @@ committen oder idempotent sein. Bei externen Schnittstellen begegnet dir dasselb
 
 ## Referenzlösung
 
-`../solutions/exercise-04/` – oder direkt laden:
+`../../solutions/exercise-04/` – oder direkt laden:
 
 ```bash
 ./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=04
