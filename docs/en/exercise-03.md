@@ -1,6 +1,6 @@
 # Exercise 3 – Double-Opt-In via Confirmation Mail
 
-> **Prerequisite:** Exercise 2 is complete – the process starts via `POST /api/subscriptions` and sends the welcome mail through a delegate.
+> **Prerequisite:** Exercise 2 is complete – the process starts via `POST /api/memberships` and sends the welcome mail through a delegate.
 > **Working directory:** `services/process-application`
 > **New in this exercise:** Message Start Event, message correlation, a second Service Task, a confirmation User Task.
 
@@ -37,7 +37,7 @@ After this exercise you can
 
 ![BPMN model of the exercise](../assets/exercise-03.svg)
 
-Reference model: `../../models/exercise-03/newsletter.bpmn`
+Reference model: `../../models/exercise-03/membership.bpmn`
 
 **Watch for three changes compared to Exercise 2**, not just the two new elements:
 
@@ -46,13 +46,13 @@ Reference model: `../../models/exercise-03/newsletter.bpmn`
 2. The User Task `userTask_fillOutForm` is **removed**, along with its form fields. The
    registration data comes in via the REST call and is set as process variables at start –
    a form in the tasklist is no longer needed for that.
-3. It is replaced further down the line by the new User Task `userTask_confirmSubscription`.
+3. It is replaced further down the line by the new User Task `userTask_confirmMembership`.
 
 ## The task
 
 ### 1. Switch the Start Event to a message
 
-Open `src/main/resources/bpmn/newsletter.bpmn` in the Miragon BPMN Modeler and replace the
+Open `src/main/resources/bpmn/membership.bpmn` in the Miragon BPMN Modeler and replace the
 None Start Event with a Message Start Event:
 
 | Property | Value |
@@ -75,7 +75,7 @@ task. That is exactly the state you saw in Exercise 1 in `act_ru_task`.
 | Element | Type | ID | Name | Configuration |
 |---|---|---|---|---|
 | Confirmation mail | Service Task | `serviceTask_sendConfirmationMail` | Send confirmation mail | Delegate Expression: `#{sendConfirmationMailDelegate}` |
-| Confirmation | User Task | `userTask_confirmSubscription` | Confirm subscription | – |
+| Confirmation | User Task | `userTask_confirmMembership` | Confirm membership | – |
 
 The Service Task comes **before** the User Task: first send the mail, then wait for the
 confirmation.
@@ -84,35 +84,35 @@ confirmation.
 
 **New file:** `application/port/inbound/SendConfirmationMailUseCase.java`
 
-An interface with the method `sendConfirmationMail(SubscriptionId)`.
+An interface with the method `sendConfirmationMail(MembershipId)`.
 
 ### 4. Implement `SendConfirmationMailService`
 
 **New file:** `application/service/SendConfirmationMailService.java`
 
-Load the subscription via the repository and log the email address the confirmation mail
+Load the membership via the repository and log the email address the confirmation mail
 goes to.
 
 ### 5. Create `SendConfirmationMailDelegate`
 
 **New file:** `adapter/inbound/cibseven/SendConfirmationMailDelegate.java`
 
-Use `SendWelcomeMailDelegate` as a template. The delegate reads `subscriptionId` from the
+Use `SendWelcomeMailDelegate` as a template. The delegate reads `membershipId` from the
 `DelegateExecution` and calls `useCase.sendConfirmationMail(...)`.
 
 ### 6. Switch the process start to correlation
 
-**File:** `adapter/outbound/cibseven/SubscriptionProcessAdapter.java`
+**File:** `adapter/outbound/cibseven/MembershipProcessAdapter.java`
 
 A Message Start Event can no longer be triggered via `startProcessInstanceByKey`. Switch
 `startProcess(...)` to correlating the message `Message_SubscriptionRequested`. The
 `RuntimeService` gives you a correlation builder via `createMessageCorrelation(...)`; the four
-process variables (`subscriptionId`, `email`, `name`, `age`) stay the same as in Exercise 2.
-You assemble the finished call chain yourself:
+process variables (`membershipId`, `email`, `name`, `age`) stay the same as in Exercise 2.
+You fill in the concrete arguments yourself:
 
 ```java
 runtimeService.createMessageCorrelation(/* message name */)
-        .setVariables(/* subscriptionId, email, name, age */)
+        .setVariables(/* membershipId, email, name, age */)
         .correlateStartMessage();
 ```
 
@@ -121,7 +121,7 @@ runtimeService.createMessageCorrelation(/* message name */)
 - The process key stays `subscribeNewsletter`, and the message name is exactly
   `Message_SubscriptionRequested` – typos lead to a
   `MismatchingMessageCorrelationException` at runtime.
-- The process variables (`subscriptionId`, `email`, `name`, `age`) stay unchanged; they are
+- The process variables (`membershipId`, `email`, `name`, `age`) stay unchanged; they are
   now set during correlation instead of at start.
 - The new use case follows the same cut as the existing ones: port in `application/port/inbound`,
   implementation in `application/service`, engine binding in `adapter/inbound/cibseven`.
@@ -131,14 +131,14 @@ runtimeService.createMessageCorrelation(/* message name */)
 Restart the application and register a person:
 
 ```bash
-curl -X POST http://localhost:8080/api/subscriptions \
+curl -X POST http://localhost:8080/api/memberships \
   -H "Content-Type: application/json" \
   -d '{"email": "bob@miravelo.com", "name": "Bob", "age": 25}'
 ```
 
 1. The Service Task `Send confirmation mail` runs through immediately – the log shows
    `Sending confirmation mail to bob@miravelo.com`.
-2. The User Task `Confirm subscription` appears in the tasklist and the process instance waits.
+2. The User Task `Confirm membership` appears in the tasklist and the process instance waits.
 3. After completing it, `Send Welcome Mail` runs through and the instance ends.
 
 ## Self-check
@@ -168,7 +168,7 @@ Boundary Event).
 
 ## Next step
 
-In Exercise 4, the newsletter turns into a real membership – with capacity check, gateway
+In Exercise 4 the Inner Circle gets its exclusivity – with a capacity check, a gateway
 and transaction boundaries.
 
 ➡️ [Next: Exercise 4](exercise-04.md)

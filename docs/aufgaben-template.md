@@ -178,10 +178,10 @@ Weitere Festlegungen:
 
 ## 3. Konsistenz über das Training hinweg
 
-- **Domäne:** Aufgaben 0–3 sprechen von *Subscription* / Newsletter, ab Aufgabe 4 von
-  *Membership* / Miravelo Inner Circle. Der Prozess-Key bleibt aus historischen Gründen
-  `subscribeNewsletter` – das wird in Aufgabe 4 einmal explizit erwähnt und danach nicht
-  mehr kommentiert.
+- **Domäne:** durchgehend *Membership* / Miravelo Inner Circle – ab Aufgabe 0. Der
+  Prozess-Key bleibt aus historischen Gründen `subscribeNewsletter`, die BPMN-Datei heißt
+  `membership.bpmn`, der Start-Message-Name `Message_SubscriptionRequested`. Diese
+  technischen Altnamen werden in Aufgabe 2 einmal erwähnt und danach nicht mehr kommentiert.
 - **Personen in Beispielen:** alphabetisch fortlaufend (Alice, Bob, Carol, Dave, Eve,
   Grace, Hanna, Jane) – jede Aufgabe nimmt die nächsten Namen.
 - **Element-ID-Konvention:** `startEvent_`, `endEvent_`, `userTask_`, `serviceTask_`,
@@ -203,17 +203,23 @@ ersten Mal braucht, mit ein bis zwei Sätzen Erklärung (im Fließtext oder als
 Diese Tabelle hält fest, wo das passiert. Wer eine Aufgabe schreibt, prüft: Ist der Begriff
 schon eingeführt? Dann nur verwenden. Ist er neu? Dann hier eintragen und erklären.
 
+**Sonderfall Aufgabe 0:** Dort werden die BPMN-Grundformen aus Kapitel 1 **rein fachlich**
+angewendet – auch eingebetteter Subprozess, Boundary Events, Gateways und Kompensation. Ihre
+**technische/Ausführungs-Semantik** (Flow-Bedingungen, `async`-Marker, `isForCompensation`,
+Korrelation an Boundary Events) wird erst in den unten genannten Aufgaben eingeführt; der
+fachliche Vorgriff in Aufgabe 0 gilt nicht als doppelte Einführung.
+
 | Aufgabe | Wird hier eingeführt |
 |---|---|
-| 0 | Start Event, User Task, Service Task, End Event, Sequenzfluss, fachliche Modellierung |
-| 1 | Engine, Deployment, Cockpit, Tasklist, Prozessdefinition, **Prozessinstanz**, Prozessvariable, **Wait State**, `act_*`-Tabellen (`re` / `ru` / `hi`) |
-| 2 | Prozess-Key, Element-ID, `isExecutable`, `historyTimeToLive`, Formularfeld, Delegate Expression, JavaDelegate, `RuntimeService`, hexagonale Architektur |
+| 0 | fachliche Modellierung; Anwendung aller BPMN-Grundformen aus Kapitel 1 – Start/End Event, User Task, Service Task, Sequenzfluss, eingebetteter Subprozess, Boundary Event, Exclusive/Parallel Gateway, Kompensation (rein fachlich) |
+| 1 | Engine, Deployment, Cockpit, Tasklist, Prozessdefinition, **Prozessinstanz**, Prozessvariable, **Wait State**, **Generated Form** (vorhandene nutzen), `act_*`-Tabellen (`re` / `ru` / `hi`) |
+| 2 | Prozess-Key, Element-ID, `isExecutable`, `historyTimeToLive`, **Generated Form selbst erstellen**, Delegate Expression, JavaDelegate, `RuntimeService`, hexagonale Architektur |
 | 3 | Message Start Event, Nachricht, Korrelation (`correlateStartMessage`) |
-| 4 | Exclusive Gateway, Default-Flow, Flow-Bedingung, **Transaktionsgrenze**, **asynchrone Continuation** (`asyncBefore` / `asyncAfter`), Commit und Rollback, **Token**, Business Key, Generated Task Form, Idempotenz |
+| 4 | Exclusive Gateway (technisch: Default-Flow, Flow-Bedingung), **Transaktionsgrenze**, **asynchrone Continuation** (`asyncBefore` / `asyncAfter`), Commit und Rollback, **Token**, Business Key, generiertes Task-Formular (Freigabe), Idempotenz |
 | 5 | Prozess-Test, In-Memory-Engine (h2), **Job Executor**, Mock (`@MockitoBean`), Assertion (`BpmnAwareTests`) |
 | 5 · Add-on | generierte Process-API, `bpmn-to-code` |
-| 6 | eingebetteter Subprozess, Boundary Event (unterbrechend / nicht unterbrechend), Timer als Duration und als Cycle, Message Boundary Event, Parallel Gateway (Fork / Join) |
-| 7 | Kompensation, Compensation Boundary Event, Kompensations-Handler (`isForCompensation`), Association, Compensating End Event, SAGA-Muster |
+| 6 | eingebetteter Subprozess (technisch), Boundary Event (unterbrechend / nicht unterbrechend), Timer als Duration und als Cycle, Message Boundary Event, Parallel Gateway (Fork / Join) |
+| 7 | Kompensation (technisch), Compensation Boundary Event, Kompensations-Handler (`isForCompensation`), Association, Compensating End Event, SAGA-Muster |
 | 8 | Call Activity, Called Element, In-/Out-Mapping, DMN, Entscheidungstabelle, Business Rule Task, `mapDecisionResult` |
 | 9 | **Signal** und **Broadcast**, Signal-Start-Event, Signal-End-Event, External Task, Worker, `fetchAndLock`, Deployment per REST, OpenAPI-Client |
 | Extra 1 | Process-Engine-API, `@ProcessEngineWorker`, Topic, `EngineCommandExecutor`, ArchUnit-Guardrail |

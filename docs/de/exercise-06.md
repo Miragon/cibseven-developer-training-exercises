@@ -33,7 +33,7 @@ Nach dieser Aufgabe kannst du
 
 ![BPMN-Modell der Aufgabe](../assets/exercise-06.svg)
 
-Referenzmodell: `../../models/exercise-06/newsletter.bpmn`
+Referenzmodell: `../../models/exercise-06/membership.bpmn`
 
 ## Aufgabe
 

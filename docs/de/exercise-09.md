@@ -74,7 +74,7 @@ plus manueller Start, dann der External Task `shipWelcomeKit`:
 
 ![BPMN send-welcome-kit](../assets/exercise-09-sub.svg)
 
-Referenzmodelle: `../../models/exercise-09/newsletter.bpmn`,
+Referenzmodelle: `../../models/exercise-09/membership.bpmn`,
 `../../models/exercise-09/send-welcome-kit.bpmn`
 
 Das Parallel Gateway aus Aufgabe 6 bleibt unverändert – nur das terminale End Event

@@ -1,8 +1,8 @@
-# Exercise 0 – Model the process at the business level
+# Exercise 0 – Model the target process at the business level
 
-> **Prerequisite:** none – this is where you start.
+> **Prerequisite:** Chapter 1 – you know BPMN as a notation (events, tasks, gateways, subprocesses, boundary events, compensation).
 > **Working directory:** any folder you like (no code yet, no module yet).
-> **New in this exercise:** BPMN modeler, Start Event, User Task, Service Task, End Event.
+> **New in this exercise:** BPMN modeler, the complete target process as a shared map.
 
 ## What this is about
 
@@ -10,26 +10,38 @@
 tours, road bikes for everyone who likes to move fast on the asphalt. The customers
 are young, brand-conscious and pretty passionate.
 
-The shop is growing, new products keep arriving, and the team decides: let's build a
-**newsletter**. Someone signs up, gets a welcome mail – done.
+Miravelo turns this into more than a mailing list: the **Inner Circle**, an exclusive
+membership with a limited number of seats. Whoever wants to join registers, confirms via
+double opt-in, gets a seat reserved – and is welcomed in the end. Sounds like four boxes,
+but it has confirmation deadlines, a capacity limit and a fallback for when there is no
+free seat after all.
 
-> *"That's built in an hour, surely."*
-> — Every developer who has ever underestimated a newsletter.
+> *"Let's sketch this out before anyone starts coding."*
+> — the one sensible sentence in the whole kickoff.
 
-Before anything gets automated, you capture the flow at the **business level**: what
-happens, and in what order? This is the language in which the business side and
-development reach agreement – without a single line of technology.
+Before anything gets automated, you capture the **complete target process at the business
+level**: what happens, in what order, where does the process wait, where does it branch?
+This is the language in which the business side and development reach agreement – without a
+single line of technology. This model is the **map for the entire training**: from Exercise 1
+on you automate it piece by piece.
 
 ## Learning goals
 
 After this exercise you can
 
-- install a BPMN modeler and create a model in it,
-- tell apart the four basic elements Start Event, User Task, Service Task and End Event,
-- model a business process as an end-to-end flow,
-- name elements so that the business side understands them without follow-up questions.
+- install a BPMN modeler and create an end-to-end model in it,
+- apply the notation from Chapter 1 to a real business process – Start and End Events,
+  User Task and Service Task, Exclusive and Parallel Gateway, an embedded subprocess,
+  boundary events and compensation,
+- justify the waiting and branching points in the flow (where does the process wait for a
+  human, where for a deadline, where does a condition decide),
+- name elements so the business side can read the flow out loud without follow-up questions.
 
 ## Target model
+
+This is the complete target process of the Inner Circle. It looks big – but it is only the
+sum of many small building blocks you already know. This is exactly the flow you rebuild
+technically, step by step, over the course of the training.
 
 ![BPMN model for the exercise](../assets/exercise-00.svg)
 
@@ -39,69 +51,146 @@ After this exercise you can
 
 We work with the **[Miragon BPMN Modeler](https://miragon.github.io/bpmn-modeler/)**.
 It comes as a VS Code extension, as an IntelliJ plugin and as a standalone desktop app –
-pick the variant that fits your environment.
+pick the variant that fits your environment. Then create a new BPMN diagram.
 
-### 2. Model the process
+### 2. Model registration and capacity check
 
-Create a new BPMN diagram and model the sign-up process with exactly these four
-elements:
+Start with the backbone of the process: a prospect registers, the process reserves a seat
+and then checks whether one is free at all. If none is free, the application ends with a
+rejection.
 
-| Element | Type | Name |
-|---|---|---|
-| Start | None Start Event | Newsletter wanted |
-| Form | User Task | Fill out form |
-| Welcome mail | Service Task | Send Welcome Mail |
-| End | None End Event | User subscribed |
+| Type | Name |
+|---|---|
+| Start Event | Submit registration form |
+| Service Task | Claim membership |
+| Exclusive Gateway | Has empty spots |
+| Service Task | Send rejection mail |
+| End Event | Membership rejected |
 
-### 3. Connect the flow
+Connect Start → *Claim membership* → *Has empty spots*. From the gateway a **No** path leads
+to *Send rejection mail* → *Membership rejected*. The **Yes** path stays open for now – you
+fill it in the next step. The seat is reserved **before** the check; step 6 deals with that.
 
-Connect the elements with sequence flows into an end-to-end path from the Start Event
-to the End Event.
+### 3. Model the confirmation as a subprocess
 
-### 4. Save the model
+Whoever gets a seat has to actively confirm the membership (double opt-in). Bundle this
+confirmation flow into an **embedded subprocess** – it will soon get its own deadlines and
+exceptions, and a subprocess keeps that tidy.
 
-Save the file as `newsletter.bpmn` in a folder of your choice. You'll need it again in
-**Exercise 2**.
+Model the subprocess **Confirm membership** and inside it:
+
+| Type | Name |
+|---|---|
+| Start Event (inside the subprocess) | Confirmation required |
+| Service Task | Send confirmation mail |
+| User Task | Confirm membership |
+| End Event (inside the subprocess) | Membership confirmed |
+
+Route the **Yes** path of the gateway from step 2 into this subprocess. The *User Task* is the
+waiting point: here the process stops until a human confirms.
+
+### 4. Add reminder, deadline and rejection
+
+People don't always confirm right away – some never do. So attach **boundary events** to the
+subprocess *Confirm membership* that model three exceptions:
+
+| Boundary event | Type | Name | Leads to |
+|---|---|---|---|
+| Reminder | Timer, non-interrupting, daily | Every day | Service Task *Re-Send confirmation mail* → End Event *Mail sent again* |
+| Abort after deadline | Timer, interrupting, 3½ days | After 3 1/2 days | End Event *Membership declined* |
+| Active rejection | Message, interrupting | Confirmation rejected | End Event *Membership declined* |
+
+The **non-interrupting** timer event lets the subprocess keep running and sends a daily
+reminder on the side. The two **interrupting** events abort the confirmation and lead to
+*Membership declined*.
+
+### 5. Model the activation in parallel
+
+Once the membership is confirmed, the member is activated – and two things happen at once:
+the welcome mail goes out, and the community is notified. Model this with a **Parallel Gateway**
+(fork and join).
+
+| Type | Name |
+|---|---|
+| Parallel Gateway (fork) | – |
+| Service Task | Send Welcome Mail |
+| Service Task | Notify community |
+| Parallel Gateway (join) | – |
+| End Event | Membership activated |
+
+Route the exit of the subprocess into the fork, both service tasks in parallel, then into the
+join and to *Membership activated*.
+
+### 6. Add compensation
+
+A reserved seat must not go to waste if the application fails in the end. When the membership
+is declined (*Membership declined*), the reservation from step 2 has to be **undone**. That is
+exactly what compensation is for.
+
+- Attach a **Compensation Boundary Event** named *Membership declined* to *Claim membership*.
+- Create a compensation handler *Revoke claim* (Service Task) and connect it to the boundary
+  event via an **association**. It sits **outside** the normal sequence flow.
+- Turn the End Event *Membership declined* into a **Compensating End Event** – it triggers the
+  compensation.
+
+### 7. Save the model
+
+Save the file as `membership.bpmn` in a folder of your choice. It is your reference picture for
+all the exercises that follow.
 
 ## Constraints
 
-- **Business level only.** This is purely about flow and naming. Process and element
-  IDs by convention, form fields, wiring the Service Task to Java code as well as
-  `isExecutable` and `historyTimeToLive` are deliberately left out here.
+- **Business level only.** This is about flow and naming. Element IDs by convention, form
+  fields, wiring service tasks to Java code as well as `isExecutable` and `historyTimeToLive`
+  are deliberately left out here – that comes from Exercise 2 on.
+- **This is the target state, not the first step.** Nobody automates this process in one go.
+  From Exercise 1 on you take on small excerpts.
 - **Don't copy it into the module yet.** Under `services/process-application/src/main/resources/bpmn/`
-  there is already a `newsletter.bpmn` – that is the technically finished version you'll
-  need in Exercise 1. Don't overwrite it just yet.
-- Model names are English throughout; the task descriptions are available in German and
-  English.
+  there is already a deliberately rudimentary `membership.bpmn` that you need in Exercise 1.
+  Don't overwrite it now.
+- Model names are English throughout; the task descriptions are available in German and English.
 
 ## Expected result
 
-Your model shows four elements in a row, connected by three sequence flows. The modeler
-reports no errors, and someone from the business side could read the flow out loud
-without asking what a single element means.
+Your model captures the complete flow: registration, seat reservation, the capacity gateway,
+the confirmation subprocess with reminder, deadline and rejection, the parallel activation and
+the compensation of the reservation. The modeler reports no errors, and someone from the
+business side could read the flow out loud without asking what a single element means.
 
 ## Self-check
 
-- [ ] The model contains exactly one Start Event and one End Event
-- [ ] User Task and Service Task sit between them in the right order
-- [ ] All four elements are connected via sequence flows – no dangling element
-- [ ] The names match the table above
-- [ ] The file is saved as `newsletter.bpmn`
+- [ ] The model has exactly one start and ends in *Membership activated*, *Membership rejected*
+      or *Membership declined*
+- [ ] Capacity is checked via an Exclusive Gateway with a **No** path to the rejection
+- [ ] The confirmation lives in an embedded subprocess with a User Task as the waiting point
+- [ ] Three boundary events hang on the subprocess: a daily (non-interrupting) timer, a 3½-day
+      timer (interrupting) and a message event (interrupting)
+- [ ] The activation runs through a Parallel Gateway (welcome mail and community notification
+      at the same time)
+- [ ] *Revoke claim* is a compensation handler, attached via an association to the boundary
+      event of *Claim membership*, and *Membership declined* is a Compensating End Event
+- [ ] All elements are connected via sequence flows – no dangling element
+- [ ] The file is saved as `membership.bpmn`
 
 ## Hints
 
-Why a User Task and a Service Task? The **User Task** waits for a human – someone fills
-out the form. The **Service Task** is handled by a system – here the mail dispatch. This
-distinction is the most important one in business-level modeling: it defines where the
-process waits and where it continues on its own.
+Don't let the size scare you: every advanced building block gets its **own exercise** later, in
+which you implement it technically – the confirmation step in Exercise 3, the capacity gateway
+in Exercise 4, subprocess and boundary events in Exercise 6, compensation in Exercise 7. Here you
+first draw the whole map, so that at every partial step you know where it belongs.
+
+Why a User Task and a Service Task? The **User Task** waits for a human – someone confirms the
+membership. The **Service Task** is handled by a system – the mail dispatch, the seat
+reservation. This distinction defines where the process waits and where it continues on its own.
 
 ## Reference solution
 
-`../../models/exercise-00/newsletter.bpmn` – open the model in the modeler and compare it
-with yours.
+`../../models/exercise-00/membership.bpmn` – open the model in the modeler and compare it with
+yours.
 
 ## Next step
 
-In Exercise 1 you get the engine running that executes exactly these kinds of models.
+In Exercise 1 you get the engine running that executes exactly these kinds of models – starting
+with a deliberately tiny excerpt.
 
 ➡️ [Next: Exercise 1](exercise-01.md)

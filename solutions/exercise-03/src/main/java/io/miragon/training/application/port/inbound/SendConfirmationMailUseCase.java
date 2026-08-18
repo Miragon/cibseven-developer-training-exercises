@@ -1,8 +1,8 @@
 package io.miragon.training.application.port.inbound;
 
-import io.miragon.training.domain.SubscriptionId;
+import io.miragon.training.domain.MembershipId;
 
 public interface SendConfirmationMailUseCase {
 
-    void sendConfirmationMail(SubscriptionId subscriptionId);
+    void sendConfirmationMail(MembershipId membershipId);
 }

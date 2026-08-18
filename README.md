@@ -35,11 +35,11 @@ Detailed exercise descriptions can be found in [`docs/`](docs/).
 
 | Exercise | Topic | Description |
 |---|---|---|
-| [0](docs/en/exercise-00.md) | Business-level BPMN modeling | Get to know the Miragon BPMN Modeler, model the process purely from a business perspective |
-| [1](docs/en/exercise-01.md) | Getting the engine running | Arm the module, get to know the Cockpit and the engine's `act_*` tables |
-| [2](docs/en/exercise-02.md) | Technical modeling & automation | Model technically, JavaDelegate, RuntimeService, REST endpoint |
+| [0](docs/en/exercise-00.md) | Business-level BPMN modeling | Model the complete Inner Circle membership process at the business level — the shared target for the whole training |
+| [1](docs/en/exercise-01.md) | Getting the engine running | Run the deliberately rudimentary starter model (Generated Form included), get to know the Cockpit and the engine's `act_*` tables |
+| [2](docs/en/exercise-02.md) | Technical modeling & automation | Rebuild the first slice from scratch, create the Generated Form yourself, JavaDelegate, RuntimeService, REST endpoint |
 | [3](docs/en/exercise-03.md) | Double opt-in | Message start event, message correlation, confirmation step |
-| [4](docs/en/exercise-04.md) | Capacity check with a gateway | Exclusive gateway, domain refactoring, transaction boundaries, business key, task form |
+| [4](docs/en/exercise-04.md) | Capacity check with a gateway | Exclusive gateway, transaction boundaries, business key, task form |
 | [5](docs/en/exercise-05.md) | Process tests | Process unit test with an in-memory engine, mocked use cases, without PostgreSQL |
 | [5 · Add-on](docs/en/exercise-05-addon.md) | bpmn-to-code | Element IDs as generated constants instead of hand-typed strings |
 | [6](docs/en/exercise-06.md) | Subprocess, boundary events & parallelism | Subprocess, timer and message boundary events, parallel gateway, Teams integration |

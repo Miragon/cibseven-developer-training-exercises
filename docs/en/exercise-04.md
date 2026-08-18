@@ -2,14 +2,13 @@
 
 > **Prerequisite:** Exercise 3 is complete – double opt-in is working, and the process starts via a message.
 > **Working directory:** `services/process-application`
-> **New in this exercise:** domain refactoring to *Membership*, Exclusive Gateway, alternative process outcome, transaction boundaries, business key, generated Task form.
+> **New in this exercise:** Exclusive Gateway, alternative process outcome, transaction boundaries, business key, generated Task form.
 
 ## What this is about
 
 **Strategy meeting, Friday afternoon. Someone brought exclusive matcha lattes.**
 
-Miravelo is launching the **Miravelo Inner Circle** – a limited membership for true fans
-of the brand. A thousand spots. No more.
+The **Miravelo Inner Circle** gets its hard limit: a thousand spots. No more.
 
 Why a thousand? Because scarcity creates value. Because FOMO is a business model. Because
 someone read a book about luxury brands.
@@ -19,7 +18,7 @@ someone read a book about luxury brands.
 > — Most honest comment in sprint planning
 
 From a process perspective, this is a **gateway**: got a spot? Carry on. No spot?
-Rejection mail. And because every registration is now a business object with its own ID,
+Rejection mail. And because every registration is a business object with its own ID,
 each process instance gets a **business key** – no more "which of the 40 running
 instances was Carol again?".
 
@@ -39,28 +38,15 @@ After this exercise you can
 
 ![BPMN model of the exercise](../assets/exercise-04.svg)
 
-Reference model: `../../models/exercise-04/newsletter.bpmn`
+Reference model: `../../models/exercise-04/membership.bpmn`
 
 ## The task
 
-### 1. Rename the domain
-
-The newsletter subscription becomes the Inner Circle membership. Rename the existing
-classes consistently – `Subscription` → `Membership`, `SubscriptionId` →
-`MembershipId`, `RegisterSubscriptionUseCase` → `RegisterMembershipUseCase`, and so on.
-The REST path becomes `/api/memberships`, and the process variable `subscriptionId` becomes
-`membershipId`.
-
-> The process key stays `subscribeNewsletter` and the file remains `newsletter.bpmn` –
-> just as it would in real projects when a process keeps evolving. We mention this once
-> and then never again.
-
-### 2. Extend the model
+### 1. Extend the model
 
 Before the confirmation mail is sent, a **Service Task** for the reservation and an
 **Exclusive Gateway** are added, splitting the sequence flow into two paths. That's
-four new elements in total – and two existing ones get new element IDs and names, because
-the subscription has become a membership.
+four new elements in total.
 
 You create the elements, delegate expressions and the gateway condition in the **Miragon BPMN
 Modeler** (select the element → Properties Panel), not in the XML.
@@ -74,17 +60,10 @@ Modeler** (select the element → Properties Panel), not in the XML.
 | Rejection mail | Service Task | `serviceTask_sendRejectionMail` | Send rejection mail | Delegate Expression: `#{sendRejectionMailDelegate}` |
 | Rejection | End Event | `endEvent_membershipRejected` | Membership rejected | – |
 
-**Renamed elements:**
-
-| Old (Exercise 3) | New (Exercise 4) |
-|---|---|
-| `userTask_confirmSubscription` – Confirm subscription | `userTask_confirmMembership` – Confirm membership |
-| `endEvent_userSubscribed` – User subscribed | `endEvent_membershipConfirmed` – Membership confirmed |
-
 **Condition on the no path:** `${!hasEmptySpots}`. The yes path is the default flow and
 needs no condition.
 
-### 3. Add use cases and services
+### 2. Add use cases and services
 
 Following the pattern from Exercise 3:
 
@@ -99,7 +78,7 @@ Following the pattern from Exercise 3:
 > If you prefer it cleaner, model a domain object `MembershipCapacity` instead, with
 > `maxSpots`, `claimedSpots`, `hasEmptySpots()` and `claim()` – functionally the two are equivalent.
 
-### 4. Add delegates
+### 3. Add delegates
 
 - **`ClaimMembershipDelegate`** – reads `membershipId`, calls the use case, and writes
   its result as the process variable `hasEmptySpots` onto the `DelegateExecution`.
@@ -109,7 +88,7 @@ Following the pattern from Exercise 3:
 > service doesn't know the engine and only returns a `boolean`. This exact separation is
 > checked by the `ArchitectureTest`.
 
-### 5. Set transaction boundaries
+### 4. Set transaction boundaries
 
 > Theory for this: training chapter **"Async & Transaction Boundaries"** (Topic 4, *Execution
 > Resilience*) – save points, default and manual boundaries, rollback in action. This is
@@ -157,7 +136,7 @@ current state of an instance in the process model). The marker belongs on the *d
 call, which would otherwise roll back the reservation with it. In the modeler: select the
 element → Properties Panel → *Asynchronous Before*.
 
-### 6. Set the business key
+### 5. Set the business key
 
 When the process starts, set the `membershipId` as the business key. The correlation builder
 in `MembershipProcessAdapter` (which you switched to `createMessageCorrelation(...)` in
@@ -174,7 +153,7 @@ runtimeService.createMessageCorrelation(/* message name */)
 The business key links the process instance to the business object: in the Cockpit, each
 instance can be uniquely mapped to a registration and searched for specifically.
 
-### 7. Task form for the approval
+### 6. Task form for the approval
 
 The User Task `userTask_confirmMembership` has no form yet – whoever opens it in the tasklist
 sees not a single process variable and can only complete it blindly. Give it a
@@ -191,6 +170,12 @@ extra file, no HTML), so that the approving person can see the registration data
 `name`, `email` and `age` carry the same IDs as the process variables and are therefore
 pre-filled automatically. `confirmed` is new and is stored as a boolean process variable on
 completion.
+
+> **Note: Why still a Generated Form here?** You know Generated Forms from Exercises 1 and 2 –
+> as a simple way in. For an internal approval step like this one they are perfectly enough and
+> therefore stay here. The actual process has long been driven by business REST endpoints (start
+> in Exercise 2, rejection in Exercise 6); a production-like approval UI would be a frontend of
+> its own – in the training we deliberately stick with the Generated Form.
 
 In the modeler: select the User Task → Properties Panel → **Forms** section → add form
 fields. In the XML this produces an `extensionElements` block with `camunda:formData` right
@@ -211,6 +196,9 @@ inside the User Task:
 
 ## Constraints
 
+- The process key stays `subscribeNewsletter` and the message name `Message_SubscriptionRequested`
+  – historical names that stay stable even as the process keeps growing at the business level
+  (mentioned once in [Exercise 2](exercise-02.md)).
 - The field type must match the type of the process variable, otherwise pre-filling won't
   take effect (`age` is `long`, not `string`).
 - `confirmed` does not control any process flow in this exercise yet – it is only captured.
@@ -251,7 +239,6 @@ Expected log: `Sending rejection mail to dave@miravelo.com`. The instance ends a
 
 ## Self-check
 
-- [ ] All classes are renamed to *Membership*, the REST path is `/api/memberships`
 - [ ] The gateway has a default flow and exactly one condition (`${!hasEmptySpots}`)
 - [ ] The yes path ends at `Membership confirmed`, the no path at `Membership rejected`
 - [ ] `asyncBefore` is on the Message Start Event and on the three mail tasks,

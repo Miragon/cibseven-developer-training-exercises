@@ -140,7 +140,7 @@ Lass die Tests aus Aufgabe 5 erneut laufen – am Verhalten darf sich nichts ge�
 
 Die Tests sind weiterhin grün, enthalten aber kein einziges Element-ID-Literal mehr.
 
-**Gegenprobe:** Benenne testweise ein Element im `newsletter.bpmn` um und führe
+**Gegenprobe:** Benenne testweise ein Element im `membership.bpmn` um und führe
 `generate-sources` erneut aus – die zugehörige Konstante verschwindet und dein Test
 **kompiliert nicht mehr**. Genau das war das Ziel.
 

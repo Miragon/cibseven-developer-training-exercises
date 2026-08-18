@@ -1,15 +1,21 @@
 # Exercise 1 – Getting the engine running
 
-> **Prerequisite:** Exercise 0 is complete (a business model exists).
+> **Prerequisite:** Exercise 0 is complete (the target process exists at the business level).
 > **Working directory:** `services/process-application`
-> **New in this exercise:** CIB Seven starter, engine configuration, auto-deployment, Cockpit, `act_*` tables, wait state.
+> **New in this exercise:** CIB Seven starter, engine configuration, auto-deployment, Cockpit, `act_*` tables, wait state, Generated Form.
 
 ## What this is about
 
-In Exercise 0 you modeled the newsletter at the **business** level. An external consultant that
-Miravelo works with turned it into the **technically finished** version – including a little bit
-of logic on the Service Task "Send Welcome Mail": it uses an inline **expression** to set the
-process variable `welcomeMailSentTo`. No Java needed; you'll build the real sending later.
+In Exercise 0 you modeled the **complete target process** of the Inner Circle. Before anyone
+automates the whole flow, an external consultant that Miravelo works with roughed out a
+**deliberately tiny first excerpt** at the technical level: registration via a form, then a
+welcome mail – nothing more. The Service Task "Send Welcome Mail" only carries a small inline
+**expression** that sets the process variable `welcomeMailSentTo`. No Java, no architecture, no
+double opt-in.
+
+This mini-version is **not** the target process and **not** the target model you build on – it
+exists for one purpose only: to get the engine running at all and to get a feel for deployment,
+execution, and task completion. From Exercise 2 on you rebuild the process cleanly.
 
 What's still missing is the **runtime environment**: a Spring Boot module in which the CIB Seven
 engine runs. That's exactly what you'll set up now – and along the way you'll get to know the
@@ -32,8 +38,9 @@ After this exercise you can
 
 ![BPMN model of the exercise](../assets/exercise-01.svg)
 
-The model is already finished and lives at
-`services/process-application/src/main/resources/bpmn/newsletter.bpmn`. You won't model anything
+This is the deliberately reduced excerpt from the consultant – registration via a form, then the
+welcome mail. It sits ready at
+`services/process-application/src/main/resources/bpmn/membership.bpmn`. You won't model anything
 in this exercise – you'll bring it to life.
 
 ## The task
@@ -135,8 +142,10 @@ The same data is also available with a UI: the Cockpit is the engine's web inter
 most important tool for the coming exercises.
 
 Open [http://localhost:8080/webapp/#/seven/auth/start](http://localhost:8080/webapp/#/seven/auth/start) (admin / admin). Under
-**Processes** you'll see `Subscribe Newsletter`. Click your way through **Cockpit** (running
-instances), **Tasklist** (open User Tasks), and **Admin** (user management).
+**Processes** you'll see `Join Inner Circle` – the display name of the model. The technical
+process key behind it is `subscribeNewsletter` (you'll see it again in `act_re_procdef` shortly).
+Click your way through **Cockpit** (running instances), **Tasklist** (open User Tasks), and
+**Admin** (user management).
 
 ### 9. Play through the process
 
@@ -144,7 +153,7 @@ The process is deployed, but has never run. Start an instance from the Tasklist 
 by hand all the way to the end – that way you'll see where the instance waits and where it
 continues on its own:
 
-1. **Tasklist** → **Start process** → `Subscribe Newsletter`
+1. **Tasklist** → **Start process** → `Join Inner Circle`
 2. **Create a filter (only the first time):** the CIB Seven Tasklist only shows open tasks
    through a filter – as long as none exists, the list stays empty even though your instance
    is already waiting at the User Task. Click the **+** at the top left next to **Filters**
@@ -152,8 +161,16 @@ continues on its own:
    appear.
 3. Open the User Task **"Fill out form"**, fill in `email`, `name`, and `age`, and complete it
 4. The Service Task then sets the variable `welcomeMailSentTo` via an expression
-5. The instance has reached the End Event "User subscribed" – in the History it shows as
+5. The instance has reached the End Event "Member joined" – in the History it shows as
    `COMPLETED`
+
+The form you just filled out didn't come from nowhere:
+
+> **Term: Generated Form.** A built-in feature of CIB Seven / Camunda 7: the form fields
+> (`email`, `name`, `age`) sit directly in the BPMN model on the User Task. The Tasklist renders
+> a form from them automatically – no extra file, no HTML, no frontend. It's the simplest way in
+> for a User Task; in Exercise 2 you create such a form yourself. For more production-like
+> applications it is later replaced by dedicated interfaces.
 
 ### 10. Look at the database once more
 
@@ -175,7 +192,7 @@ SELECT name_, text_ FROM exercise.act_hi_varinst WHERE name_ = 'welcomeMailSentT
 and `act_ru_task`. After completion the runtime tables are empty, and everything that happened is
 in the `act_hi_*` tables. That's exactly the difference between `ru` and `hi`.
 
-> **Concept: wait state.** A point at which the process instance **stops and waits for an event
+> **Term: wait state.** A point at which the process instance **stops and waits for an event
 > from outside** – here the User Task, which waits for its own completion. As it does, the engine
 > writes the state into the `act_ru_*` tables and releases the thread. That's why a waiting instance
 > survives a restart of the application: it doesn't live in memory, but in the database.
@@ -201,17 +218,18 @@ same spot afterwards.
 
 ## Expected result
 
-The log shows `Auto-Deploying resources: [... newsletter.bpmn]` and
-`Started TrainingApplication`. The Cockpit is reachable, `Subscribe Newsletter` appears under
+The log shows `Auto-Deploying resources: [... membership.bpmn]` and
+`Started TrainingApplication`. The Cockpit is reachable, `Join Inner Circle` appears under
 **Processes**, and an instance you started runs all the way to the End Event.
 
 ## Self-check
 
 - [ ] PostgreSQL is running, the schema `exercise` exists
 - [ ] Dependencies, configuration, and `@SpringBootApplication` are enabled
-- [ ] The application starts and deploys `newsletter.bpmn`
-- [ ] `Subscribe Newsletter` appears in the Cockpit under **Processes**
-- [ ] An instance was started, the User Task worked through, the process finished cleanly
+- [ ] The application starts and deploys `membership.bpmn`
+- [ ] `Join Inner Circle` appears in the Cockpit under **Processes**
+- [ ] An instance was started, the User Task worked through via the Generated Form, the process
+      finished cleanly
 - [ ] The database is connected in your tool, `act_re_procdef` contains `subscribeNewsletter`
 - [ ] You can explain why the `act_ru_*` tables are empty after the run and what is in the
       `act_hi_*` tables instead
@@ -227,7 +245,7 @@ The log shows `Auto-Deploying resources: [... newsletter.bpmn]` and
 ## Reference solution
 
 - Finished module: `../../solutions/exercise-01/`
-- Model: `../../models/exercise-01/newsletter.bpmn`
+- Model: `../../models/exercise-01/membership.bpmn`
 - Load it directly into the working module (replaces `src/main` including `application.yaml`; the
   `pom.xml` and thus your dependencies from step 3 stay intact):
 
@@ -237,7 +255,8 @@ The log shows `Auto-Deploying resources: [... newsletter.bpmn]` and
 
 ## Next step
 
-In Exercise 2 you take over the technical modeling yourself and connect the Service Task to real
-Java code.
+In Exercise 2 you throw away the rudimentary version and rebuild the first excerpt of the target
+process cleanly – including a Generated Form that you create yourself this time, and a Service
+Task that runs real Java code.
 
 ➡️ [Next: Exercise 2](exercise-02.md)

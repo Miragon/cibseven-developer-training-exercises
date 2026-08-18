@@ -1,0 +1,18 @@
+meta {
+  name: Reject Membership
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/memberships/{{membershipId}}/reject
+  body: none
+  auth: none
+}
+
+docs {
+  Rejects a waiting membership – a business REST endpoint that drives the process forward
+  (controller → use case → adapter → message correlation), no Tasklist form involved.
+  Available from Exercise 6 on. Uses the `membershipId` captured by `Register Membership`;
+  set it manually if you start here.
+}

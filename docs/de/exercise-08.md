@@ -43,7 +43,7 @@ Aufgerufener Prozess `handleRejection`:
 
 ![BPMN-Subprozess](../assets/exercise-08-sub.svg)
 
-Referenzmodelle: `../../models/exercise-08/newsletter.bpmn`,
+Referenzmodelle: `../../models/exercise-08/membership.bpmn`,
 `../../models/exercise-08/membership-rejection.bpmn`,
 `../../models/exercise-08/categorize-applicant.dmn`
 

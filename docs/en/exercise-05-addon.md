@@ -139,7 +139,7 @@ Run the tests from Exercise 5 again – the behavior must not have changed at al
 
 The tests are still green, but no longer contain a single element-ID literal.
 
-**Counter-check:** As an experiment, rename an element in `newsletter.bpmn` and run
+**Counter-check:** As an experiment, rename an element in `membership.bpmn` and run
 `generate-sources` again – the corresponding constant disappears and your test **no longer
 compiles**. That was exactly the goal.
 

@@ -34,7 +34,7 @@ Called process `handleRejection`:
 
 ![BPMN subprocess](../assets/exercise-08-sub.svg)
 
-Reference models: `../../models/exercise-08/newsletter.bpmn`,
+Reference models: `../../models/exercise-08/membership.bpmn`,
 `../../models/exercise-08/membership-rejection.bpmn`,
 `../../models/exercise-08/categorize-applicant.dmn`
 

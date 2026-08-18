@@ -1,17 +1,24 @@
 # Aufgabe 1 – Die Engine zum Laufen bringen
 
-> **Voraussetzung:** Aufgabe 0 ist abgeschlossen (ein fachliches Modell liegt vor).
+> **Voraussetzung:** Aufgabe 0 ist abgeschlossen (der Sollprozess liegt fachlich vor).
 > **Arbeitsverzeichnis:** `services/process-application`
-> **Neu in dieser Aufgabe:** CIB-Seven-Starter, Engine-Konfiguration, Auto-Deployment, Cockpit, `act_*`-Tabellen, Wait State.
+> **Neu in dieser Aufgabe:** CIB-Seven-Starter, Engine-Konfiguration, Auto-Deployment, Cockpit, `act_*`-Tabellen, Wait State, Generated Form.
 
 ## Darum geht es
 
-In Aufgabe 0 hast du den Newsletter **fachlich** modelliert. Ein externer Consultant, mit dem
-Miravelo zusammenarbeitet, hat daraus die **technisch fertige** Fassung gemacht – inklusive
-einer kleinen Logik am Service Task „Send Welcome Mail": Er setzt per Inline-**Expression**
-die Prozessvariable `welcomeMailSentTo`. Kein Java nötig; den echten Versand baust du später.
+In Aufgabe 0 hast du den **kompletten Sollprozess** des Inner Circle modelliert. Bevor jemand den
+ganzen Ablauf automatiert, hat ein externer Consultant, mit dem Miravelo zusammenarbeitet, einen
+**bewusst winzigen ersten Ausschnitt** grob technisch aufgesetzt: Registrierung über ein Formular,
+danach eine Willkommens-Mail – mehr nicht. Am Service Task „Send Welcome Mail" hängt nur eine
+kleine Inline-**Expression**, die die Prozessvariable `welcomeMailSentTo` setzt. Kein Java, keine
+Architektur, kein Double-Opt-In.
 
-Was fehlt, ist die **Laufzeitumgebung**: ein Spring-Boot-Modul, in dem die CIB-Seven-Engine
+Diese Mini-Fassung ist **nicht** der Sollprozess und **nicht** das Zielmodell, auf dem du
+weiterbaust – sie existiert nur zu einem Zweck: die Engine überhaupt einmal zu starten und ein
+Gefühl für Deployment, Ausführung und Task-Abschluss zu bekommen. Ab Aufgabe 2 baust du den Prozess
+sauber neu auf.
+
+Was jetzt fehlt, ist die **Laufzeitumgebung**: ein Spring-Boot-Modul, in dem die CIB-Seven-Engine
 läuft. Genau das richtest du jetzt ein – und lernst dabei Engine, Cockpit und Datenbank kennen.
 
 ## Lernziele
@@ -31,9 +38,10 @@ Nach dieser Aufgabe kannst du
 
 ![BPMN-Modell der Aufgabe](../assets/exercise-01.svg)
 
-Das Modell ist bereits fertig und liegt unter
-`services/process-application/src/main/resources/bpmn/newsletter.bpmn`. Du modellierst in
-dieser Aufgabe nichts – du bringst es zum Laufen.
+Das ist der bewusst reduzierte Ausschnitt des Consultants – Registrierung über ein Formular,
+dann die Willkommens-Mail. Er liegt fertig unter
+`services/process-application/src/main/resources/bpmn/membership.bpmn`. Du modellierst in dieser
+Aufgabe nichts – du bringst ihn zum Laufen.
 
 ## Aufgabe
 
@@ -135,8 +143,10 @@ Dieselben Daten gibt es auch mit Oberfläche: Das Cockpit ist die Weboberfläche
 und dein wichtigstes Werkzeug für die kommenden Aufgaben.
 
 Öffne [http://localhost:8080/webapp/#/seven/auth/start](http://localhost:8080/webapp/#/seven/auth/start) (admin / admin). Unter
-**Processes** erscheint `Subscribe Newsletter`. Klick dich durch **Cockpit** (laufende
-Instanzen), **Tasklist** (offene User Tasks) und **Admin** (Benutzerverwaltung).
+**Processes** erscheint `Join Inner Circle` – der Anzeigename des Modells. Der technische
+Prozess-Key dahinter ist `subscribeNewsletter` (den siehst du gleich in `act_re_procdef`
+wieder). Klick dich durch **Cockpit** (laufende Instanzen), **Tasklist** (offene User Tasks)
+und **Admin** (Benutzerverwaltung).
 
 ### 9. Prozess durchspielen
 
@@ -144,7 +154,7 @@ Der Prozess ist deployt, aber noch nie gelaufen. Starte über die Tasklist eine 
 führe sie von Hand bis zum Ende – so siehst du, wo die Instanz wartet und wo sie von allein
 weiterläuft:
 
-1. **Tasklist** → **Start process** → `Subscribe Newsletter`
+1. **Tasklist** → **Start process** → `Join Inner Circle`
 2. **Filter anlegen (nur beim ersten Mal):** Die CIB-Seven-Tasklist zeigt offene Aufgaben nur
    über einen Filter an – solange keiner existiert, bleibt die Liste leer, obwohl deine Instanz
    bereits am User Task wartet. Klick oben links neben **Filters** auf das **+**
@@ -152,8 +162,16 @@ weiterläuft:
    erscheinen die offenen Tasks.
 3. Den User Task **„Fill out form"** öffnen, `email`, `name` und `age` ausfüllen, abschließen
 4. Der Service Task setzt danach per Expression die Variable `welcomeMailSentTo`
-5. Die Instanz ist am End Event „User subscribed" angekommen – in der History steht sie auf
+5. Die Instanz ist am End Event „Member joined" angekommen – in der History steht sie auf
    `COMPLETED`
+
+Das Formular, das du gerade ausgefüllt hast, kommt nicht von irgendwoher:
+
+> **Begriff: Generated Form.** Ein Bordmittel von CIB Seven / Camunda 7: Die Formularfelder
+> (`email`, `name`, `age`) stehen direkt im BPMN-Modell am User Task. Die Tasklist rendert daraus
+> automatisch ein Formular – keine zusätzliche Datei, kein HTML, kein Frontend. Das ist der
+> einfachste Einstieg für einen User Task; in Aufgabe 2 erstellst du so eine Form selbst. Für
+> produktionsnähere Anwendungen wird sie später durch eigene Schnittstellen ersetzt.
 
 ### 10. Noch einmal in die Datenbank schauen
 
@@ -202,17 +220,18 @@ immer noch an derselben Stelle.
 
 ## Erwartetes Ergebnis
 
-Im Log erscheinen `Auto-Deploying resources: [... newsletter.bpmn]` und
-`Started TrainingApplication`. Das Cockpit ist erreichbar, `Subscribe Newsletter` steht
+Im Log erscheinen `Auto-Deploying resources: [... membership.bpmn]` und
+`Started TrainingApplication`. Das Cockpit ist erreichbar, `Join Inner Circle` steht
 unter **Processes**, und eine von dir gestartete Instanz läuft bis zum End Event durch.
 
 ## Selbstcheck
 
 - [ ] PostgreSQL läuft, das Schema `exercise` existiert
 - [ ] Dependencies, Konfiguration und `@SpringBootApplication` sind aktiviert
-- [ ] Die Anwendung startet und deployt `newsletter.bpmn`
-- [ ] `Subscribe Newsletter` erscheint im Cockpit unter **Processes**
-- [ ] Eine Instanz wurde gestartet, der User Task bearbeitet, der Prozess sauber beendet
+- [ ] Die Anwendung startet und deployt `membership.bpmn`
+- [ ] `Join Inner Circle` erscheint im Cockpit unter **Processes**
+- [ ] Eine Instanz wurde gestartet, der User Task über die Generated Form bearbeitet, der
+      Prozess sauber beendet
 - [ ] Die Datenbank ist in deinem Werkzeug angebunden, `act_re_procdef` enthält
       `subscribeNewsletter`
 - [ ] Du kannst erklären, warum die `act_ru_*`-Tabellen nach dem Durchlauf leer sind und
@@ -230,7 +249,7 @@ unter **Processes**, und eine von dir gestartete Instanz läuft bis zum End Even
 ## Referenzlösung
 
 - Fertiges Modul: `../../solutions/exercise-01/`
-- Modell: `../../models/exercise-01/newsletter.bpmn`
+- Modell: `../../models/exercise-01/membership.bpmn`
 - Direkt ins Arbeitsmodul laden (ersetzt `src/main` inklusive `application.yaml`; die
   `pom.xml` und damit deine Dependencies aus Schritt 3 bleiben bestehen):
 
@@ -240,7 +259,8 @@ unter **Processes**, und eine von dir gestartete Instanz läuft bis zum End Even
 
 ## Nächster Schritt
 
-In Aufgabe 2 übernimmst du die technische Modellierung selbst und verbindest den Service
-Task mit echtem Java-Code.
+In Aufgabe 2 wirfst du die rudimentäre Fassung weg und baust den ersten Ausschnitt des
+Sollprozesses sauber neu auf – inklusive einer Generated Form, die du diesmal selbst erstellst,
+und einem Service Task, der echten Java-Code ausführt.
 
 ➡️ [Weiter zu Aufgabe 2](exercise-02.md)

@@ -36,11 +36,11 @@ Detaillierte Aufgabenbeschreibungen befinden sich in [`docs/`](docs/).
 
 | Aufgabe | Thema | Beschreibung |
 |---|---|---|
-| [0](docs/de/exercise-00.md) | Fachliche BPMN-Modellierung | Miragon BPMN Modeler kennenlernen, Prozess rein fachlich modellieren |
-| [1](docs/de/exercise-01.md) | Engine zum Laufen bringen | Modul scharf schalten, Cockpit und `act_*`-Tabellen der Engine kennenlernen |
-| [2](docs/de/exercise-02.md) | Technische Modellierung & Automatisierung | Technisch modellieren, JavaDelegate, RuntimeService, REST-Endpoint |
+| [0](docs/de/exercise-00.md) | Fachliche BPMN-Modellierung | Den kompletten Inner-Circle-Membership-Prozess rein fachlich modellieren — die gemeinsame Vorlage für das ganze Training |
+| [1](docs/de/exercise-01.md) | Engine zum Laufen bringen | Das bewusst rudimentäre Startmodell zum Laufen bringen (Generated Form inklusive), Cockpit und `act_*`-Tabellen der Engine kennenlernen |
+| [2](docs/de/exercise-02.md) | Technische Modellierung & Automatisierung | Den ersten Ausschnitt von Grund auf neu bauen, die Generated Form selbst erstellen, JavaDelegate, RuntimeService, REST-Endpoint |
 | [3](docs/de/exercise-03.md) | Double-Opt-In | Message Start Event, Nachrichten-Korrelation, Bestätigungsschritt |
-| [4](docs/de/exercise-04.md) | Kapazitätsprüfung mit Gateway | Exclusive Gateway, Domain-Refactoring, Transaktionsgrenzen, Business Key, Task-Formular |
+| [4](docs/de/exercise-04.md) | Kapazitätsprüfung mit Gateway | Exclusive Gateway, Transaktionsgrenzen, Business Key, Task-Formular |
 | [5](docs/de/exercise-05.md) | Prozess-Tests | Prozess-Unit-Test mit In-Memory-Engine, gemockten Use Cases, ohne PostgreSQL |
 | [5 · Add-on](docs/de/exercise-05-addon.md) | bpmn-to-code | Element-IDs als generierte Konstanten statt handgetippter Strings |
 | [6](docs/de/exercise-06.md) | Subprozess, Boundary Events & Parallelität | Subprozess, Timer- und Message-Boundary-Events, Parallel Gateway, Teams-Anbindung |

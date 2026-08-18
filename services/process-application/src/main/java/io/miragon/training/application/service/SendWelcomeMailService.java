@@ -4,8 +4,8 @@ package io.miragon.training.application.service;
 //  and then implement the TODO in the method body.
 /*
 import io.miragon.training.application.port.inbound.SendWelcomeMailUseCase;
-import io.miragon.training.application.port.outbound.SubscriptionRepository;
-import io.miragon.training.domain.SubscriptionId;
+import io.miragon.training.application.port.outbound.MembershipRepository;
+import io.miragon.training.domain.MembershipId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -17,20 +17,20 @@ public class SendWelcomeMailService implements SendWelcomeMailUseCase {
 
     private static final Logger log = LoggerFactory.getLogger(SendWelcomeMailService.class);
 
-    private final SubscriptionRepository repository;
+    private final MembershipRepository repository;
 
-    public SendWelcomeMailService(SubscriptionRepository repository) {
+    public SendWelcomeMailService(MembershipRepository repository) {
         this.repository = repository;
     }
 
     @Override
-    public void sendWelcomeMail(SubscriptionId subscriptionId) {
-        var subscription = repository.find(subscriptionId);
+    public void sendWelcomeMail(MembershipId membershipId) {
+        var membership = repository.find(membershipId);
 
         // TODO Exercise 2:
         //  Log a message in the format "Sending welcome mail to [email]"
         //  In later exercises a real mail will be sent here.
-        throw new UnsupportedOperationException("Exercise 2: Log 'Sending welcome mail to " + subscription.email().value() + "'");
+        throw new UnsupportedOperationException("Exercise 2: Log 'Sending welcome mail to " + membership.email().value() + "'");
     }
 }
 */

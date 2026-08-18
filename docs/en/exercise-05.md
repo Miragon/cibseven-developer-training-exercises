@@ -43,7 +43,7 @@ After this exercise you can
 There is **no new model**. You test the process from Exercise 4: Message Start →
 Claim → Gateway → confirmation → welcome mail, respectively rejection.
 
-Reference model (unchanged from Exercise 4): `../../models/exercise-05/newsletter.bpmn`
+Reference model (unchanged from Exercise 4): `../../models/exercise-05/membership.bpmn`
 
 ## The task
 
@@ -203,7 +203,7 @@ Everything else you need:
   `when(...)`/`verify(...)` for the use cases.
 - **Driving and lookup** come from the provided helper: `continueToNextWaitState(processEngine)`
   and `findProcessInstance(runtimeService, membership.id().value().toString())`.
-- **The element IDs** are deliberately not listed here – read them off `newsletter.bpmn` in the
+- **The element IDs** are deliberately not listed here – read them off `membership.bpmn` in the
   modeler. The confirm path is start → claim → gateway → confirmation mail → user task → welcome
   mail → confirmed end; at the gateway the reject path branches to the rejection mail → rejected end.
 

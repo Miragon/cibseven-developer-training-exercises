@@ -43,7 +43,7 @@ Nach dieser Aufgabe kannst du
 Es kommt **kein neues Modell** dazu. Du testest den Prozess aus Aufgabe 4: Message Start →
 Claim → Gateway → Bestätigung → Willkommens-Mail beziehungsweise Ablehnung.
 
-Referenzmodell (unverändert gegenüber Aufgabe 4): `../../models/exercise-05/newsletter.bpmn`
+Referenzmodell (unverändert gegenüber Aufgabe 4): `../../models/exercise-05/membership.bpmn`
 
 ## Aufgabe
 
@@ -205,7 +205,7 @@ Alles Weitere hast du beisammen:
 - **Treiben und Suchen** kommen aus dem vorgegebenen Helfer:
   `continueToNextWaitState(processEngine)` und
   `findProcessInstance(runtimeService, membership.id().value().toString())`.
-- **Die Element-IDs** stehen hier bewusst nicht – lies sie im Modeler aus `newsletter.bpmn` ab.
+- **Die Element-IDs** stehen hier bewusst nicht – lies sie im Modeler aus `membership.bpmn` ab.
   Der Bestätigungspfad ist Start → Claim → Gateway → Bestätigungs-Mail → User Task →
   Willkommens-Mail → Bestätigungs-Ende; am Gateway zweigt der Ablehnungspfad zur Ablehnungs-Mail
   → Ablehnungs-Ende ab.
