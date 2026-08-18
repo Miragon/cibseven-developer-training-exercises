@@ -242,7 +242,7 @@ curl -X POST http://localhost:8080/api/memberships \
 ```
 
 Der Prozess reserviert einen Platz, nimmt den Ja-Pfad und wartet am User Task
-`Confirm membership`. Öffne ihn in der Tasklist (`http://localhost:8080/camunda`,
+`Confirm membership`. Öffne ihn in der Tasklist (`http://localhost:8080/webapp/#/seven/auth/start`,
 admin/admin): Name, E-Mail und Alter sind vorbefüllt. Setze den Haken bei *Confirm
 membership* und schließe den Task ab – die Instanz läuft über `Send Welcome Mail` bis
 `Membership confirmed`, und `confirmed` steht in der History auf `true`.

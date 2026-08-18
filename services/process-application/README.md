@@ -29,7 +29,7 @@ cd ../../stack && docker-compose up -d
 ../../mvnw spring-boot:run
 
 # CIB Seven Cockpit
-http://localhost:8080/camunda  (admin / admin)
+http://localhost:8080/webapp/#/seven/auth/start  (admin / admin)
 ```
 
 > Im Auslieferungszustand startet dieses Modul im Zustand von **Aufgabe 1** – die

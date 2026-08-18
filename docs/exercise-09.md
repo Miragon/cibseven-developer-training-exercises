@@ -245,7 +245,7 @@ cd solutions/exercise-09/logistics-service && ../../../mvnw spring-boot:run
 # 3. Beweis, dass der Remote-Service das Modell deployt hat:
 curl http://localhost:8080/engine-rest/deployment
 
-# 4. Mitglied anlegen, im Cockpit (http://localhost:8080/camunda, admin/admin) die
+# 4. Mitglied anlegen, im Cockpit (http://localhost:8080/webapp/#/seven/auth/start, admin/admin) die
 #    Confirm-Aufgabe abschließen → das Signal feuert → eine sendWelcomeKit-Instanz läuft
 curl -X POST http://localhost:8080/api/memberships \
   -H "Content-Type: application/json" \
