@@ -33,21 +33,6 @@ After this exercise you can
 
 ![BPMN model of the exercise](../assets/exercise-06.svg)
 
-```
-[Claim membership] → ◇ [Has empty spots?]
-                            ↓ yes
-        ┌─────────────────────────────────────┐
-        │ subProcess_confirmMembership        │ ←── ⏱ daily (non-interrupting):
-        │  (Start) → [Send confirmation mail] │      [Re-Send confirmation mail] → (End)
-        │         → [Confirm membership]      │
-        │         → (End)                     │ ←── ⏱ 3½ days (interrupting) ─┐
-        └─────────────────────────────────────┘ ←── ✉ rejection (interrupting) ┤
-                            ↓ confirmed                                        ↓
-              ⬦ Fork ─┬─ [Send Welcome Mail] ─┬─ ⬦ Join                [Revoke claim]
-                      └─ [Notify community] ──┘      ↓                        ↓
-                                            [Membership activated]   [Membership declined]
-```
-
 Reference model: `../../models/exercise-06/newsletter.bpmn`
 
 ## The task

@@ -38,34 +38,26 @@ Reference model: `../../models/exercise-02/newsletter.bpmn`
 The flow stays the same as in Exercise 1. What changes is the **binding**: the
 Service Task no longer calls an inline expression, but your Java code.
 
-Here's how a request travels through the architecture:
+Here's how a request travels through the architecture – and how the engine later calls
+back into your code (you fill in the participants marked `TODO` in this exercise):
 
-```
-POST /api/subscriptions
-       ↓
-SubscriptionController              (adapter/inbound/rest)
-       ↓
-RegisterSubscriptionUseCase         (application/port/inbound)
-       ↓
-RegisterSubscriptionService         (application/service)          ← TODO
-       ↓
-SubscriptionProcess.startProcess()  (application/port/outbound)
-       ↓
-SubscriptionProcessAdapter          (adapter/outbound/cibseven)    ← TODO
-       ↓
-RuntimeService.startProcessInstanceByKey(...)
-```
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Ctrl as SubscriptionController · inbound/rest
+    participant Svc as RegisterSubscriptionService · service · TODO
+    participant Adp as SubscriptionProcessAdapter · outbound/cibseven · TODO
+    participant Eng as CIB Seven Engine
+    participant Del as SendWelcomeMailDelegate · inbound/cibseven · TODO
+    participant Mail as SendWelcomeMailService · service · TODO
 
-And here's how the engine calls back into your code:
-
-```
-[BPMN: serviceTask_sendWelcomeMail]
-       ↓
-SendWelcomeMailDelegate             (adapter/inbound/cibseven)     ← TODO
-       ↓
-SendWelcomeMailUseCase              (application/port/inbound)
-       ↓
-SendWelcomeMailService              (application/service)          ← TODO
+    Client->>Ctrl: POST /api/subscriptions
+    Ctrl->>Svc: RegisterSubscriptionUseCase
+    Svc->>Adp: SubscriptionProcess.startProcess()
+    Adp->>Eng: RuntimeService.startProcessInstanceByKey(...)
+    Note over Eng: reaches serviceTask_sendWelcomeMail
+    Eng->>Del: DelegateExpression
+    Del->>Mail: SendWelcomeMailUseCase
 ```
 
 ## The task

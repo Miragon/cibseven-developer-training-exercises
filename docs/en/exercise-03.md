@@ -37,18 +37,6 @@ After this exercise you can
 
 ![BPMN model of the exercise](../assets/exercise-03.svg)
 
-```
-(✉) [Submit registration form]     ← changed: Message Start Event
-              ↓
-    [Send confirmation mail]       ← new: Service Task
-              ↓
-    [Confirm subscription]         ← new: User Task
-              ↓
-    [Send Welcome Mail]
-              ↓
-    [User subscribed]
-```
-
 Reference model: `../../models/exercise-03/newsletter.bpmn`
 
 **Watch for three changes compared to Exercise 2**, not just the two new elements:

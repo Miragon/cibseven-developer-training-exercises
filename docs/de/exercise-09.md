@@ -64,18 +64,15 @@ logistics-service  (Remote-Owner — eigene JVM, :8090)
 Zwei Prozessmodelle, die sich nur über ein Signal kennen – der Host weiß nicht, dass es die
 Logistik gibt, und die Logistik kennt den Membership-Prozess nicht:
 
-```
-Membership (subscribeNewsletter, Engine-Host):
-  … (bestätigt) → ⬦ Fork ┬ [Send Welcome Mail] ┬ ⬦ Join → (◉ "Membership activated")
-                         └ [Notify community]  ┘              │  Signal-End-Event,
-                                                              ▼  wirft Signal_MemberActivated {name}
-Logistik (sendWelcomeKit, im Remote-Service modelliert und deployt):
-  (✱ Signal-Start: Signal_MemberActivated) ┐
-                                           ◇ → [Ship welcome kit] → (◉ Welcome kit shipped)
-  (○ manueller Start: Test / erneut senden)┘      external, topic "shipWelcomeKit"
-                                                   ▲ fetch & lock, complete
-                          logistics-service: ShipWelcomeKitWorker → WelcomeKitShipmentOutPort
-```
+Membership-Prozess (`subscribeNewsletter`, Engine-Host) – das terminale End Event „Membership
+activated" wirft `Signal_MemberActivated`:
+
+![BPMN Membership-Prozess](../assets/exercise-09-main.svg)
+
+Logistik-Prozess (`sendWelcomeKit`, im logistics-service modelliert und deployt) – Signal-Start
+plus manueller Start, dann der External Task `shipWelcomeKit`:
+
+![BPMN send-welcome-kit](../assets/exercise-09-sub.svg)
 
 Referenzmodelle: `../../models/exercise-09/newsletter.bpmn`,
 `../../models/exercise-09/send-welcome-kit.bpmn`

@@ -33,11 +33,6 @@ Nach dieser Aufgabe kannst du
 
 ![BPMN-Modell der Aufgabe](../assets/exercise-00.svg)
 
-```
-[Newsletter wanted]  →  [Fill out form]  →  [Send Welcome Mail]  →  [User subscribed]
-   (Start Event)          (User Task)         (Service Task)           (End Event)
-```
-
 ## Aufgabe
 
 ### 1. Modeler installieren
