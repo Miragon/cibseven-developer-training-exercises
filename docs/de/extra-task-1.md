@@ -50,11 +50,11 @@ engine-neutrale Welt.
 
 Hauptprozess:
 
-![BPMN-Hauptprozess](assets/extra-task-1-main.svg)
+![BPMN-Hauptprozess](../assets/extra-task-1-main.svg)
 
 Aufgerufener Prozess `handleRejection`:
 
-![BPMN-Subprozess](assets/extra-task-1-sub.svg)
+![BPMN-Subprozess](../assets/extra-task-1-sub.svg)
 
 Was sich ändert – und was nicht:
 
@@ -304,7 +304,7 @@ Modul `cib-seven-with-process-engine-api`.
 
 ## Referenzlösung
 
-`../solutions/extra-task-1/`
+`../../solutions/extra-task-1/`
 
 ## Nächster Schritt
 

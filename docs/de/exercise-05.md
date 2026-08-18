@@ -38,12 +38,12 @@ Nach dieser Aufgabe kannst du
 
 ## Ziel-Modell
 
-![BPMN-Modell der Aufgabe](assets/exercise-05.svg)
+![BPMN-Modell der Aufgabe](../assets/exercise-05.svg)
 
 Es kommt **kein neues Modell** dazu. Du testest den Prozess aus Aufgabe 4: Message Start →
 Claim → Gateway → Bestätigung → Willkommens-Mail beziehungsweise Ablehnung.
 
-Referenzmodell (unverändert gegenüber Aufgabe 4): `../models/exercise-05/newsletter.bpmn`
+Referenzmodell (unverändert gegenüber Aufgabe 4): `../../models/exercise-05/newsletter.bpmn`
 
 ## Aufgabe
 
@@ -244,7 +244,7 @@ fehl, zeigt dir die Assertion, an welcher Aktivität die Instanz tatsächlich st
 
 ## Referenzlösung
 
-`../solutions/exercise-05/`
+`../../solutions/exercise-05/`
 
 ## Nächster Schritt
 

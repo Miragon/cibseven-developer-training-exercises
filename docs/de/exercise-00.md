@@ -31,7 +31,7 @@ Nach dieser Aufgabe kannst du
 
 ## Ziel-Modell
 
-![BPMN-Modell der Aufgabe](assets/exercise-00.svg)
+![BPMN-Modell der Aufgabe](../assets/exercise-00.svg)
 
 ```
 [Newsletter wanted]  →  [Fill out form]  →  [Send Welcome Mail]  →  [User subscribed]
@@ -76,7 +76,8 @@ Speichere die Datei als `newsletter.bpmn` in einem Ordner deiner Wahl. Du brauch
 - **Noch nicht ins Modul kopieren.** Unter `services/process-application/src/main/resources/bpmn/`
   liegt bereits ein `newsletter.bpmn` – das ist die technisch fertige Fassung, die du in
   Aufgabe 1 brauchst. Überschreibe sie jetzt noch nicht.
-- Namen in den Modellen sind durchgehend englisch, die Aufgabenbeschreibungen deutsch.
+- Namen in den Modellen sind durchgehend englisch; die Aufgabenbeschreibungen gibt es auf
+  Deutsch und Englisch.
 
 ## Erwartetes Ergebnis
 
@@ -101,7 +102,7 @@ Sie legt fest, wo der Prozess wartet und wo er von allein weiterläuft.
 
 ## Referenzlösung
 
-`../models/exercise-00/newsletter.bpmn` – öffne das Modell im Modeler und vergleiche es
+`../../models/exercise-00/newsletter.bpmn` – öffne das Modell im Modeler und vergleiche es
 mit deinem.
 
 ## Nächster Schritt

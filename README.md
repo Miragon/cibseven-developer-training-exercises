@@ -1,142 +1,143 @@
 # CIB Seven Developer Training Exercises
 
-Praxisübungen für das CIB Seven Developer Training. Das Projekt implementiert einen Newsletter-Anmeldeprozess mit CIB Seven als Process Engine und einer hexagonalen Architektur, die Business-Logik von Infrastruktur entkoppelt.
+> [🇩🇪 Deutsch](README.de.md) · 🇬🇧 **English**
 
-## Übungen
+Hands-on exercises for the CIB Seven Developer Training. The project implements a newsletter subscription process with CIB Seven as the process engine and a hexagonal architecture that decouples business logic from infrastructure.
 
-### Hintergrund: Miravelo
+## Exercises
 
-**Miravelo** ist ein Online-Shop für hochwertige Fahrräder — Gravel Bikes für lange
-Wochenendtouren, Rennräder für alle, die es auf dem Asphalt schnell mögen. Die Kundschaft
-ist jung, markenbewusst und ziemlich leidenschaftlich.
+### Background: Miravelo
 
-Der Shop wächst, neue Produkte kommen laufend dazu. Das Team beschließt:
-Wir bauen einen **Newsletter**, damit Kundinnen und Kunden über Produkt-Launches und
-exklusive Angebote informiert bleiben. Jemand trägt sich ein, bekommt eine
-Willkommens-Mail – fertig.
+**Miravelo** is an online shop for premium bicycles — gravel bikes for long
+weekend tours, road bikes for everyone who likes going fast on the asphalt. Its customers
+are young, brand-conscious, and pretty passionate.
 
-> *„Das ist doch in einer Stunde gebaut."*
-> — Jeder Entwickler, der einen Newsletter unterschätzt hat.
+The shop is growing, and new products keep arriving. The team decides:
+let's build a **newsletter** so customers stay informed about product launches and
+exclusive offers. Someone signs up, gets a welcome mail — done.
 
-Das Training findet im Kontext des **Newsletter-Anmeldeprozesses** statt.
-Ab Aufgabe 4 wird aus dem einfachen Newsletter der exklusive **Miravelo Inner Circle** —
-eine auf tausend Plätze limitierte Membership für die treuesten Kundinnen und Kunden.
+> *"Surely that's built in an hour."*
+> — Every developer who has ever underestimated a newsletter.
 
-Was folgt, ist eine Reise durch immer komplexere BPMN-Muster: Gateways, Boundary Events,
-Subprozesse, Parallel Gateways, Call Activities, DMN-Entscheidungstabellen und Kompensation —
-jede Aufgabe baut auf der vorherigen auf.
+The training takes place in the context of the **newsletter subscription process**.
+From Exercise 4 onward, the simple newsletter turns into the exclusive **Miravelo Inner Circle** —
+a membership limited to a thousand seats for the most loyal customers.
 
-![Prozessmodell](docs/newsletter-subscription.png)
+What follows is a journey through increasingly complex BPMN patterns: gateways, boundary events,
+subprocesses, parallel gateways, call activities, DMN decision tables, and compensation —
+each exercise builds on the previous one.
 
-### Aufgabenübersicht
+![Process model](docs/newsletter-subscription.png)
 
-Detaillierte Aufgabenbeschreibungen befinden sich in [`docs/`](docs/).
+### Exercise overview
 
-| Aufgabe | Thema | Beschreibung |
+Detailed exercise descriptions can be found in [`docs/`](docs/).
+
+| Exercise | Topic | Description |
 |---|---|---|
-| [0](docs/exercise-00.md) | Fachliche BPMN-Modellierung | Miragon BPMN Modeler kennenlernen, Prozess rein fachlich modellieren |
-| [1](docs/exercise-01.md) | Engine zum Laufen bringen | Modul scharf schalten, Cockpit und `act_*`-Tabellen der Engine kennenlernen |
-| [2](docs/exercise-02.md) | Technische Modellierung & Automatisierung | Technisch modellieren, JavaDelegate, RuntimeService, REST-Endpoint |
-| [3](docs/exercise-03.md) | Double-Opt-In | Message Start Event, Nachrichten-Korrelation, Bestätigungsschritt |
-| [4](docs/exercise-04.md) | Kapazitätsprüfung mit Gateway | Exclusive Gateway, Domain-Refactoring, Transaktionsgrenzen, Business Key, Task-Formular |
-| [5](docs/exercise-05.md) | Prozess-Tests | Prozess-Unit-Test mit In-Memory-Engine, gemockten Use Cases, ohne PostgreSQL |
-| [5 · Add-on](docs/exercise-05-addon.md) | bpmn-to-code | Element-IDs als generierte Konstanten statt handgetippter Strings |
-| [6](docs/exercise-06.md) | Subprozess, Boundary Events & Parallelität | Subprozess, Timer- und Message-Boundary-Events, Parallel Gateway, Teams-Anbindung |
-| [7](docs/exercise-07.md) | Kompensation (SAGA) | Compensation Boundary Event, Compensating End Event, Kompensations-Handler |
-| [8](docs/exercise-08.md) | Call Activity & DMN | Call Activity, DMN-Entscheidungstabelle, Business Rule Task |
-| [9](docs/exercise-09.md) | Remote Engine als geteilte Infrastruktur | Eine Abteilung besitzt einen **eigenen** kleinen Prozess (`sendWelcomeKit`) in ihrem Remote-Service: Modell, Worker, Deployment und Tests liegen dort; getriggert per Signal-Broadcast; die Engine über einen generierten OpenAPI-Client getrieben |
-| [Extra 1](docs/extra-task-1.md) | Process-Engine-API | Aufgabe 9 engine-neutral umbauen: Worker statt JavaDelegate, Adapter-Tausch statt Engine-Lock-in |
+| [0](docs/en/exercise-00.md) | Business-level BPMN modeling | Get to know the Miragon BPMN Modeler, model the process purely from a business perspective |
+| [1](docs/en/exercise-01.md) | Getting the engine running | Arm the module, get to know the Cockpit and the engine's `act_*` tables |
+| [2](docs/en/exercise-02.md) | Technical modeling & automation | Model technically, JavaDelegate, RuntimeService, REST endpoint |
+| [3](docs/en/exercise-03.md) | Double opt-in | Message start event, message correlation, confirmation step |
+| [4](docs/en/exercise-04.md) | Capacity check with a gateway | Exclusive gateway, domain refactoring, transaction boundaries, business key, task form |
+| [5](docs/en/exercise-05.md) | Process tests | Process unit test with an in-memory engine, mocked use cases, without PostgreSQL |
+| [5 · Add-on](docs/en/exercise-05-addon.md) | bpmn-to-code | Element IDs as generated constants instead of hand-typed strings |
+| [6](docs/en/exercise-06.md) | Subprocess, boundary events & parallelism | Subprocess, timer and message boundary events, parallel gateway, Teams integration |
+| [7](docs/en/exercise-07.md) | Compensation (SAGA) | Compensation boundary event, compensating end event, compensation handler |
+| [8](docs/en/exercise-08.md) | Call activity & DMN | Call activity, DMN decision table, business rule task |
+| [9](docs/en/exercise-09.md) | Remote engine as shared infrastructure | One department owns its **own** small process (`sendWelcomeKit`) in its remote service: model, worker, deployment, and tests live there; triggered via signal broadcast; the engine driven through a generated OpenAPI client |
+| [Extra 1](docs/en/extra-task-1.md) | Process engine API | Rebuild Exercise 9 to be engine-neutral: worker instead of JavaDelegate, swapping adapters instead of engine lock-in |
 
-> Aufbau, Sprache und Qualitätskriterien der Aufgaben sind in
-> [`docs/aufgaben-template.md`](docs/aufgaben-template.md) festgehalten. Neue oder geänderte
-> Aufgaben werden mit dem Skill `aufgaben-review` gegengeprüft
+> The structure, language, and quality criteria of the exercises are captured in
+> [`docs/aufgaben-template.md`](docs/aufgaben-template.md) (German). New or changed
+> exercises are cross-checked with the `aufgaben-review` skill
 > (`.claude/skills/aufgaben-review/SKILL.md`).
 
 ## Quick Start
 
 ```bash
-# PostgreSQL starten
+# Start PostgreSQL
 cd stack && docker-compose up -d
 
-# Alles bauen
+# Build everything
 ./mvnw clean install
 
-# process-application-Modul starten (das eine Modul, in dem du alle Aufgaben bearbeitest)
+# Start the process-application module (the one module where you work on all exercises)
 cd services/process-application && ../../mvnw spring-boot:run
 
 # CIB Seven Cockpit
 open http://localhost:8080/webapp/#/seven/auth/start    # admin / admin
 ```
 
-### Lösung einer Aufgabe laden
+### Loading an exercise solution
 
-Das `process-application`-Modul startet im Zustand von **Aufgabe 1** (Engine noch auskommentiert). Wenn du
-eine Aufgabe nicht ganz fertig bekommst, kannst du die Referenzlösung in dein `process-application`-Modul
-kopieren und mit ihr weiterarbeiten:
+The `process-application` module starts in the state of **Exercise 1** (engine still commented out). If you
+can't fully finish an exercise, you can copy the reference solution into your `process-application` module
+and continue working with it:
 
 ```bash
-# solutions/exercise-02 in das process-application-Modul kopieren (gültige Werte: 01–09, zweistellig)
+# Copy solutions/exercise-02 into the process-application module (valid values: 01–09, two-digit)
 ./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=02
 ```
 
-Der Task ersetzt `src/main` komplett (Java, `application.yaml`, BPMN/DMN); `src/test` bleibt
-unberührt. Alle Module – das `process-application`-Modul **und** alle Solutions – laufen auf demselben Port
-(`8080`) und demselben DB-Schema (`exercise`); es läuft also immer nur **ein** Modul zur Zeit.
-Die in **Aufgabe 1** aktivierten CIB-Seven-Abhängigkeiten (`pom.xml`) bleiben bestehen – lade
-eine Lösung ab `exercise-2` daher erst, nachdem Aufgabe 1 abgeschlossen ist.
+The task replaces `src/main` completely (Java, `application.yaml`, BPMN/DMN); `src/test` stays
+untouched. All modules – the `process-application` module **and** all solutions – run on the same port
+(`8080`) and the same DB schema (`exercise`); so only **one** module runs at a time.
+The CIB Seven dependencies activated in **Exercise 1** (`pom.xml`) remain in place – so only load
+a solution from `exercise-2` onward after Exercise 1 is complete.
 
-## Repository-Struktur
+## Repository structure
 
 ```
 cibseven-developer-training-exercises/
-├── docs/                             # Aufgabenbeschreibungen (exercise-00.md … exercise-09.md) + Assets
-├── services/                         # Die Services, an denen du arbeitest
-│   ├── process-application/          # Prozess-Anwendung (startet im Zustand von Aufgabe 1)
+├── docs/                             # Exercise descriptions: docs/de/ (German) + docs/en/ (English) + assets
+├── services/                         # The services you work on
+│   ├── process-application/          # Process application (starts in the state of Exercise 1)
 │   │   └── src/main/java/io/miragon/training/
 │   │       ├── adapter/
 │   │       │   ├── inbound/
-│   │       │   │   ├── cibseven/     # JavaDelegate-Implementierungen
-│   │       │   │   └── rest/         # REST-Controller
+│   │       │   │   ├── cibseven/     # JavaDelegate implementations
+│   │       │   │   └── rest/         # REST controllers
 │   │       │   └── outbound/
-│   │       │       ├── cibseven/     # Process-Engine-Adapter (Start/Korrelation)
-│   │       │       └── db/           # JPA-Persistence-Adapter
+│   │       │       ├── cibseven/     # Process engine adapter (start/correlation)
+│   │       │       └── db/           # JPA persistence adapter
 │   │       ├── application/
 │   │       │   ├── port/
-│   │       │   │   ├── inbound/      # Use-Case-Interfaces
-│   │       │   │   └── outbound/     # Repository- und Prozess-Port-Interfaces
-│   │       │   └── service/          # Use-Case-Implementierungen
-│   │       └── domain/               # Domain-Modell (reines Java, keine Framework-Abhängigkeiten)
-│   └── (logistics-service/)          # erst in Aufgabe 9 aus templates/ angelegt (Remote-Owner)
+│   │       │   │   ├── inbound/      # Use-case interfaces
+│   │       │   │   └── outbound/     # Repository and process port interfaces
+│   │       │   └── service/          # Use-case implementations
+│   │       └── domain/               # Domain model (pure Java, no framework dependencies)
+│   └── (logistics-service/)          # created from templates/ only in Exercise 9 (remote owner)
 ├── templates/
-│   └── exercise-09/logistics-service/ # Vorlage für den Aufgabe-9-Worker (in services/ kopieren)
-├── solutions/                        # Kumulative Lösungen pro Aufgabe (exercise-01 … exercise-09, extra-task-1)
-│   ├── exercise-{01-09}/             # exercise-09/ ist verschachtelt: process-application/ + logistics-service/
+│   └── exercise-09/logistics-service/ # Template for the Exercise 9 worker (copied into services/)
+├── solutions/                        # Cumulative solutions per exercise (exercise-01 … exercise-09, extra-task-1)
+│   ├── exercise-{01-09}/             # exercise-09/ is nested: process-application/ + logistics-service/
 │   └── extra-task-1/
-├── models/                           # Referenz-BPMN-/DMN-Modelle
+├── models/                           # Reference BPMN/DMN models
 ├── stack/
 │   ├── docker-compose.yml            # PostgreSQL + MailHog
 │   └── init-schemas.sql
 └── pom.xml
 ```
 
-## Technologie-Stack
+## Technology stack
 
-| Komponente | Technologie |
+| Component | Technology |
 |---|---|
-| Sprache | Java 21 |
+| Language | Java 21 |
 | Framework | Spring Boot 4 |
 | Process Engine | CIB Seven 2.2.0 |
-| Datenbank | PostgreSQL (JPA / Hibernate) |
+| Database | PostgreSQL (JPA / Hibernate) |
 | Build | Maven |
-| Architektur-Tests | ArchUnit |
+| Architecture tests | ArchUnit |
 
 ## CIB Seven
 
-[CIB Seven](https://cibseven.org) ist eine community-gepflegte Distribution von Camunda Platform 7. Sie bietet volle Kompatibilität mit der Camunda-7-API und wird unabhängig als Open Source weiterentwickelt.
+[CIB Seven](https://cibseven.org) is a community-maintained distribution of Camunda Platform 7. It offers full compatibility with the Camunda 7 API and is developed further independently as open source.
 
-In diesem Projekt läuft CIB Seven eingebettet in Spring Boot, stellt die Camunda-Webanwendung unter `http://localhost:8080/webapp/#/seven/auth/start` bereit und übernimmt die BPMN-Prozessausführung für den Newsletter-Anmeldeprozess.
+In this project, CIB Seven runs embedded in Spring Boot, provides the Camunda web application at `http://localhost:8080/webapp/#/seven/auth/start`, and handles the BPMN process execution for the newsletter subscription process.
 
-Service Tasks werden über das `JavaDelegate`-Pattern mit `DelegateExpression` angebunden:
+Service tasks are wired up via the `JavaDelegate` pattern with `DelegateExpression`:
 
 ```java
 @Component
@@ -156,16 +157,16 @@ public class SendWelcomeMailDelegate extends BaseDelegate {
 }
 ```
 
-## Architektur
+## Architecture
 
-Das Projekt folgt einer **hexagonalen Architektur** (Ports & Adapters):
+The project follows a **hexagonal architecture** (ports & adapters):
 
 ```
 REST / JavaDelegates           Application              CIB7 / Database
-  (Inbound-Adapter)    →   Ports + Services   →     (Outbound-Adapter)
+  (Inbound adapters)   →   Ports + Services   →     (Outbound adapters)
                                ↑
                             Domain
                         (engine-neutral)
 ```
 
-Architekturregeln werden zur Build-Zeit über [ArchUnit](https://www.archunit.org/)-Tests sichergestellt.
+Architecture rules are enforced at build time via [ArchUnit](https://www.archunit.org/) tests.

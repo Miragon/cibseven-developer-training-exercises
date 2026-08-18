@@ -5,15 +5,15 @@ description: Prüft die Trainingsaufgaben in docs/ gegen Template, Styleguide, R
 
 # Review der Trainingsaufgaben
 
-Dieser Skill prüft die Aufgabenbeschreibungen unter `docs/` auf **fachliche Korrektheit**,
+Dieser Skill prüft die deutschen Aufgabenbeschreibungen unter `docs/de/` auf **fachliche Korrektheit**,
 **didaktische Nachvollziehbarkeit**, **sprachliche Natürlichkeit** und **strukturelle
 Konsistenz**. Er ändert Modelle, Lösungen oder Testcode **nicht** – gefundene Abweichungen
 dort werden gemeldet, nicht stillschweigend repariert.
 
 ## Geltungsbereich
 
-Standard: alle Dateien `docs/exercise-*.md`, `docs/extra-task-*.md` und die
-Aufgabentabelle in `README.md`. Ist eine konkrete Aufgabe genannt, nur diese – plus die
+Standard: alle Dateien `docs/de/exercise-*.md`, `docs/de/extra-task-*.md` und die
+Aufgabentabelle in `README.de.md`. Ist eine konkrete Aufgabe genannt, nur diese – plus die
 direkt angrenzenden Aufgaben, weil Übergänge mitgeprüft werden.
 
 Referenzdokument für alle Struktur- und Sprachfragen: **`docs/aufgaben-template.md`**.
@@ -65,7 +65,7 @@ Typische Fehlerklassen, auf die gezielt zu achten ist:
    def is_lead(l):                       # Überschrift oder fette Zwischenzeile
        return bool(re.match(r'^#{2,4} ', l) or re.match(r'^\*\*[^*]+:?\*\*\s*$', l))
 
-   for f in sorted(glob.glob('docs/exercise-*.md') + glob.glob('docs/extra-*.md')):
+   for f in sorted(glob.glob('docs/de/exercise-*.md') + glob.glob('docs/de/extra-*.md')):
        L = open(f).read().split('\n')
        for i, l in enumerate(L):
            if not is_lead(l):
@@ -93,7 +93,7 @@ Typische Fehlerklassen, auf die gezielt zu achten ist:
    *Präzision vor Umschreibung* in `docs/aufgaben-template.md`, Abschnitt 2. Grobsuche:
 
    ```bash
-   grep -niE "Weiche|Wartepunkt|Kästchen|Aufrufstelle|Aufräum|Fläche|Knoten|Strecke|Kette|klammer|\bhört auf|Blackbox|Baustein|Zwischenschritt" docs/exercise-*.md docs/extra-*.md
+   grep -niE "Weiche|Wartepunkt|Kästchen|Aufrufstelle|Aufräum|Fläche|Knoten|Strecke|Kette|klammer|\bhört auf|Blackbox|Baustein|Zwischenschritt" docs/de/exercise-*.md docs/de/extra-*.md
    ```
 
    Jeder Treffer wird einzeln bewertet: Steht der Fachbegriff daneben, ist das Bild als
@@ -107,7 +107,7 @@ Typische Fehlerklassen, auf die gezielt zu achten ist:
    dich bei jedem Satz: Würde ich das so sagen?
 
    ```bash
-   grep -niE "in Code|den Prozess treiben|Layer|feuerst|Requests|macht Sinn|adressier|realisier" docs/exercise-*.md docs/extra-*.md
+   grep -niE "in Code|den Prozess treiben|Layer|feuerst|Requests|macht Sinn|adressier|realisier" docs/de/exercise-*.md docs/de/extra-*.md
    ```
 9. **Unerklärter Begriff / Vorgriff** – eine Aufgabe benutzt einen Fachbegriff, der laut
    Begriffs-Fahrplan (`docs/aufgaben-template.md`, Abschnitt 4) erst später oder gar nicht
@@ -122,7 +122,7 @@ Typische Fehlerklassen, auf die gezielt zu achten ist:
             "Business Key" "Job Executor" "Boundary Event" "Kompensation" "Call Activity" \
             "External Task" "Broadcast" "Korrelation"; do
      echo "## $t"
-     grep -l "$t" docs/exercise-0*.md docs/exercise-05-addon.md docs/extra-task-1.md | sort | head -1
+     grep -l "$t" docs/de/exercise-0*.md docs/de/exercise-05-addon.md docs/de/extra-task-1.md | sort | head -1
    done
    ```
 
@@ -137,7 +137,7 @@ Typische Fehlerklassen, auf die gezielt zu achten ist:
    Stelle, an der man den Begriff zum ersten Mal braucht.
 10. **Prozess statt Prozessinstanz** – „der Prozess wartet am User Task" meint in Wahrheit
    den einzelnen Durchlauf. Prüfe jeden Treffer von
-   `grep -nE "[Dd]er Prozess (wartet|läuft|endet|startet|bricht|nimmt)" docs/exercise-*.md docs/extra-*.md`:
+   `grep -nE "[Dd]er Prozess (wartet|läuft|endet|startet|bricht|nimmt)" docs/de/exercise-*.md docs/de/extra-*.md`:
    Ist ein konkreter Durchlauf gemeint, muss dort **Prozessinstanz** oder **Instanz** stehen.
    Aussagen über das Modell („der Prozess startet ab jetzt per Nachricht") bleiben.
 

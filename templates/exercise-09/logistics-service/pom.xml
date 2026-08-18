@@ -96,7 +96,7 @@
 
                  So aktivierst du ihn:
                    1. Diesen Block einkommentieren.
-                   2. Die beiden mit TODO markierten Werte setzen (siehe docs/exercise-09.md bzw. Slide 7.5).
+                   2. Die beiden mit TODO markierten Werte setzen (siehe docs/de/exercise-09.md bzw. Slide 7.5).
                    3. `./mvnw -pl services/logistics-service generate-sources` -> Client erscheint.
                    4. Danach EngineClientConfig + RemoteWelcomeKitProcessAdapter verdrahten.
                  ============================================================================ -->
@@ -172,7 +172,7 @@
                  Es generiert eine Topic-Konstante (SendWelcomeKitProcessApi.ServiceTasks.SHIP_WELCOME_KIT)
                  aber ERST, wenn du den Prozess modelliert hast (inkl. External Service Task mit Topic) –
                  deshalb ist dieser Block auskommentiert. Reihenfolge:
-                   1. Den sendWelcomeKit-Prozess in send-welcome-kit.bpmn modellieren (siehe docs/exercise-09.md).
+                   1. Den sendWelcomeKit-Prozess in send-welcome-kit.bpmn modellieren (siehe docs/de/exercise-09.md).
                    2. Diesen Block einkommentieren.
                    3. `./mvnw -pl services/logistics-service generate-sources`
                       -> SendWelcomeKitProcessApi erscheint; der Worker kann die Topic-Konstante abonnieren.

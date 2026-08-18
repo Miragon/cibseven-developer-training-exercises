@@ -37,11 +37,11 @@ Nach dieser Aufgabe kannst du
 
 Hauptprozess:
 
-![BPMN-Hauptprozess](assets/exercise-08-main.svg)
+![BPMN-Hauptprozess](../assets/exercise-08-main.svg)
 
 Aufgerufener Prozess `handleRejection`:
 
-![BPMN-Subprozess](assets/exercise-08-sub.svg)
+![BPMN-Subprozess](../assets/exercise-08-sub.svg)
 
 ```
 Hauptprozess (newsletter.bpmn):
@@ -62,9 +62,9 @@ Aufgerufener Prozess (membership-rejection.bpmn):
                                   (◉ Tried to reacquire applicant)
 ```
 
-Referenzmodelle: `../models/exercise-08/newsletter.bpmn`,
-`../models/exercise-08/membership-rejection.bpmn`,
-`../models/exercise-08/categorize-applicant.dmn`
+Referenzmodelle: `../../models/exercise-08/newsletter.bpmn`,
+`../../models/exercise-08/membership-rejection.bpmn`,
+`../../models/exercise-08/categorize-applicant.dmn`
 
 ## Aufgabe
 
@@ -212,7 +212,7 @@ regret* erscheint in der Tasklist. Nach dem Abschließen endet der aufgerufene P
 
 ## Referenzlösung
 
-`../solutions/exercise-08/` – oder direkt laden:
+`../../solutions/exercise-08/` – oder direkt laden:
 
 ```bash
 ./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=08

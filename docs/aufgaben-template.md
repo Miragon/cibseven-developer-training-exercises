@@ -17,7 +17,7 @@ die übrigen entfallen, wenn sie nichts beitragen.
 | 2 | **Info-Kasten** (Blockquote direkt unter dem Titel) | `Voraussetzung` · `Arbeitsverzeichnis` · `Neu in dieser Aufgabe` |
 | 3 | **`## Darum geht es`** | Ausgangssituation: fachlicher Anlass in 3–6 Sätzen, gerne mit Pointe |
 | 4 | **`## Lernziele`** | „Nach dieser Aufgabe kannst du …" – 3–6 Bullets, jeder mit einem Verb |
-| 5 | **`## Ziel-Modell`** | Grafik (`assets/exercise-NN.svg`) und/oder ASCII-Ablauf; bei reinen Code-Aufgaben ein Hinweis, dass kein Modell dazukommt |
+| 5 | **`## Ziel-Modell`** | Grafik (`../assets/exercise-NN.svg`) und/oder ASCII-Ablauf; bei reinen Code-Aufgaben ein Hinweis, dass kein Modell dazukommt |
 | 6 | **`## Aufgabe`** | Nummerierte Arbeitsschritte, jeder Schritt beginnt mit einem Imperativ |
 | 7 | **`## Randbedingungen`** | Vorgaben, Konventionen, Annahmen, bewusste Auslassungen |
 | 8 | **`## Erwartetes Ergebnis`** | Woran erkennst du Erfolg? Beobachtbares Verhalten + die Befehle, um es zu erzeugen |
