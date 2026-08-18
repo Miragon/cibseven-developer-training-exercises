@@ -1,4 +1,4 @@
-# Aufgabe 2 – Den ersten Wartepunkt einbauen
+# Aufgabe 2 – Den ersten User Task einbauen
 
 > **Voraussetzung:** Aufgabe 1 ist abgeschlossen – die Engine startet und deployt `membership.bpmn`.
 > **Arbeitsverzeichnis:** `services/process-application`

@@ -139,7 +139,7 @@ Der Prozess ist deployt, aber noch nie gelaufen. Starte ihn über das Start-Form
 > **Begriff: Manual Task.** Ein Task, den die Engine **nicht** ausführt und an dem sie **nicht**
 > wartet – sie läuft einfach hindurch. Ein Platzhalter für „hier passiert später etwas". Deshalb
 > durchläuft die Instanz das Modell auf einen Schlag. Ab Aufgabe 2 wird der erste Platzhalter zu
-> einem echten Wartepunkt.
+> einem echten User Task.
 
 ## Randbedingungen
 
@@ -152,7 +152,7 @@ Der Prozess ist deployt, aber noch nie gelaufen. Starte ihn über das Start-Form
 
 Im Log erscheinen `Auto-Deploying resources: [... membership.bpmn]` und
 `Started TrainingApplication`. Das Cockpit ist erreichbar, `Join Inner Circle` steht unter
-**Processes**, und eine über das Start-Formular gestartete Instanz läuft ohne Wartepunkt bis zum
+**Processes**, und eine über das Start-Formular gestartete Instanz läuft ohne anzuhalten bis zum
 End Event durch.
 
 ## Selbstcheck
@@ -182,7 +182,7 @@ End Event durch.
 
 ## Nächster Schritt
 
-In Aufgabe 2 wird aus dem Platzhalter „Confirm" ein echter **User Task** – der erste Wartepunkt,
-den du selbst mit einem Formular modellierst.
+In Aufgabe 2 wird aus dem Platzhalter „Confirm" ein echter **User Task**, den du selbst mit
+einem Formular modellierst.
 
 ➡️ [Weiter zu Aufgabe 2](exercise-02.md)

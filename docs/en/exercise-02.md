@@ -1,4 +1,4 @@
-# Exercise 2 – Building the first wait point
+# Exercise 2 – Building the first User Task
 
 > **Prerequisite:** Exercise 1 is complete – the engine starts and deploys `membership.bpmn`.
 > **Working directory:** `services/process-application`

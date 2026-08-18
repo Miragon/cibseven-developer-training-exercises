@@ -87,8 +87,8 @@ Modelliere den Subprozess **Confirm membership** und darin:
 | User Task | Confirm membership |
 | End Event (im Subprozess) | Membership confirmed |
 
-Führe den **Yes**-Pfad des Gateways aus Schritt 2 in diesen Subprozess. Der *User Task* ist der
-Wartepunkt: Hier hält der Prozess an, bis ein Mensch bestätigt.
+Führe den **Yes**-Pfad des Gateways aus Schritt 2 in diesen Subprozess. An diesem *User Task*
+hält der Prozess an: Hier wartet er, bis ein Mensch bestätigt.
 
 ### 4. Erinnerung, Frist und Ablehnung ergänzen
 
@@ -164,7 +164,7 @@ könnte den Ablauf vorlesen, ohne nachzufragen, was ein einzelnes Element bedeut
 - [ ] Das Modell hat genau einen Startpunkt und endet in *Membership activated*, *Membership
       rejected* oder *Membership declined*
 - [ ] Die Kapazität wird über ein Exclusive Gateway mit einem **No**-Pfad zur Absage geprüft
-- [ ] Die Bestätigung liegt in einem eingebetteten Subprozess mit einem User Task als Wartepunkt
+- [ ] Die Bestätigung liegt in einem eingebetteten Subprozess mit einem User Task
 - [ ] Am Subprozess hängen drei Boundary Events: täglicher (nicht unterbrechender) Timer,
       3½-Tage-Timer (unterbrechend) und ein Message Event (unterbrechend)
 - [ ] Die Aktivierung läuft über ein Parallel Gateway (Willkommens-Mail und Community-Info
