@@ -32,16 +32,6 @@ After this exercise you can
 
 ![BPMN model of the exercise](../assets/exercise-07.svg)
 
-```
-serviceTask_claimMembership ──[Compensation Boundary]--- - -→ serviceTask_revokeClaim
-                                boundary_compensateClaim         (isForCompensation="true")
-
-timer_abortAfter3HalfDays  ─┐
-                            ├─→ endEvent_membershipDeclined  (Compensating End Event)
-event_confirmationRejected ─┘              ↓
-                                  Engine calls revokeClaim
-```
-
 Reference model: `../../models/exercise-07/newsletter.bpmn`
 
 ## The task

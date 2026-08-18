@@ -39,22 +39,6 @@ After this exercise you can
 
 ![BPMN model of the exercise](../assets/exercise-04.svg)
 
-```
-(✉) [Submit registration form]
-              ↓
-    [Claim membership]              ← new
-              ↓
-        ◇ [Has empty spots?] ◇      ← new
-       ↓ yes               ↓ no
-[Send confirmation mail]  [Send rejection mail]   ← new
-       ↓                   ↓
-[Confirm membership]      [Membership rejected]   ← new
-       ↓
-[Send Welcome Mail]
-       ↓
-[Membership confirmed]
-```
-
 Reference model: `../../models/exercise-04/newsletter.bpmn`
 
 ## The task

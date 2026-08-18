@@ -43,25 +43,6 @@ Aufgerufener Prozess `handleRejection`:
 
 ![BPMN-Subprozess](../assets/exercise-08-sub.svg)
 
-```
-Hauptprozess (newsletter.bpmn):
-  [timer_abortAfter3HalfDays | event_confirmationRejected]
-                    ↓
-     [Call Activity: handleRejection]
-                    ↓
-     (◉ Membership declined – Compensating End Event)
-                    ↓
-        Engine kompensiert → [Revoke claim]
-
-Aufgerufener Prozess (membership-rejection.bpmn):
-  (Start) → [Categorize applicant (DMN)] → ◇ [High value?]
-                                            ↓ ja                ↓ nein (Default)
-                                  [Write regret mail]     (◉ Accept rejection)
-                                     (User Task)
-                                            ↓
-                                  (◉ Tried to reacquire applicant)
-```
-
 Referenzmodelle: `../../models/exercise-08/newsletter.bpmn`,
 `../../models/exercise-08/membership-rejection.bpmn`,
 `../../models/exercise-08/categorize-applicant.dmn`

@@ -37,18 +37,6 @@ Nach dieser Aufgabe kannst du
 
 ![BPMN-Modell der Aufgabe](../assets/exercise-03.svg)
 
-```
-(✉) [Submit registration form]     ← geändert: Message Start Event
-              ↓
-    [Send confirmation mail]       ← neu: Service Task
-              ↓
-    [Confirm subscription]         ← neu: User Task
-              ↓
-    [Send Welcome Mail]
-              ↓
-    [User subscribed]
-```
-
 Referenzmodell: `../../models/exercise-03/newsletter.bpmn`
 
 **Achte auf drei Änderungen gegenüber Aufgabe 2**, nicht nur auf die beiden neuen Elemente:

@@ -33,21 +33,6 @@ Nach dieser Aufgabe kannst du
 
 ![BPMN-Modell der Aufgabe](../assets/exercise-06.svg)
 
-```
-[Claim membership] → ◇ [Has empty spots?]
-                            ↓ ja
-        ┌─────────────────────────────────────┐
-        │ subProcess_confirmMembership        │ ←── ⏱ täglich (nicht unterbrechend):
-        │  (Start) → [Send confirmation mail] │      [Re-Send confirmation mail] → (Ende)
-        │         → [Confirm membership]      │
-        │         → (Ende)                    │ ←── ⏱ 3½ Tage (unterbrechend) ─┐
-        └─────────────────────────────────────┘ ←── ✉ Ablehnung (unterbrechend) ┤
-                            ↓ bestätigt                                        ↓
-              ⬦ Fork ─┬─ [Send Welcome Mail] ─┬─ ⬦ Join                [Revoke claim]
-                      └─ [Notify community] ──┘      ↓                        ↓
-                                            [Membership activated]   [Membership declined]
-```
-
 Referenzmodell: `../../models/exercise-06/newsletter.bpmn`
 
 ## Aufgabe

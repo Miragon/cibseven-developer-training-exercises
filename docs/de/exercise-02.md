@@ -38,34 +38,26 @@ Referenzmodell: `../../models/exercise-02/newsletter.bpmn`
 Der Ablauf bleibt derselbe wie in Aufgabe 1. Was sich ändert, ist die **Anbindung**: Der
 Service Task ruft nicht mehr eine Inline-Expression auf, sondern deinen Java-Code.
 
-So wandert eine Anfrage durch die Architektur:
+So wandert eine Anfrage durch die Architektur – und so ruft die Engine später in deinen
+Code zurück (die mit `TODO` markierten Beteiligten füllst du in dieser Aufgabe):
 
-```
-POST /api/subscriptions
-       ↓
-SubscriptionController              (adapter/inbound/rest)
-       ↓
-RegisterSubscriptionUseCase         (application/port/inbound)
-       ↓
-RegisterSubscriptionService         (application/service)          ← TODO
-       ↓
-SubscriptionProcess.startProcess()  (application/port/outbound)
-       ↓
-SubscriptionProcessAdapter          (adapter/outbound/cibseven)    ← TODO
-       ↓
-RuntimeService.startProcessInstanceByKey(...)
-```
+```mermaid
+sequenceDiagram
+    actor Client
+    participant Ctrl as SubscriptionController · inbound/rest
+    participant Svc as RegisterSubscriptionService · service · TODO
+    participant Adp as SubscriptionProcessAdapter · outbound/cibseven · TODO
+    participant Eng as CIB Seven Engine
+    participant Del as SendWelcomeMailDelegate · inbound/cibseven · TODO
+    participant Mail as SendWelcomeMailService · service · TODO
 
-Und so ruft die Engine zurück in deinen Code:
-
-```
-[BPMN: serviceTask_sendWelcomeMail]
-       ↓
-SendWelcomeMailDelegate             (adapter/inbound/cibseven)     ← TODO
-       ↓
-SendWelcomeMailUseCase              (application/port/inbound)
-       ↓
-SendWelcomeMailService              (application/service)          ← TODO
+    Client->>Ctrl: POST /api/subscriptions
+    Ctrl->>Svc: RegisterSubscriptionUseCase
+    Svc->>Adp: SubscriptionProcess.startProcess()
+    Adp->>Eng: RuntimeService.startProcessInstanceByKey(...)
+    Note over Eng: erreicht serviceTask_sendWelcomeMail
+    Eng->>Del: DelegateExpression
+    Del->>Mail: SendWelcomeMailUseCase
 ```
 
 ## Aufgabe

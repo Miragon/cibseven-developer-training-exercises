@@ -64,17 +64,23 @@ logistics-service  (remote owner — own JVM, :8090)
 Two process models that know each other only through a signal – the host has no idea
 logistics exists, and logistics doesn't know the membership process:
 
-```
-Membership (subscribeNewsletter, engine host):
-  … (confirmed) → ⬦ Fork ┬ [Send Welcome Mail] ┬ ⬦ Join → (◉ "Membership activated")
-                         └ [Notify community]  ┘              │  Signal End Event,
-                                                              ▼  throws Signal_MemberActivated {name}
-Logistics (sendWelcomeKit, modelled and deployed in the remote service):
-  (✱ Signal Start: Signal_MemberActivated) ┐
-                                           ◇ → [Ship welcome kit] → (◉ Welcome kit shipped)
-  (○ manual start: test / resend)          ┘      external, topic "shipWelcomeKit"
-                                                   ▲ fetch & lock, complete
-                          logistics-service: ShipWelcomeKitWorker → WelcomeKitShipmentOutPort
+```mermaid
+flowchart TD
+    subgraph host["Membership · subscribeNewsletter (engine host)"]
+        direction LR
+        c["… confirmed"] --> fk{{Fork}}
+        fk --> swm["Send Welcome Mail"] --> jn{{Join}}
+        fk --> nc["Notify community"] --> jn
+        jn --> ma(("Membership activated<br/>Signal End Event"))
+    end
+    subgraph log["Logistics · sendWelcomeKit (remote service)"]
+        direction LR
+        ss(("Signal Start:<br/>Signal_MemberActivated")) --> ship["Ship welcome kit<br/>external · topic shipWelcomeKit"]
+        ms(("manual start:<br/>test / resend")) --> ship
+        ship --> done(("Welcome kit shipped"))
+    end
+    ma -. "throws Signal_MemberActivated {name}" .-> ss
+    ship -. "fetch & lock / complete" .-> worker["ShipWelcomeKitWorker → WelcomeKitShipmentOutPort"]
 ```
 
 Reference models: `../../models/exercise-09/newsletter.bpmn`,
