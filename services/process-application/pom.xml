@@ -63,6 +63,20 @@
             <artifactId>archunit-junit5</artifactId>
             <scope>test</scope>
         </dependency>
+        <!--
+          Engine-CORE (nur Klassen), damit der vorgegebene Prozess-Test-Helfer
+          src/test/.../process/util/ProcessEngineTestUtils.java auch kompiliert, solange die
+          CIB-Seven-Starter noch auskommentiert sind (vor Aufgabe 1). Version zentral gemanagt.
+          Wichtig: KEIN test-Scope – die Starter ziehen dieselbe Engine ab Aufgabe 1 transitiv als
+          compile; ein direkter test-Scope würde diese per Maven-Nearest-Wins auf test herabstufen
+          und der laufenden App die Engine entziehen. Die Engine STARTET weiterhin erst mit den
+          Startern aus Aufgabe 1 (Autoconfiguration + Cockpit + REST) – dieser Eintrag bringt nur
+          die Klassen auf den Klassenpfad, kein laufendes Verhalten.
+        -->
+        <dependency>
+            <groupId>org.cibseven.bpm</groupId>
+            <artifactId>cibseven-engine</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

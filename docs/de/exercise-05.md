@@ -109,37 +109,35 @@ cibseven:
 > im Test eine Quelle für Zufall: Der Test weiß nie, wie weit die Instanz gerade ist.
 > Deshalb schalten wir ihn ab und führen die Jobs selbst aus.
 
-### 3. Test-Helfer anlegen
+### 3. Der Test-Helfer – bereits vorgegeben
 
-**Neue Datei:** `src/test/java/io/miragon/training/process/util/ProcessEngineTestUtils.java`
+Diese Verdrahtung schreibst du weder selbst, noch kopierst du sie: Sie liegt schon im Test-Modul
+unter `src/test/java/io/miragon/training/process/util/ProcessEngineTestUtils.java`. Sie ist für
+jeden Prozess-Test gleich; du rufst nur ihre Methoden auf. Was sie dir gibt:
 
-Zwei Helfer reichen für diese Aufgabe:
+- **`continueToNextWaitState(processEngine)`** – weil der Job Executor aus ist (Schritt 2), holt
+  niemand die Async-Continuation-Jobs ab (`asyncBefore`/`asyncAfter`). Diese Methode führt sie aus
+  dem Testthread aus, bis die Instanz ihren nächsten Wait State (User Task oder Ende) erreicht. Du
+  rufst sie direkt nach dem Start des Prozesses und erneut nach dem Abschließen einer Task auf.
+- **`fireTimer(processEngine, activityId)`** – führt einen Timer-Job direkt aus, unabhängig vom
+  Fälligkeitsdatum. Hier brauchst du ihn nicht; er kommt erst mit den Boundary Events in
+  [Aufgabe 6](exercise-06.md) ins Spiel.
+- **`findProcessInstance(runtimeService, membershipId)`** – sucht die laufende Instanz über den
+  Prozess-Key `subscribeNewsletter` und die Variable `membershipId`, damit dein Test gegen sie
+  prüfen kann.
 
-- `continueToNextWaitState(processEngine)` – führt die offenen Async-Jobs nacheinander aus,
-  bis die Instanz ihren nächsten Wait State (User Task oder Ende) erreicht.
-- `findProcessInstance(runtimeService, membershipId)` – findet die laufende Instanz über den
-  Prozess-Key `subscribeNewsletter` und die Variable `membershipId`.
+> Der Helfer braucht zum Kompilieren die Engine-Klassen. Das ist in der `pom.xml` des Moduls schon
+> verdrahtet (die Engine-CORE-Dependency `cibseven-engine`), er kompiliert also von Anfang an – du
+> ergänzt dafür nichts. Öffne die Datei einmal, um die zwei, drei Zeilen pro Methode zu sehen, und
+> nutze sie dann einfach.
 
-```java
-public static void continueToNextWaitState(ProcessEngine processEngine) {
-    ManagementService ms = processEngine.getManagementService();
-    for (int i = 0; i < 50; i++) {
-        Job job = ms.createJobQuery().active().messages().listPage(0, 1)
-                .stream().findFirst().orElse(null);
-        if (job == null) return;
-        ms.executeJob(job.getId());
-    }
-}
-```
+### 4. Happy-Path-Test selbst schreiben
 
-Den `fireTimer`-Helfer brauchst du erst mit den Boundary Events in Aufgabe 6. Die
-vollständige Datei liegt in der Referenzlösung.
+**Neue Datei:** `src/test/java/io/miragon/training/process/MembershipProcessTest.java`
 
-### 4. Happy-Path-Test schreiben
-
-**Datei:** `src/test/java/io/miragon/training/process/MembershipProcessTest.java`
-
-Gerüst:
+Diesen Teil schreibst du selbst. Starte vom Gerüst – die Klassen-Annotationen, die injizierten
+Engine-Services, die gemockten Use Cases und der `init(...)`-Aufruf sind für jeden Prozess-Test
+gleich:
 
 ```java
 @SpringBootTest
@@ -163,50 +161,62 @@ class MembershipProcessTest {
 }
 ```
 
-Der Happy Path: `claimMembership` liefert `true`, die Prozessinstanz wartet am User Task, du
-schließt ihn ab, die Willkommens-Mail geht raus, das Ende ist `endEvent_membershipConfirmed`.
+Jeder Prozess-Test folgt derselben **Given – When – Then**-Form. Hier ein **generisches
+Beispiel** des Happy Path: Es zeigt die konkreten API-Aufrufe, aber die Element-IDs sind
+Platzhalter – jeden `"<…>"` ersetzt du durch die echte ID aus deinem Modell.
 
 ```java
 @Test
 void happyPath_membershipIsConfirmedAndWelcomeMailIsSent() {
+    // Given: die Kapazitätsprüfung gewährt einen Platz
     when(claimMembershipUseCase.claimMembership(any())).thenReturn(true);
 
+    // When: der Prozess wird gestartet und bis zum ersten Wait State getrieben
     Membership membership = new Membership(new Email("jane@example.com"), new Name("Jane"), new Age(30));
     membershipProcess.startProcess(membership);
-
     ProcessInstance instance = findProcessInstance(runtimeService, membership.id().value().toString());
     continueToNextWaitState(processEngine);
 
-    assertThat(instance).isWaitingAt("userTask_confirmMembership");
+    // Then: die Instanz wartet am User Task
+    assertThat(instance).isWaitingAt("<user-task-id>");
 
+    // When: dieser User Task wird abgeschlossen und der Prozess läuft weiter
     String taskId = taskService.createTaskQuery()
             .processInstanceId(instance.getProcessInstanceId()).singleResult().getId();
     taskService.complete(taskId);
     continueToNextWaitState(processEngine);
 
+    // Then: er endet über den Bestätigungspfad und berührt den Ablehnungspfad nie
     assertThat(instance)
             .isEnded()
-            .hasPassedInOrder(
-                    "startEvent_submitRegistration",
-                    "serviceTask_claimMembership",
-                    "gateway_hasEmptySpots",
-                    "serviceTask_sendConfirmationMail",
-                    "userTask_confirmMembership",
-                    "serviceTask_sendWelcomeMail",
-                    "endEvent_membershipConfirmed")
-            .hasNotPassed("serviceTask_sendRejectionMail", "endEvent_membershipRejected");
+            .hasPassedInOrder("<start>", "<…Aktivitäten des Bestätigungspfads, in Reihenfolge…>", "<confirmed-end>")
+            .hasNotPassed("<reject-activity>", "<rejected-end>");
 
+    // And: der Willkommens-Mail-Use-Case wurde aufgerufen
     verify(sendWelcomeMailUseCase).sendWelcomeMail(membership.id());
 }
 ```
 
+Alles Weitere hast du beisammen:
+
+- **Assertion-Vokabular** (aus `BpmnAwareTests`, über das statisch importierte `assertThat`):
+  `isWaitingAt(id)`, `isEnded()`, `hasPassedInOrder(ids…)`, `hasNotPassed(ids…)` – dazu Mockitos
+  `when(...)`/`verify(...)` für die Use Cases.
+- **Treiben und Suchen** kommen aus dem vorgegebenen Helfer:
+  `continueToNextWaitState(processEngine)` und
+  `findProcessInstance(runtimeService, membership.id().value().toString())`.
+- **Die Element-IDs** stehen hier bewusst nicht – lies sie im Modeler aus `newsletter.bpmn` ab.
+  Der Bestätigungspfad ist Start → Claim → Gateway → Bestätigungs-Mail → User Task →
+  Willkommens-Mail → Bestätigungs-Ende; am Gateway zweigt der Ablehnungspfad zur Ablehnungs-Mail
+  → Ablehnungs-Ende ab.
+
 ### 5. Ablehnungspfad selbst testen
 
-Schreibe einen zweiten Test `noCapacity_membershipIsRejected`:
+Jetzt der zweite Test, `noCapacity_membershipIsRejected` – gleicher Ansatz, du schreibst ihn:
 
 - `claimMembership` liefert `false`.
-- Die Prozessinstanz läuft ohne Wait State direkt bis `endEvent_membershipRejected`.
-- Geprüft wird: `serviceTask_sendRejectionMail` wurde durchlaufen, Bestätigung und
+- Die Prozessinstanz läuft ohne Wait State direkt bis zum Ablehnungs-Ende.
+- Geprüft wird: die Ablehnungs-Mail-Aktivität wurde durchlaufen, Bestätigung und
   Willkommens-Mail **nicht**, und `sendWelcomeMailUseCase` wurde nie aufgerufen
   (`verify(..., never())`).
 
