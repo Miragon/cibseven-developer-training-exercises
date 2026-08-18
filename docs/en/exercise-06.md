@@ -54,6 +54,9 @@ Reference model: `../../models/exercise-06/newsletter.bpmn`
 
 ### 1. Create the subprocess
 
+You build and configure the entire model in this exercise in the **Miragon BPMN Modeler**
+(select the element → Properties Panel), not in the XML.
+
 Group the confirmation mail and the confirmation into an embedded subprocess
 `subProcess_confirmMembership` ("Confirm membership"). An embedded subprocess
 has its own start and its own end and here contains four elements:

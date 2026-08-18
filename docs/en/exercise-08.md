@@ -87,6 +87,9 @@ The FEEL range `[21..29]` is inclusive on both ends (21 and 29 are included). Ju
 
 **New file:** `src/main/resources/bpmn/membership-rejection.bpmn`, process key `handleRejection`.
 
+You set all the attributes below in the **Miragon BPMN Modeler** (select the element →
+Properties Panel), not in the XML.
+
 | Element | Type | ID | Name | Configuration |
 |---|---|---|---|---|
 | Start | None Start Event | `startEvent_confirmationRejected` | Confirmation rejected | – |
@@ -115,7 +118,10 @@ The compensation stays untouched: after returning from the Call Activity, the Co
 
 ### 4. Pass variables
 
-In-mapping on the Call Activity (main process → called process):
+You create the variable mapping in the **Miragon BPMN Modeler**, not directly in the XML:
+select the Call Activity → Properties Panel → **In Mapping** section → add one *source/target*
+pair each for `membershipId` and `age` (main process → called process). In the XML this
+produces an `extensionElements` block with `camunda:in` entries on the Call Activity:
 
 ```xml
 <bpmn:extensionElements>

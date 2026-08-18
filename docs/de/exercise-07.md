@@ -55,6 +55,9 @@ Zuerst sagst du dem Modell, *was* die Reservierung rückgängig macht. Dazu geh�
 Dinge: ein Compensation Boundary Event am reservierenden Task, der Handler selbst und die
 Association, die beide verbindet.
 
+Alle drei modellierst und konfigurierst du im **Miragon BPMN Modeler** (Element auswählen →
+Properties Panel), nicht im XML.
+
 | Element | Typ | ID | Konfiguration |
 |---|---|---|---|
 | Kompensations-Boundary | Compensation Boundary Event | `boundary_compensateClaim` | hängt an `serviceTask_claimMembership` |

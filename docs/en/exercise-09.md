@@ -122,7 +122,10 @@ In the host exactly one change is needed. Turn the terminal End Event
 `endEvent_membershipActivated` (after the join) into a **Signal End Event**. `Send Welcome
 Mail` and `Notify community` stay unchanged, and **no** new element is added.
 
-The End Event passes the payload (`name`) along via `camunda:in`:
+You make all changes in the **Miragon BPMN Modeler**, not in the XML: select the End Event →
+convert it to a **Signal End Event** → create/select the signal `Signal_MemberActivated` →
+set `asyncBefore`. The End Event passes the payload (`name`) along via an **In Mapping**
+(`camunda:in`). In the XML this produces:
 
 ```xml
 <bpmn:endEvent id="endEvent_membershipActivated" name="Membership activated" camunda:asyncBefore="true">
@@ -134,7 +137,7 @@ The End Event passes the payload (`name`) along via `camunda:in`:
 </bpmn:endEvent>
 ```
 
-Declare the signal once at the definitions level:
+Creating the signal in the modeler produces the definitions-level declaration automatically:
 
 ```xml
 <bpmn:signal id="Signal_MemberActivated" name="Signal_MemberActivated" />
@@ -154,6 +157,9 @@ then generate the APIs, then write the code. Work through the
 **File:** `src/main/resources/bpmn/send-welcome-kit.bpmn` – it deliberately contains only an
 empty model with a Start Event. Model the process yourself; this is your
 final check on whether what you've learned has stuck.
+
+You set all the attributes in the table in the **Miragon BPMN Modeler** (select the element →
+Properties Panel), not in the XML.
 
 | Element | Type | ID | Configuration |
 |---|---|---|---|
