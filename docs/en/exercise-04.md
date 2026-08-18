@@ -1,270 +1,183 @@
-# Exercise 4 – Capacity Check with a Gateway
+# Exercise 4 – The application takes over
 
-> **Prerequisite:** Exercise 3 is complete – double opt-in is working, and the process starts via a message.
+> **Prerequisite:** Exercise 3 is complete – the Service Task runs through a JavaDelegate, and the process is still started by hand in the Cockpit.
 > **Working directory:** `services/process-application`
-> **New in this exercise:** domain refactoring to *Membership*, Exclusive Gateway, alternative process outcome, transaction boundaries, business key, generated Task form.
+> **New in this exercise:** Message Start Event, message correlation, `RuntimeService`, REST endpoint, persistence, confirmation via REST (`TaskService`).
 
 ## What this is about
 
-**Strategy meeting, Friday afternoon. Someone brought exclusive matcha lattes.**
+Rose has launched the new **Backroad AL**, and Miravelo is selling it exclusively in the Store.
+Social media goes wild, and overnight 500 registrations pour in.
 
-Miravelo is launching the **Miravelo Inner Circle** – a limited membership for true fans
-of the brand. A thousand spots. No more.
+> *"500 sign-ups. That's either viral or a bot attack."*
+> — CTO, on the second coffee
 
-Why a thousand? Because scarcity creates value. Because FOMO is a business model. Because
-someone read a book about luxury brands.
+Two things become suddenly clear. First: nobody starts 500 process instances by hand in the
+Cockpit – **the application** has to start the process as soon as a registration comes in via
+REST. Second: are these real people? The answer is a **double opt-in** – confirm first via a
+confirmation link, then welcome. That click on the link also lands as a REST call in your
+application, not as a click in the Tasklist.
 
-> *"We're not exclusive because we're good. We're exclusive because the counter in the
-> database is set to 1000."*
-> — Most honest comment in sprint planning
-
-From a process perspective, this is a **gateway**: got a spot? Carry on. No spot?
-Rejection mail. And because every registration is now a business object with its own ID,
-each process instance gets a **business key** – no more "which of the 40 running
-instances was Carol again?".
+From this exercise on it's the application that drives the process: it creates the Membership,
+starts the instance via a **message**, and completes the confirmation step via a REST endpoint.
 
 ## Learning goals
 
 After this exercise you can
 
-- model an Exclusive Gateway, set its conditions, and choose a default flow,
-- implement an alternative process outcome (rejection),
-- pass a decision from Java code to the gateway as a process variable,
-- deliberately set **transaction boundaries** and explain why a non-repeatable
-  step must commit before an external effect,
-- assign a business key to a process instance,
-- give a User Task a generated Task form for an approval step.
+- replace a None Start Event with a **Message Start Event** and explain why,
+- start a process instance from Java via `createMessageCorrelation(...).correlateStartMessage()`,
+- persist the business data and reference it via the `membershipId` as a process variable,
+- implement REST endpoints that start the process and complete a wait state,
+- complete a waiting User Task via the `TaskService` over REST (instead of in the Tasklist).
 
 ## Target model
 
 ![BPMN model of the exercise](../assets/exercise-04.svg)
 
-Reference model: `../../models/exercise-04/newsletter.bpmn`
+Reference model: `../../models/exercise-04/membership.bpmn`
+
+**Three changes compared to Exercise 3:**
+
+1. The Start Event becomes a **Message Start Event** `startEvent_submitRegistration`
+   (`Message_SubscriptionRequested`). The start form goes away – the data comes in via the REST
+   call.
+2. Before the confirmation, a **Service Task** `serviceTask_sendConfirmationMail` is added.
+3. The Service Task path from Exercise 3 stays, but the delegates now read the `membershipId`
+   instead of the raw email address.
 
 ## The task
 
-### 1. Rename the domain
+### 1. Enable the application's business layer
 
-The newsletter subscription becomes the Inner Circle membership. Rename the existing
-classes consistently – `Subscription` → `Membership`, `SubscriptionId` →
-`MembershipId`, `RegisterSubscriptionUseCase` → `RegisterMembershipUseCase`, and so on.
-The REST path becomes `/api/memberships`, and the process variable `subscriptionId` becomes
-`membershipId`.
+The REST and persistence classes are commented out with `TODO Exercise 4`. Uncomment them – this
+is plumbing, not engine binding:
 
-> The process key stays `subscribeNewsletter` and the file remains `newsletter.bpmn` –
-> just as it would in real projects when a process keeps evolving. We mention this once
-> and then never again.
+- `adapter/inbound/rest/MembershipController.java`
+- `application/service/RegisterMembershipService.java`
+- `adapter/outbound/cibseven/MembershipProcessAdapter.java`
+- `adapter/outbound/db/*` (Entity, Mapper, JpaRepository, PersistenceAdapter)
+- the use-case interfaces in `application/port/inbound/*` (`domain/` and the outbound ports are
+  already part of the active skeleton)
+- the confirmation and confirm classes (`SendConfirmationMail*`, `ConfirmMembership*`)
 
-### 2. Extend the model
+The three spots with real engine binding (`MembershipProcessAdapter`, the two delegates) still
+carry a `TODO` – you write those yourself.
 
-Before the confirmation mail is sent, a **Service Task** for the reservation and an
-**Exclusive Gateway** are added, splitting the sequence flow into two paths. That's
-four new elements in total – and two existing ones get new element IDs and names, because
-the subscription has become a membership.
+### 2. Rebuild the model
 
-You create the elements, delegate expressions and the gateway condition in the **Miragon BPMN
-Modeler** (select the element → Properties Panel), not in the XML.
+Take the model from Exercise 3 and change it in the Miragon BPMN Modeler:
 
-**New elements:**
-
-| Element | Type | ID | Name | Configuration |
-|---|---|---|---|---|
-| Reserve spot | Service Task | `serviceTask_claimMembership` | Claim membership | Delegate Expression: `#{claimMembershipDelegate}` |
-| Capacity decision | Exclusive Gateway | `gateway_hasEmptySpots` | Has empty spots | Default flow: yes path |
-| Rejection mail | Service Task | `serviceTask_sendRejectionMail` | Send rejection mail | Delegate Expression: `#{sendRejectionMailDelegate}` |
-| Rejection | End Event | `endEvent_membershipRejected` | Membership rejected | – |
-
-**Renamed elements:**
-
-| Old (Exercise 3) | New (Exercise 4) |
+| Change | Value |
 |---|---|
-| `userTask_confirmSubscription` – Confirm subscription | `userTask_confirmMembership` – Confirm membership |
-| `endEvent_userSubscribed` – User subscribed | `endEvent_membershipConfirmed` – Membership confirmed |
+| Start Event → **Message Start Event** | ID `startEvent_submitRegistration`, name "Submit registration form", Message Name `Message_SubscriptionRequested` |
+| Remove the start form | delete the `email`/`name`/`age` fields on the Start Event |
+| New **Service Task** before the confirmation | ID `serviceTask_sendConfirmationMail`, name "Send confirmation mail", Delegate Expression `#{sendConfirmationMailDelegate}` |
 
-**Condition on the no path:** `${!hasEmptySpots}`. The yes path is the default flow and
-needs no condition.
+The flow afterwards is: Message Start → `Send confirmation mail` → `Confirm membership` (User
+Task, wait state) → `Send Welcome Mail` → End.
 
-### 3. Add use cases and services
+### 3. Persist the registration and start the process
 
-Following the pattern from Exercise 3:
+**File:** `application/service/RegisterMembershipService.java`
 
-- **`ClaimMembershipUseCase` / `ClaimMembershipService`** – checks capacity and returns
-  `true` if a spot was still free. A simple in-memory counter is enough (maximum 1000
-  spots); you don't need a database for this.
-- **`SendRejectionMailUseCase` / `SendRejectionMailService`** – loads the membership and
-  logs the rejection with the email address.
+The REST endpoint `POST /api/memberships` calls `RegisterMembershipUseCase.register(...)`.
+Implement the logic: build a `Membership` object from the command, save it via the repository,
+start the process via the process port, return `membership.id()`.
 
-> The capacity is deliberately kept simple. The reference solution uses an
-> `AtomicInteger` together with a constant `MAX_SPOTS` right inside `ClaimMembershipService`.
-> If you prefer it cleaner, model a domain object `MembershipCapacity` instead, with
-> `maxSpots`, `claimedSpots`, `hasEmptySpots()` and `claim()` – functionally the two are equivalent.
+### 4. Start the process via correlation
 
-### 4. Add delegates
+**File:** `adapter/outbound/cibseven/MembershipProcessAdapter.java` – **write it yourself.**
 
-- **`ClaimMembershipDelegate`** – reads `membershipId`, calls the use case, and writes
-  its result as the process variable `hasEmptySpots` onto the `DelegateExecution`.
-- **`SendRejectionMailDelegate`** – reads `membershipId` and calls the use case.
-
-> Setting the process variable belongs in the **delegate**, not in the service: the
-> service doesn't know the engine and only returns a `boolean`. This exact separation is
-> checked by the `ArchitectureTest`.
-
-### 5. Set transaction boundaries
-
-> Theory for this: training chapter **"Async & Transaction Boundaries"** (Topic 4, *Execution
-> Resilience*) – save points, default and manual boundaries, rollback in action. This is
-> the first place where you apply it.
-
-Until now the process ran completely **synchronously**. Starting with this model you set
-transaction boundaries – in two steps.
-
-**a) Boundaries at the wait states.** The engine commits automatically at every wait state –
-at a User Task it has to persist the state anyway. Everywhere else you set the boundary
-yourself, with an **asynchronous continuation**: the markers `asyncBefore` and `asyncAfter`
-tell the engine to commit at this point, create a job, and continue the work afterwards in a
-**new** transaction.
-
-Add the two continuations that are missing here:
-
-- `asyncBefore` on the Message Start Event `startEvent_submitRegistration` – a clean boundary
-  after correlation; the `correlateMessage` call only creates the instance and returns.
-- `asyncAfter` on the User Task `userTask_confirmMembership` – the completion commits immediately.
-  Otherwise the completion **and** the downstream Service Task run in **one** transaction:
-  if it throws, the completion rolls back with it and the task reappears in the tasklist.
-
-**b) Boundaries at the Service Tasks.** With `claimMembership` there is, for the first time, a
-**non-repeatable** step – the spot reservation – directly before a mail send. Between the
-Message Start and the User Task there is **no** wait state; without further markers,
-`claimMembership` and `sendConfirmationMail` therefore run in **one** engine transaction.
-
-If the mail send throws an exception, the engine rolls back the *entire* transaction and
-re-executes the job. Result: `claimMembership` runs a second time – a double-reserved spot,
-even though only the mail send failed.
-
-**Rule:** Separate the *non-repeatable* work from the *external, non-rollbackable*
-effect with its own transaction boundary. Set `asyncBefore` on every Service Task with an
-external effect:
-
-| Marker | Element | Why |
-|---|---|---|
-| `asyncBefore` | `serviceTask_sendConfirmationMail` | commits the reservation first; a mail failure only retries the send |
-| `asyncBefore` | `serviceTask_sendRejectionMail` | otherwise sits in the same transaction as `claimMembership` |
-| `asyncBefore` | `serviceTask_sendWelcomeMail` | consistency; from Exercise 6 on it also matters on a parallel branch |
-
-`claimMembership` deliberately gets **no** marker – it should commit early, together with
-the token that advances in the model (the *token* is the imagined game piece that marks the
-current state of an instance in the process model). The marker belongs on the *downstream*
-call, which would otherwise roll back the reservation with it. In the modeler: select the
-element → Properties Panel → *Asynchronous Before*.
-
-### 6. Set the business key
-
-When the process starts, set the `membershipId` as the business key. The correlation builder
-in `MembershipProcessAdapter` (which you switched to `createMessageCorrelation(...)` in
-Exercise 3) offers `processInstanceBusinessKey(...)` for this. Hook the call with the
-`membershipId` into the existing chain – you fill in the concrete arguments yourself:
+A Message Start Event can't be triggered via `startProcessInstanceByKey`. Switch `startProcess(...)`
+to correlating the message `Message_SubscriptionRequested`. The `RuntimeService` gives you a
+correlation builder via `createMessageCorrelation(...)`; set the four process variables
+`membershipId`, `email`, `name`, `age`. You fill in the arguments yourself:
 
 ```java
 runtimeService.createMessageCorrelation(/* message name */)
-        .processInstanceBusinessKey(/* membershipId */)
-        .setVariables(/* ... */)
+        .setVariables(/* membershipId, email, name, age */)
         .correlateStartMessage();
 ```
 
-The business key links the process instance to the business object: in the Cockpit, each
-instance can be uniquely mapped to a registration and searched for specifically.
+### 5. Switch the delegates to the `membershipId`
 
-### 7. Task form for the approval
+Until now the `SendWelcomeMailDelegate` read the raw `email`. Now the process references the
+business data via the persisted Membership:
 
-The User Task `userTask_confirmMembership` has no form yet – whoever opens it in the tasklist
-sees not a single process variable and can only complete it blindly. Give it a
-**generated Task form** (*Generated Task Form*, a built-in feature of Camunda 7 – no
-extra file, no HTML), so that the approving person can see the registration data:
+- **`SendWelcomeMailDelegate`** and **`SendConfirmationMailDelegate`** read the process variable
+  `membershipId` from the `DelegateExecution`, turn it into a `MembershipId`, and call the
+  respective use case – **you write this yourself.**
+- **`SendWelcomeMailService`** and **`SendConfirmationMailService`** load the Membership via the
+  repository and log the email address.
 
-| Field ID | Label | Type | Purpose |
-|---|---|---|---|
-| `name` | Name | string | context, pre-filled from the process variable |
-| `email` | E-Mail | string | context, pre-filled |
-| `age` | Age | long | context, pre-filled |
-| `confirmed` | Confirm membership | boolean | the actual approval (checkbox) |
+### 6. Complete the confirmation via a REST endpoint
 
-`name`, `email` and `age` carry the same IDs as the process variables and are therefore
-pre-filled automatically. `confirmed` is new and is stored as a boolean process variable on
-completion.
+The confirmation link from the mail lands as `POST /api/memberships/{membershipId}/confirm` in
+the application. This endpoint completes the waiting User Task – not the Tasklist.
 
-In the modeler: select the User Task → Properties Panel → **Forms** section → add form
-fields. In the XML this produces an `extensionElements` block with `camunda:formData` right
-inside the User Task:
-
-```xml
-<bpmn:userTask id="userTask_confirmMembership" name="Confirm membership" camunda:asyncAfter="true">
-  <bpmn:extensionElements>
-    <camunda:formData>
-      <camunda:formField id="name" label="Name" type="string" />
-      <camunda:formField id="email" label="E-Mail" type="string" />
-      <camunda:formField id="age" label="Age" type="long" />
-      <camunda:formField id="confirmed" label="Confirm membership" type="boolean" />
-    </camunda:formData>
-  </bpmn:extensionElements>
-</bpmn:userTask>
-```
+- `MembershipController` gets a method `confirm(...)` that calls `ConfirmMembershipUseCase`.
+- `ConfirmMembershipService` forwards to the process port.
+- **`MembershipProcessAdapter.confirm(...)` – write it yourself:** find, via the `TaskService`,
+  the open task `userTask_confirmMembership` for the matching `membershipId` and complete it. The
+  API chain is `taskService.createTaskQuery()...singleResult()` followed by
+  `taskService.complete(...)`; you fill in the query conditions (task definition key, process
+  variable) yourself.
 
 ## Constraints
 
-- The field type must match the type of the process variable, otherwise pre-filling won't
-  take effect (`age` is `long`, not `string`).
-- `confirmed` does not control any process flow in this exercise yet – it is only captured.
-- The capacity lives in memory and is back at zero after a restart. That's intentional for
-  the training.
-- You can take element IDs and variable names from the reference model at any time.
+- The process key stays `subscribeNewsletter` and the message name exactly
+  `Message_SubscriptionRequested` – historical names that stay stable. A typo leads to a
+  `MismatchingMessageCorrelationException`.
+- The `membershipId` is from now on the reference between application and process instance; it is
+  set as a process variable at start.
+- The User Task `userTask_confirmMembership` has **no** form in this exercise – it is completed
+  via REST. A tasklist form for the approval step is added in [Exercise 5](exercise-05.md).
 
 ## Expected result
 
-The process now has two outcomes – check both. First the path that almost everyone takes:
-
-**A free spot is available:**
+Restart the application and register a person:
 
 ```bash
 curl -X POST http://localhost:8080/api/memberships \
   -H "Content-Type: application/json" \
-  -d '{"email": "carol@miravelo.com", "name": "Carol", "age": 27}'
+  -d '{"email": "bob@miravelo.com", "name": "Bob", "age": 25}'
 ```
 
-The process reserves a spot, takes the yes path, and waits at the User Task
-`Confirm membership`. Open it in the tasklist (`http://localhost:8080/webapp/#/seven/auth/start`,
-admin/admin): name, email, and age are pre-filled. Tick the box for *Confirm
-membership* and complete the task – the instance runs through `Send Welcome Mail` to
-`Membership confirmed`, and `confirmed` is `true` in the history.
+1. The call returns the `membershipId`. `Send confirmation mail` runs through – the log shows
+   `Sending confirmation mail to bob@miravelo.com`.
+2. The process instance waits at the User Task `Confirm membership` (visible in `act_ru_task`).
+3. Confirm via the endpoint – with the ID from step 1:
 
-**No spot left free:** Temporarily set the maximum number of spots to `0` (in the
-reference solution the constant `MAX_SPOTS` in `ClaimMembershipService`), restart the
-application, and send:
+   ```bash
+   curl -X POST http://localhost:8080/api/memberships/<membershipId>/confirm
+   ```
 
-```bash
-curl -X POST http://localhost:8080/api/memberships \
-  -H "Content-Type: application/json" \
-  -d '{"email": "dave@miravelo.com", "name": "Dave", "age": 30}'
-```
-
-Expected log: `Sending rejection mail to dave@miravelo.com`. The instance ends at
-`Membership rejected`, without ever waiting at a User Task.
+4. `Send Welcome Mail` runs through (`Sending welcome mail to bob@miravelo.com`), the instance ends.
 
 ## Self-check
 
-- [ ] All classes are renamed to *Membership*, the REST path is `/api/memberships`
-- [ ] The gateway has a default flow and exactly one condition (`${!hasEmptySpots}`)
-- [ ] The yes path ends at `Membership confirmed`, the no path at `Membership rejected`
-- [ ] `asyncBefore` is on the Message Start Event and on the three mail tasks,
-      `asyncAfter` on the User Task, `claimMembership` has **no** marker
-- [ ] In the Cockpit the instance carries the `membershipId` as its business key
-- [ ] The Task form shows the pre-filled fields plus the `confirmed` checkbox
+- [ ] The Start Event is a Message Start Event with the name `Message_SubscriptionRequested`
+- [ ] A `POST /api/memberships` creates a Membership, starts the instance via correlation, and
+      returns the `membershipId`
+- [ ] Both delegates read `membershipId`; the services load the Membership from the repository
+- [ ] A `POST /api/memberships/{id}/confirm` completes the waiting `userTask_confirmMembership`
+      via the `TaskService`
+- [ ] The log lines (confirmation, then welcome) appear in the right order
+- [ ] `./mvnw -pl services/process-application test -Dtest=ArchitectureTest` is green
 
 ## Hints
 
-**Idempotency rule of thumb:** A retry may re-execute a Service Task. As soon as an action
-may happen only *once* (reservation, payment), it must either commit before the boundary or
-be idempotent. With external interfaces you'll meet the same pattern again in
-[Exercise 9](exercise-09.md) and in [Extra Exercise 1](extra-task-1.md).
+**Why a Message Start Event?** A None Start Event says "someone starts this somehow". A Message
+Start Event names the business trigger – *a registration has come in* – and makes it visible in
+the model. You'll need the same correlation API from [Exercise 7](exercise-07.md) on for messages
+**to running instances** too.
+
+**Why the confirmation via REST instead of the Tasklist?** In Exercise 2 the tasklist form was the
+simple way in. In a production-like setting, though, the confirmation comes from a dedicated UI or –
+as here – from a confirmation link; the click lands as a REST call, and the `TaskService` completes
+the wait state. Business interaction runs from now on through dedicated endpoints, no longer through
+the generic Tasklist.
 
 ## Reference solution
 
@@ -276,7 +189,7 @@ be idempotent. With external interfaces you'll meet the same pattern again in
 
 ## Next step
 
-The process now has two outcomes – and nobody automatically checks that it takes the right
-one. In Exercise 5 you secure it with a process test.
+In Exercise 5 the Inner Circle gets its exclusivity – with a capacity check, a gateway, and
+transaction boundaries.
 
 ➡️ [Next: Exercise 5](exercise-05.md)

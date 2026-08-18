@@ -1,7 +1,7 @@
 meta {
   name: Register Membership
   type: http
-  seq: 2
+  seq: 1
 }
 
 post {
@@ -16,4 +16,17 @@ body:json {
     "name": "John Doe",
     "age": 30
   }
+}
+
+script:post-response {
+  // The endpoint returns the membershipId as plain text – keep it for the reject request.
+  if (res.getStatus() === 200) {
+    bru.setVar("membershipId", res.getBody());
+  }
+}
+
+docs {
+  Starts an Inner Circle membership (process key `subscribeNewsletter`).
+  Available from Exercise 4 on. The returned membershipId is stored as the `membershipId`
+  variable so `Reject Membership` can reuse it.
 }

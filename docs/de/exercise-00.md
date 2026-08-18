@@ -1,8 +1,8 @@
-# Aufgabe 0 – Den Prozess fachlich modellieren
+# Aufgabe 0 – Den Sollprozess fachlich modellieren
 
-> **Voraussetzung:** keine – das ist der Einstieg.
+> **Voraussetzung:** Kapitel 1 – du kennst BPMN als Notation (Events, Tasks, Gateways, Subprozesse, Boundary Events, Kompensation).
 > **Arbeitsverzeichnis:** ein beliebiger Ordner deiner Wahl (noch kein Code, noch kein Modul).
-> **Neu in dieser Aufgabe:** BPMN-Modeler, Start Event, User Task, Service Task, End Event.
+> **Neu in dieser Aufgabe:** BPMN-Modeler, der vollständige Sollprozess als gemeinsame Landkarte.
 
 ## Darum geht es
 
@@ -10,26 +10,38 @@
 Wochenendtouren, Rennräder für alle, die es auf dem Asphalt schnell mögen. Die Kundschaft
 ist jung, markenbewusst und ziemlich leidenschaftlich.
 
-Der Shop wächst, neue Produkte kommen laufend dazu, und das Team beschließt: Wir bauen einen
-**Newsletter**. Jemand trägt sich ein, bekommt eine Willkommens-Mail – fertig.
+Miravelo baut daraus mehr als einen Verteiler: den **Inner Circle**, eine exklusive
+Mitgliedschaft mit begrenzter Platzzahl. Wer beitreten will, registriert sich, bestätigt per
+Double-Opt-In, bekommt einen Platz reserviert – und wird am Ende willkommen geheißen. Klingt
+nach vier Kästchen, hat aber Bestätigungsfristen, eine Kapazitätsgrenze und einen Rückzieher,
+wenn am Ende doch kein Platz frei ist.
 
-> *„Das ist doch in einer Stunde gebaut."*
-> — Jeder Entwickler, der einen Newsletter unterschätzt hat.
+> *„Zeichnen wir das doch erst mal auf, bevor jemand anfängt zu programmieren."*
+> — der eine vernünftige Satz im ganzen Kickoff.
 
-Bevor irgendetwas automatisiert wird, hältst du den Ablauf **fachlich** fest: Was passiert,
-in welcher Reihenfolge? Das ist die Sprache, in der Fachbereich und Entwicklung sich einig
-werden – ohne eine Zeile Technik.
+Bevor irgendetwas automatisiert wird, hältst du den **kompletten Sollprozess fachlich** fest:
+Was passiert, in welcher Reihenfolge, wo wartet der Prozess, wo verzweigt er? Das ist die
+Sprache, in der Fachbereich und Entwicklung sich einig werden – ohne eine Zeile Technik. Dieses
+Modell ist die **Landkarte für das ganze Training**: Ab Aufgabe 1 automatisierst du es Stück für
+Stück.
 
 ## Lernziele
 
 Nach dieser Aufgabe kannst du
 
-- einen BPMN-Modeler installieren und darin ein Modell anlegen,
-- die vier Grundelemente Start Event, User Task, Service Task und End Event unterscheiden,
-- einen Geschäftsprozess als durchgängigen Ablauf modellieren,
-- Elemente so benennen, dass ein Fachbereich sie ohne Rückfragen versteht.
+- einen BPMN-Modeler installieren und darin ein durchgängiges Modell anlegen,
+- die Notation aus Kapitel 1 auf einen realen Geschäftsprozess anwenden – Start- und End Events,
+  User Task und Service Task, Exclusive und Parallel Gateway, eingebetteter Subprozess,
+  Boundary Events und Kompensation,
+- Warte- und Verzweigungspunkte im Ablauf begründen (wo wartet der Prozess auf einen Menschen,
+  wo auf eine Frist, wo entscheidet eine Bedingung),
+- Elemente so benennen, dass ein Fachbereich den Ablauf ohne Rückfragen vorlesen kann.
 
 ## Ziel-Modell
+
+Das ist der vollständige Sollprozess des Inner Circle. Er sieht groß aus – ist aber nur die
+Summe vieler kleiner, dir bekannter Bausteine. Genau diesen Ablauf baust du im Lauf des
+Trainings Schritt für Schritt technisch nach.
 
 ![BPMN-Modell der Aufgabe](../assets/exercise-00.svg)
 
@@ -39,69 +51,150 @@ Nach dieser Aufgabe kannst du
 
 Wir arbeiten mit dem **[Miragon BPMN Modeler](https://miragon.github.io/bpmn-modeler/)**.
 Es gibt ihn als VS-Code-Extension, als IntelliJ-Plugin und als eigenständige Desktop-App –
-nimm die Variante, die zu deiner Umgebung passt.
+nimm die Variante, die zu deiner Umgebung passt. Lege danach ein neues BPMN-Diagramm an.
 
-### 2. Prozess modellieren
+### 2. Registrierung und Kapazitätsprüfung modellieren
 
-Lege ein neues BPMN-Diagramm an und modelliere den Anmeldeprozess mit genau diesen vier
-Elementen:
+Beginne mit dem Rückgrat des Prozesses: Ein Interessent registriert sich, der Prozess reserviert
+einen Platz und prüft dann, ob überhaupt noch einer frei ist. Ist keiner frei, endet die
+Bewerbung mit einer Absage.
 
-| Element | Typ | Name |
-|---|---|---|
-| Start | None Start Event | Newsletter wanted |
-| Formular | User Task | Fill out form |
-| Willkommens-Mail | Service Task | Send Welcome Mail |
-| Ende | None End Event | User subscribed |
+| Typ | Name |
+|---|---|
+| Start Event | Submit registration form |
+| Service Task | Claim membership |
+| Exclusive Gateway | Has empty spots |
+| Service Task | Send rejection mail |
+| End Event | Membership rejected |
 
-### 3. Ablauf verbinden
+Verbinde Start → *Claim membership* → *Has empty spots*. Vom Gateway führt ein Pfad **No** zu
+*Send rejection mail* → *Membership rejected*. Der Pfad **Yes** bleibt zunächst offen – ihn füllst
+du im nächsten Schritt. Der Platz wird also **vor** der Prüfung reserviert; darum kümmert sich
+Schritt 6.
 
-Verbinde die Elemente mit Sequenzflüssen zu einem durchgängigen Pfad vom Start Event bis
-zum End Event.
+### 3. Die Bestätigung als Subprozess modellieren
 
-### 4. Modell sichern
+Wer einen Platz bekommt, muss die Mitgliedschaft aktiv bestätigen (Double-Opt-In). Fasse diesen
+Bestätigungsablauf in einem **eingebetteten Subprozess** zusammen – er bekommt gleich seine eigenen
+Fristen und Ausnahmen, und ein Subprozess hält das übersichtlich.
 
-Speichere die Datei als `newsletter.bpmn` in einem Ordner deiner Wahl. Du brauchst sie in
-**Aufgabe 2** wieder.
+Modelliere den Subprozess **Confirm membership** und darin:
+
+| Typ | Name |
+|---|---|
+| Start Event (im Subprozess) | Confirmation required |
+| Service Task | Send confirmation mail |
+| User Task | Confirm membership |
+| End Event (im Subprozess) | Membership confirmed |
+
+Führe den **Yes**-Pfad des Gateways aus Schritt 2 in diesen Subprozess. Der *User Task* ist der
+Wartepunkt: Hier hält der Prozess an, bis ein Mensch bestätigt.
+
+### 4. Erinnerung, Frist und Ablehnung ergänzen
+
+Menschen bestätigen nicht immer sofort – manche gar nicht. Häng deshalb **Boundary Events** an
+den Subprozess *Confirm membership*, die drei Ausnahmen abbilden:
+
+| Boundary Event | Typ | Name | Führt zu |
+|---|---|---|---|
+| Erinnerung | Timer, nicht unterbrechend, täglich | Every day | Service Task *Re-Send confirmation mail* → End Event *Mail sent again* |
+| Abbruch nach Frist | Timer, unterbrechend, 3½ Tage | After 3 1/2 days | End Event *Membership declined* |
+| Aktive Ablehnung | Message, unterbrechend | Confirmation rejected | End Event *Membership declined* |
+
+Das **nicht unterbrechende** Timer-Event lässt den Subprozess weiterlaufen und schickt nebenbei
+täglich eine Erinnerung. Die beiden **unterbrechenden** Events brechen die Bestätigung ab und
+führen zu *Membership declined*.
+
+### 5. Die Aktivierung parallel modellieren
+
+Ist die Mitgliedschaft bestätigt, wird das Mitglied aktiviert – und zwei Dinge passieren
+gleichzeitig: die Willkommens-Mail geht raus, und die Community wird informiert. Modelliere das
+mit einem **Parallel Gateway** (Fork und Join).
+
+| Typ | Name |
+|---|---|
+| Parallel Gateway (Fork) | – |
+| Service Task | Send Welcome Mail |
+| Service Task | Notify community |
+| Parallel Gateway (Join) | – |
+| End Event | Membership activated |
+
+Führe den Ausgang des Subprozesses in den Fork, beide Service Tasks parallel, dann in den Join
+und zu *Membership activated*.
+
+### 6. Kompensation ergänzen
+
+Ein reservierter Platz darf nicht verfallen, wenn die Bewerbung am Ende doch scheitert. Wird die
+Mitgliedschaft abgelehnt (*Membership declined*), muss die Reservierung aus Schritt 2 **rückgängig**
+gemacht werden. Genau dafür gibt es Kompensation.
+
+- Häng an *Claim membership* ein **Compensation Boundary Event** mit dem Namen *Membership declined*.
+- Lege einen Kompensations-Handler *Revoke claim* (Service Task) an und verbinde ihn per
+  **Association** mit dem Boundary Event. Er steht **außerhalb** des normalen Sequenzflusses.
+- Mach das End Event *Membership declined* zu einem **Compensating End Event** – es stößt die
+  Kompensation an.
+
+### 7. Modell sichern
+
+Speichere die Datei als `membership.bpmn` in einem Ordner deiner Wahl. Sie ist dein Referenzbild
+für alle Folgeaufgaben.
 
 ## Randbedingungen
 
-- **Nur fachlich.** Es geht ausschließlich um Ablauf und Benennung. Prozess- und
-  Element-IDs nach Konvention, Formularfelder, die Anbindung des Service Tasks an Java-Code
-  sowie `isExecutable` und `historyTimeToLive` lässt du hier bewusst weg.
+- **Nur fachlich.** Es geht um Ablauf und Benennung. Element-IDs nach Konvention, Formularfelder,
+  die Anbindung von Service Tasks an Java-Code sowie `isExecutable` und `historyTimeToLive` lässt
+  du hier bewusst weg – das kommt ab Aufgabe 2.
+- **Das ist der Zielzustand, nicht der erste Schritt.** Niemand automatisiert diesen Prozess auf
+  einmal. Ab Aufgabe 1 nimmst du dir kleine Ausschnitte vor.
 - **Noch nicht ins Modul kopieren.** Unter `services/process-application/src/main/resources/bpmn/`
-  liegt bereits ein `newsletter.bpmn` – das ist die technisch fertige Fassung, die du in
-  Aufgabe 1 brauchst. Überschreibe sie jetzt noch nicht.
+  liegt bereits ein bewusst rudimentäres `membership.bpmn`, das du in Aufgabe 1 brauchst.
+  Überschreibe es jetzt nicht.
 - Namen in den Modellen sind durchgehend englisch; die Aufgabenbeschreibungen gibt es auf
   Deutsch und Englisch.
 
 ## Erwartetes Ergebnis
 
-Dein Modell zeigt vier Elemente in einer Reihe, verbunden durch drei Sequenzflüsse. Der
-Modeler meldet keine Fehler, und jemand aus dem Fachbereich könnte den Ablauf vorlesen,
-ohne nachzufragen, was ein einzelnes Element bedeutet.
+Dein Modell bildet den vollständigen Ablauf ab: Registrierung, Platzreservierung, Kapazitäts-
+Gateway, Bestätigungs-Subprozess mit Erinnerung, Frist und Ablehnung, parallele Aktivierung und
+die Kompensation der Reservierung. Der Modeler meldet keine Fehler, und jemand aus dem Fachbereich
+könnte den Ablauf vorlesen, ohne nachzufragen, was ein einzelnes Element bedeutet.
 
 ## Selbstcheck
 
-- [ ] Das Modell enthält genau ein Start Event und ein End Event
-- [ ] User Task und Service Task stehen in der richtigen Reihenfolge dazwischen
-- [ ] Alle vier Elemente sind über Sequenzflüsse verbunden – kein loses Element
-- [ ] Die Namen entsprechen der Tabelle oben
-- [ ] Die Datei liegt als `newsletter.bpmn` gespeichert vor
+- [ ] Das Modell hat genau einen Startpunkt und endet in *Membership activated*, *Membership
+      rejected* oder *Membership declined*
+- [ ] Die Kapazität wird über ein Exclusive Gateway mit einem **No**-Pfad zur Absage geprüft
+- [ ] Die Bestätigung liegt in einem eingebetteten Subprozess mit einem User Task als Wartepunkt
+- [ ] Am Subprozess hängen drei Boundary Events: täglicher (nicht unterbrechender) Timer,
+      3½-Tage-Timer (unterbrechend) und ein Message Event (unterbrechend)
+- [ ] Die Aktivierung läuft über ein Parallel Gateway (Willkommens-Mail und Community-Info
+      gleichzeitig)
+- [ ] *Revoke claim* ist ein Kompensations-Handler, per Association an das Boundary Event von
+      *Claim membership* gehängt, und *Membership declined* ist ein Compensating End Event
+- [ ] Alle Elemente sind über Sequenzflüsse verbunden – kein loses Element
+- [ ] Die Datei liegt als `membership.bpmn` gespeichert vor
 
 ## Hinweise
 
-Warum ein User Task und ein Service Task? Der **User Task** wartet auf einen Menschen –
-jemand füllt das Formular aus. Der **Service Task** wird von einem System erledigt – hier
-der Mailversand. Diese Unterscheidung ist die wichtigste beim fachlichen Modellieren:
-Sie legt fest, wo der Prozess wartet und wo er von allein weiterläuft.
+Lass dich von der Größe nicht abschrecken: Jeder fortgeschrittene Baustein bekommt später seine
+**eigene Aufgabe**, in der du ihn technisch umsetzt – der Bestätigungsschritt in Aufgabe 3, das
+Kapazitäts-Gateway in Aufgabe 4, Subprozess und Boundary Events in Aufgabe 6, die Kompensation in
+Aufgabe 7. Hier zeichnest du zuerst die ganze Landkarte, damit du bei jedem Teilschritt weißt,
+wohin er gehört.
+
+Warum ein User Task und ein Service Task? Der **User Task** wartet auf einen Menschen – jemand
+bestätigt die Mitgliedschaft. Der **Service Task** wird von einem System erledigt – der
+Mailversand, die Platzreservierung. Diese Unterscheidung legt fest, wo der Prozess wartet und wo
+er von allein weiterläuft.
 
 ## Referenzlösung
 
-`../../models/exercise-00/newsletter.bpmn` – öffne das Modell im Modeler und vergleiche es
-mit deinem.
+`../../models/exercise-00/membership.bpmn` – öffne das Modell im Modeler und vergleiche es mit
+deinem.
 
 ## Nächster Schritt
 
-In Aufgabe 1 bringst du die Engine zum Laufen, die genau solche Modelle ausführt.
+In Aufgabe 1 bringst du die Engine zum Laufen, die genau solche Modelle ausführt – zunächst mit
+einem bewusst winzigen Ausschnitt.
 
 ➡️ [Weiter zu Aufgabe 1](exercise-01.md)

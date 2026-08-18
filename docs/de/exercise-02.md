@@ -1,190 +1,76 @@
-# Aufgabe 2 – Den Prozess technisch automatisieren
+# Aufgabe 2 – Den ersten Wartepunkt einbauen
 
-> **Voraussetzung:** Aufgabe 1 ist abgeschlossen – die Engine startet und deployt `newsletter.bpmn`.
+> **Voraussetzung:** Aufgabe 1 ist abgeschlossen – die Engine startet und deployt `membership.bpmn`.
 > **Arbeitsverzeichnis:** `services/process-application`
-> **Neu in dieser Aufgabe:** technische Modellierung, JavaDelegate, hexagonale Architektur, Prozessstart über `RuntimeService`.
+> **Neu in dieser Aufgabe:** technische Modellierung (Element-ID, Prozess-Key, `isExecutable`, `historyTimeToLive`), User Task, Wait State, Generated Form selbst erstellen.
 
 ## Darum geht es
 
-Der Newsletter ist live. Seit dem Launch des neuen Gravel Bikes kommen die Anmeldungen rein –
-und irgendwer klickt jetzt jede einzelne im Cockpit durch.
+Der Prozess aus Aufgabe 1 läuft von vorne bis hinten durch – auch der Schritt „Confirm". Fachlich
+ist das falsch: Die Bestätigung soll auf einen **Menschen** warten, nicht durchrauschen.
 
-Das ist keine Lösung. Wir sind Entwickler, wir automatisieren Dinge, selbst wenn es nur ein
-Newsletter für Fahrrad-Enthusiasten ist.
+Genau dafür gibt es den **User Task**: einen Schritt, an dem die Prozessinstanz stehen bleibt, bis
+jemand sie abschließt. In dieser Aufgabe machst du aus dem Platzhalter „Confirm" einen echten User
+Task – und gibst ihm ein **Formular**, das du selbst erstellst. Der zweite Platzhalter („Send
+welcome mail") bleibt vorerst ein Manual Task.
 
-> *„Ich klick das doch nicht 500 Mal von Hand durch."*
-> — Das gesamte Team, zur Gravel-Bike-Saison
-
-Ab jetzt startet der Prozess über einen REST-Endpunkt, und der Service Task
-`Send Welcome Mail` führt echten Java-Code aus.
+> *„Ein Task, der nicht wartet, ist kein Task – der ist Durchgangsverkehr."*
 
 ## Lernziele
 
 Nach dieser Aufgabe kannst du
 
-- ein fachliches BPMN technisch vervollständigen (Element-IDs, Prozess-Key, Formularfelder,
-  `isExecutable`, `historyTimeToLive`),
-- einen Service Task über eine **Delegate Expression** an eine Spring-Bean binden,
-- die Schichten der hexagonalen Architektur einer Anfrage entlang benennen,
-- eine Prozessinstanz aus Java über den `RuntimeService` starten,
-- einen REST-Endpunkt implementieren, der den Prozess anstößt.
+- ein fachliches BPMN technisch grundieren (Element-ID, Prozess-Key, `isExecutable`, `historyTimeToLive`),
+- einen Manual Task in einen **User Task** umwandeln,
+- erklären, was ein **Wait State** ist und ihn im Datenbestand (`act_ru_task`) wiederfinden,
+- eine **Generated Form** im Modeler selbst erstellen und mit dem User Task verknüpfen,
+- den User Task über die Tasklist abschließen.
 
 ## Ziel-Modell
 
 ![BPMN-Modell der Aufgabe](../assets/exercise-02.svg)
 
-Referenzmodell: `../../models/exercise-02/newsletter.bpmn`
+Referenzmodell: `../../models/exercise-02/membership.bpmn`
 
-Der Ablauf bleibt derselbe wie in Aufgabe 1. Was sich ändert, ist die **Anbindung**: Der
-Service Task ruft nicht mehr eine Inline-Expression auf, sondern deinen Java-Code.
-
-So wandert eine Anfrage durch die Architektur – und so ruft die Engine später in deinen
-Code zurück (die mit `TODO` markierten Beteiligten füllst du in dieser Aufgabe):
-
-```mermaid
-sequenceDiagram
-    actor Client
-    participant Ctrl as SubscriptionController · inbound/rest
-    participant Svc as RegisterSubscriptionService · service · TODO
-    participant Adp as SubscriptionProcessAdapter · outbound/cibseven · TODO
-    participant Eng as CIB Seven Engine
-    participant Del as SendWelcomeMailDelegate · inbound/cibseven · TODO
-    participant Mail as SendWelcomeMailService · service · TODO
-
-    Client->>Ctrl: POST /api/subscriptions
-    Ctrl->>Svc: RegisterSubscriptionUseCase
-    Svc->>Adp: SubscriptionProcess.startProcess()
-    Adp->>Eng: RuntimeService.startProcessInstanceByKey(...)
-    Note over Eng: erreicht serviceTask_sendWelcomeMail
-    Eng->>Del: DelegateExpression
-    Del->>Mail: SendWelcomeMailUseCase
-```
+Gegenüber Aufgabe 1 ändert sich genau ein Element: aus dem Manual Task „Confirm" wird der User
+Task `userTask_confirmMembership` mit einem Formular. „Send welcome mail" bleibt ein Manual Task.
 
 ## Aufgabe
 
-### 1. Business-Schicht reaktivieren
+### 1. Modell technisch grundieren
 
-Die Klassen für diese Aufgabe sind mit `TODO Exercise 2` auskommentiert – sie hingen an der
-erst in Aufgabe 1 aktivierten Engine und wurden bis dahin geparkt. Entferne in diesen Dateien
-jeweils die Zeilen mit `/*` und `*/`, damit sie wieder kompilieren:
-
-- `application/service/RegisterSubscriptionService.java`
-- `application/service/SendWelcomeMailService.java`
-- `adapter/inbound/rest/SubscriptionController.java`
-- `adapter/inbound/cibseven/BaseDelegate.java`
-- `adapter/inbound/cibseven/SendWelcomeMailDelegate.java`
-- `adapter/outbound/cibseven/SubscriptionProcessAdapter.java`
-
-Das Einkommentieren ist nur die Vorbereitung, nicht das Ergebnis. `SubscriptionController` und
-die Delegate-Basisklasse `BaseDelegate` sind danach fertig; die beiden Services (Schritte 4–5)
-und – das eigentliche Herz dieser Aufgabe – der Delegate und der Prozess-Adapter (Schritte 6–7)
-tragen weiterhin ein `TODO`. Die Engine-Anbindung dort schreibst du selbst.
-
-### 2. Modell technisch vervollständigen
-
-Die Datei `src/main/resources/bpmn/newsletter.bpmn` im Modul ist die Fassung des Consultants
-aus Aufgabe 1 – technisch bereits vollständig. Du hast zwei Wege:
-
-- **Selbst modellieren (empfohlen):** Nimm dein fachliches Modell aus Aufgabe 0, ergänze im
-  Miragon BPMN Modeler die technischen Attribute aus den Tabellen unten und ersetze damit
-  die Datei im Modul. So übst du die technische Modellierung an deinem eigenen Modell.
-- **Nachvollziehen:** Öffne die vorhandene Datei und prüfe sie gegen die Tabellen. Was der
-  Consultant gesetzt hat, siehst du dann Attribut für Attribut.
-
-**Element-IDs und Namen:**
-
-| Element | Typ | ID | Name |
-|---|---|---|---|
-| Start | None Start Event | `startEvent_newsletterWanted` | Newsletter wanted |
-| Formular | User Task | `userTask_fillOutForm` | Fill out form |
-| Willkommens-Mail | Service Task | `serviceTask_sendWelcomeMail` | Send Welcome Mail |
-| Ende | None End Event | `endEvent_userSubscribed` | User subscribed |
+Öffne `src/main/resources/bpmn/membership.bpmn` im Miragon BPMN Modeler und stelle sicher, dass die
+Prozess-Eigenschaften stimmen – ab jetzt sind sie verbindlich:
 
 **Prozess-Eigenschaften:** Prozess-Key `subscribeNewsletter` · `Executable` aktiviert ·
 `History Time To Live` = `180`
 
-**Formularfelder** (am User Task `userTask_fillOutForm`):
+### 2. „Confirm" in einen User Task umwandeln
+
+Ändere den Typ des Elements von **Manual Task** auf **User Task** und vergib ID und Namen:
+
+| Element | Typ | ID | Name |
+|---|---|---|---|
+| Bestätigung | User Task | `userTask_confirmMembership` | Confirm membership |
+
+Weil ein User Task ein **Wait State** ist, hält die Instanz hier künftig an, bis jemand den Task
+abschließt.
+
+### 3. Die Generated Form selbst erstellen
+
+Der User Task soll der bestätigenden Person die Daten zeigen und die Bestätigung aufnehmen. Wähl
+im Modeler den User Task aus und lege im Properties Panel unter **Forms** eine Generated Form mit
+diesen Feldern an:
 
 | Feld-ID | Label | Typ |
 |---|---|---|
 | `email` | E-Mail | string |
-| `name` | Name | string |
-| `age` | Age | long |
+| `confirmed` | Confirm membership | boolean |
 
-### 3. Service Task an den Delegate binden
+`email` wird aus der gleichnamigen Prozessvariable (aus dem Start-Formular) vorbefüllt. `confirmed`
+ist neu und wird beim Abschließen als Prozessvariable gespeichert.
 
-Das ist die inhaltliche Änderung gegenüber Aufgabe 1 – auch dann, wenn du die vorhandene
-Datei weiterverwendest:
-
-| Element | Vorher (Aufgabe 1) | Jetzt |
-|---|---|---|
-| `serviceTask_sendWelcomeMail` | Implementation: *Expression*, `${execution.setVariable('welcomeMailSentTo', email)}` | Implementation: **Delegate Expression**, `#{sendWelcomeMailDelegate}` |
-
-### 4. `RegisterSubscriptionService` implementieren
-
-**Datei:** `application/service/RegisterSubscriptionService.java`
-
-Ersetze das `TODO` durch diese Logik:
-
-1. Erstelle ein `Subscription`-Objekt aus E-Mail, Name und Alter des Commands.
-2. Speichere es über das Repository.
-3. Starte den Prozess über den Process-Port.
-4. Gib `subscription.id()` zurück.
-
-### 5. `SendWelcomeMailService` implementieren
-
-**Datei:** `application/service/SendWelcomeMailService.java`
-
-Lade die Subscription über das Repository und logge die E-Mail-Adresse, an die die
-Willkommens-Mail geht.
-
-### 6. `SendWelcomeMailDelegate` implementieren
-
-**Datei:** `adapter/inbound/cibseven/SendWelcomeMailDelegate.java`
-
-Ersetze das `TODO` in `executeTask(execution)` durch die Engine-Anbindung – **das schreibst
-du selbst**:
-
-- Lies die Prozessvariable `subscriptionId` über die `DelegateExecution` aus.
-- Wandle den Wert in eine `SubscriptionId` und rufe damit `useCase.sendWelcomeMail(...)` auf.
-
-Welche Methode der `DelegateExecution` die Variable liefert und wie du den String konvertierst,
-findest du selbst heraus – der Aufgabentext nennt dir die API, nicht die fertige Zeile.
-
-### 7. `SubscriptionProcessAdapter` implementieren
-
-**Datei:** `adapter/outbound/cibseven/SubscriptionProcessAdapter.java`
-
-Ersetze das `TODO` in `startProcess(subscription)` durch den Prozessstart über den
-`RuntimeService` – **auch das schreibst du selbst**:
-
-- Starte eine Instanz zum Prozess-Key `subscribeNewsletter`. Die passende `RuntimeService`-Methode,
-  die eine Instanz per Key startet, heißt `startProcessInstanceByKey`.
-- Übergib die Prozessvariablen `subscriptionId`, `email`, `name` und `age` als Map. Die
-  Schlüssel müssen exakt den Variablennamen im Modell entsprechen.
-
-Wie du Prozess-Key und Variablen-Map zum Aufruf zusammensetzt, baust du selbst zusammen.
-
-## Randbedingungen
-
-- **Element-ID-Konvention** – ab jetzt in jeder Aufgabe verbindlich:
-
-  | Präfix | Für |
-  |---|---|
-  | `startEvent_` | Start Events |
-  | `endEvent_` | End Events |
-  | `userTask_` | User Tasks |
-  | `serviceTask_` | Service Tasks |
-  | `gateway_` | Gateways |
-  | `subProcess_` | Subprozesse |
-  | `boundaryEvent_` | Boundary Events |
-
-- Der Delegate ist ein **Adapter**: Er liest Prozessvariablen und ruft einen Use Case auf.
-  Fachlogik gehört in den Service, nicht in den Delegate.
-- Die Domain-Klassen (`domain/`) bleiben frei von Framework-Importen. Der ArchUnit-Test
-  `ArchitectureTest` prüft das.
-
-## Erwartetes Ergebnis
+### 4. Deployen und testen
 
 Starte die Anwendung neu, damit das geänderte Modell deployt wird:
 
@@ -192,36 +78,43 @@ Starte die Anwendung neu, damit das geänderte Modell deployt wird:
 cd services/process-application && ../../mvnw spring-boot:run
 ```
 
-Löse den Prozess anschließend über die REST-Schnittstelle aus – ab jetzt startet ihn keine
-Person mehr von Hand im Cockpit:
+Starte über die Tasklist (`Start process` → `Join Inner Circle`) eine Instanz und fülle das
+Start-Formular aus. Diesmal läuft sie **nicht** durch: Sie bleibt am User Task `Confirm membership`
+stehen.
 
-```bash
-curl -X POST http://localhost:8080/api/subscriptions \
-  -H "Content-Type: application/json" \
-  -d '{"email": "alice@miravelo.com", "name": "Alice", "age": 28}'
-```
+## Randbedingungen
 
-Der Aufruf liefert die ID der Subscription. Im Cockpit
-(`http://localhost:8080/webapp/#/seven/auth/start`, admin/admin) läuft daraufhin eine Instanz von
-`Subscribe Newsletter`, in der **Tasklist** steht `Fill out form`. Nach dem Abschließen des
-Tasks läuft der Service Task durch und im Log erscheint
-`Sending welcome mail to alice@miravelo.com`.
+- **Element-ID-Konvention** – ab jetzt verbindlich: `startEvent_`, `endEvent_`, `userTask_`,
+  `serviceTask_`, `manualTask_`, `gateway_`, `subProcess_`, `boundaryEvent_`.
+- Es wird weiterhin **kein Java** geschrieben: Start und Abschluss laufen über das Cockpit.
+- Der Feldtyp muss zum Typ der Prozessvariable passen, sonst greift die Vorbefüllung nicht.
+
+## Erwartetes Ergebnis
+
+Nach dem Start über das Start-Formular wartet die Instanz am User Task – in `act_ru_task` steht eine
+Zeile, im Cockpit unter **Tasklist** erscheint `Confirm membership`. Öffne den Task: `email` ist
+vorbefüllt. Setze den Haken bei `confirmed` und schließe ab – die Instanz läuft über den (noch
+manuellen) „Send welcome mail" bis `Member joined` durch.
+
+> **Begriff: Wait State.** Eine Stelle, an der die Prozessinstanz **stehen bleibt und auf ein
+> Ereignis von außen wartet** – hier der User Task, der auf seinen Abschluss wartet. Die Engine
+> schreibt den Zustand in die `act_ru_*`-Tabellen und gibt den Thread frei; deshalb übersteht eine
+> wartende Instanz einen Neustart. Ein Manual Task ist **kein** Wait State.
 
 ## Selbstcheck
 
-- [ ] Die sechs Klassen kompilieren wieder; `SendWelcomeMailDelegate` und
-      `SubscriptionProcessAdapter` sind selbst implementiert (kein `UnsupportedOperationException`-Stub mehr)
-- [ ] Der Service Task nutzt `#{sendWelcomeMailDelegate}` statt der Inline-Expression
-- [ ] Ein `POST /api/subscriptions` erzeugt eine Prozessinstanz mit den vier Prozessvariablen
-- [ ] Nach Abschluss des User Tasks steht die Log-Zeile mit der E-Mail-Adresse im Log
-- [ ] Die Instanz endet an `endEvent_userSubscribed`
-- [ ] `./mvnw -pl services/process-application test -Dtest=ArchitectureTest` ist grün
+- [ ] `userTask_confirmMembership` ist ein User Task (kein Manual Task mehr)
+- [ ] Er trägt eine selbst erstellte Generated Form mit `email` und `confirmed`
+- [ ] Eine gestartete Instanz wartet am User Task (`act_ru_task` enthält eine Zeile)
+- [ ] Nach dem Abschließen über die Tasklist endet die Instanz an `Member joined`
+- [ ] Der Prozess-Key ist `subscribeNewsletter`, `Executable` ist aktiv, `historyTimeToLive` = 180
 
 ## Hinweise
 
-Prozess-Tests bekommen in [Aufgabe 5](exercise-05.md) ihren eigenen Platz – dort schreibst
-du einen vollwertigen Test gegen den dann fertigen Prozess. Der Platzhalter liegt bereits
-unter `src/test/java/io/miragon/training/process/MembershipProcessTest.java`.
+Das Start-Formular (aus Aufgabe 1) und die Form am User Task sind beide **Generated Forms** –
+derselbe einfache Mechanismus, einmal am Start Event, einmal am User Task. Das ist der bequeme
+Einstieg für Formulare. Ab Aufgabe 4 wandert die fachliche Interaktion aus der Tasklist heraus in
+eigene REST-Endpunkte.
 
 ## Referenzlösung
 
@@ -233,7 +126,7 @@ unter `src/test/java/io/miragon/training/process/MembershipProcessTest.java`.
 
 ## Nächster Schritt
 
-In Aufgabe 3 kommt der Bestätigungsschritt dazu – und der Prozess wird nicht mehr direkt,
-sondern über eine Nachricht gestartet.
+In Aufgabe 3 wird aus dem zweiten Platzhalter „Send welcome mail" ein echter **Service Task** –
+und du lernst den **JavaDelegate** kennen, der ihn ausführt.
 
 ➡️ [Weiter zu Aufgabe 3](exercise-03.md)

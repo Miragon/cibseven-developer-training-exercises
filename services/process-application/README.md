@@ -8,18 +8,18 @@ Welcome to the CIB Seven Developer Training!
 running gear, gravel bikes, road bikes. The company is growing, the customer base is growing,
 and the processes have to keep up.
 
-In this module you work your way step by step through 9 exercises that build a complete
-newsletter and membership system on top of CIB Seven (Camunda Platform 7).
+In this module you work your way step by step through 10 exercises that build a complete
+Inner Circle membership process on top of CIB Seven (Camunda Platform 7).
 
 ## The complete target process
 
-Here is what the process looks like at the end of Exercise 9 – with all the concepts you build up step by step:
+Here is what the process looks like at the end of Exercise 10 – with all the concepts you build up step by step:
 
-![Complete membership process](../../docs/assets/exercise-09-main.svg)
+![Complete membership process](../../docs/assets/exercise-10-main.svg)
 
 The extracted sub-process for the rejection (Call Activity + DMN):
 
-![Membership rejection sub-process](../../docs/assets/exercise-09-sub.svg)
+![Membership rejection sub-process](../../docs/assets/exercise-10-sub.svg)
 
 ## Prerequisites
 
@@ -41,17 +41,18 @@ http://localhost:8080/webapp/#/seven/auth/start  (admin / admin)
 
 | Exercise | Topic | Description |
 |---|---|---|
-| [0](../../docs/en/exercise-00.md) | Business BPMN modeling | Create the process purely on the business level with the Miragon BPMN Modeler |
-| [1](../../docs/en/exercise-01.md) | Engine & tooling | Deploy a runnable newsletter, get to know the Cockpit & DB tables |
-| [2](../../docs/en/exercise-02.md) | Technical modeling & automation | Model technically & wire it up with Java code |
-| [3](../../docs/en/exercise-03.md) | Confirmation mail | Extend service tasks, confirmation flow |
-| [4](../../docs/en/exercise-04.md) | Membership & gateway | Exclusive gateway, capacity check |
-| [5](../../docs/en/exercise-05.md) | Process tests | Process unit test: in-memory engine, mocked use cases, without PostgreSQL |
-| [5 · Add-on](../../docs/en/exercise-05-addon.md) | bpmn-to-code | Generate a type-safe process API from the BPMN – strings out, constants in |
-| [6](../../docs/en/exercise-06.md) | Boundary events & subprocesses | Parallel gateway, timer and message boundary events, subprocesses |
-| [7](../../docs/en/exercise-07.md) | Compensation (SAGA) | Automatic rollback via BPMN compensation |
-| [8](../../docs/en/exercise-08.md) | Call Activity & DMN | Process modularization with decision tables |
-| [9](../../docs/en/exercise-09.md) | Remote engine & external task | Extract the notify-community delegate as an external task into a dedicated remote worker, notification into a Teams channel |
+| [0](../../docs/en/exercise-00.md) | Business BPMN modeling | Create the whole target process purely on the business level with the Miragon BPMN Modeler |
+| [1](../../docs/en/exercise-01.md) | Engine & tooling | Run the given start-form / Manual-Task model, get to know the Cockpit & DB tables |
+| [2](../../docs/en/exercise-02.md) | The first wait state | Turn the "Confirm" Manual Task into a User Task with a self-made Generated Form |
+| [3](../../docs/en/exercise-03.md) | Automate a step | Turn the "Send welcome mail" Manual Task into a Service Task + JavaDelegate (Cockpit-started) |
+| [4](../../docs/en/exercise-04.md) | The application takes over | Message start, REST register + confirm endpoints, correlation, persistence |
+| [5](../../docs/en/exercise-05.md) | Membership & gateway | Exclusive gateway, capacity check |
+| [6](../../docs/en/exercise-06.md) | Process tests | Process unit test: in-memory engine, mocked use cases, without PostgreSQL |
+| [6 · Add-on](../../docs/en/exercise-06-addon.md) | bpmn-to-code | Generate a type-safe process API from the BPMN – strings out, constants in |
+| [7](../../docs/en/exercise-07.md) | Boundary events & subprocesses | Parallel gateway, timer and message boundary events, subprocesses |
+| [8](../../docs/en/exercise-08.md) | Compensation (SAGA) | Automatic rollback via BPMN compensation |
+| [9](../../docs/en/exercise-09.md) | Call Activity & DMN | Process modularization with decision tables |
+| [10](../../docs/en/exercise-10.md) | Remote engine & external task | Extract the notify-community delegate as an external task into a dedicated remote worker, notification into a Teams channel |
 | [Extra 1](../../docs/en/extra-task-1.md) | Process engine API | Break the engine lock-in: workers instead of delegates, engine-neutral adapter layer |
 
 ## Architecture
@@ -91,7 +92,7 @@ For every exercise there is a reference solution under `../../solutions/exercise
 Each solution is a self-contained, runnable Spring Boot application.
 
 If you don't quite manage to finish an exercise, you can copy the reference solution directly into
-this module and continue working with it (valid values: 1–9):
+this module and continue working with it (valid values: 1–10):
 
 ```bash
 ../../mvnw antrun:run@load-solution -Dsolution=02

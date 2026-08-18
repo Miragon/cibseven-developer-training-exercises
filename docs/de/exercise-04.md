@@ -1,270 +1,182 @@
-# Aufgabe 4 – Kapazitätsprüfung mit Gateway
+# Aufgabe 4 – Die Anwendung übernimmt
 
-> **Voraussetzung:** Aufgabe 3 ist abgeschlossen – Double-Opt-In läuft, der Prozess startet per Nachricht.
+> **Voraussetzung:** Aufgabe 3 ist abgeschlossen – der Service Task läuft über einen JavaDelegate, gestartet wird der Prozess bisher von Hand im Cockpit.
 > **Arbeitsverzeichnis:** `services/process-application`
-> **Neu in dieser Aufgabe:** Domain-Refactoring zu *Membership*, Exclusive Gateway, alternativer Prozessausgang, Transaktionsgrenzen, Business Key, generiertes Task-Formular.
+> **Neu in dieser Aufgabe:** Message Start Event, Nachrichten-Korrelation, `RuntimeService`, REST-Endpunkt, Persistenz, Bestätigung per REST (`TaskService`).
 
 ## Darum geht es
 
-**Strategie-Meeting, Freitagnachmittag. Jemand hat exklusiven Matcha Latte mitgebracht.**
+Rose hat das neue **Backroad AL** gelauncht, Miravelo verkauft es exklusiv im Store. Social
+Media dreht durch, über Nacht kommen 500 Registrierungen rein.
 
-Miravelo startet den **Miravelo Inner Circle** – eine limitierte Membership für echte Fans
-der Marke. Tausend Plätze. Mehr nicht.
+> *„500 Sign-ups. Das ist entweder viral oder ein Bot-Angriff."*
+> — CTO, beim zweiten Kaffee
 
-Warum tausend? Weil Knappheit Wert erzeugt. Weil FOMO ein Geschäftsmodell ist. Weil
-irgendjemand ein Buch über Luxusmarken gelesen hat.
+Zwei Dinge werden schlagartig klar. Erstens: Niemand startet 500 Prozessinstanzen von Hand im
+Cockpit – **die Anwendung** muss den Prozess starten, sobald eine Registrierung per REST
+hereinkommt. Zweitens: Sind das echte Leute? Die Antwort ist ein **Double-Opt-In** – erst per
+Bestätigungslink bestätigen, dann willkommen heißen. Auch dieser Klick auf den Link landet als
+REST-Aufruf in deiner Anwendung, nicht als Klick in der Tasklist.
 
-> *„Wir sind nicht exklusiv, weil wir gut sind. Wir sind exklusiv, weil der Counter in der
-> Datenbank auf 1000 steht."*
-> — Ehrlichster Kommentar im Sprint Planning
-
-Aus Prozesssicht ist das ein **Gateway**: Platz bekommen? Weiter im Text. Kein Platz?
-Ablehnungsmail. Und weil jede Anmeldung ab jetzt ein fachliches Objekt mit eigener ID ist,
-bekommt jede Prozessinstanz einen **Business Key** – Schluss mit „welche der 40 laufenden
-Instanzen war noch mal Carol?".
+Ab dieser Aufgabe treibt also die Anwendung den Prozess: Sie legt die Membership an, startet
+die Instanz über eine **Nachricht** und schließt den Bestätigungsschritt über einen
+REST-Endpunkt ab.
 
 ## Lernziele
 
 Nach dieser Aufgabe kannst du
 
-- ein Exclusive Gateway modellieren, seine Bedingungen setzen und einen Default-Flow wählen,
-- einen alternativen Prozessausgang (Ablehnung) umsetzen,
-- eine Entscheidung aus Java-Code als Prozessvariable an das Gateway übergeben,
-- **Transaktionsgrenzen** bewusst setzen und begründen, warum ein nicht wiederholbarer
-  Schritt vor einem externen Effekt committen muss,
-- einer Prozessinstanz einen Business Key zuordnen,
-- einem User Task ein generiertes Task-Formular für einen Freigabeschritt geben.
+- ein None Start Event durch ein **Message Start Event** ersetzen und begründen, warum,
+- eine Prozessinstanz aus Java über `createMessageCorrelation(...).correlateStartMessage()` starten,
+- die fachlichen Daten persistieren und über die `membershipId` als Prozessvariable referenzieren,
+- REST-Endpunkte implementieren, die den Prozess starten und einen Wait State abschließen,
+- einen wartenden User Task über den `TaskService` per REST abschließen (statt in der Tasklist).
 
 ## Ziel-Modell
 
 ![BPMN-Modell der Aufgabe](../assets/exercise-04.svg)
 
-Referenzmodell: `../../models/exercise-04/newsletter.bpmn`
+Referenzmodell: `../../models/exercise-04/membership.bpmn`
+
+**Drei Änderungen gegenüber Aufgabe 3:**
+
+1. Das Start Event wird zum **Message Start Event** `startEvent_submitRegistration`
+   (`Message_SubscriptionRequested`). Das Start-Formular entfällt – die Daten kommen über den
+   REST-Aufruf herein.
+2. Vor der Bestätigung kommt ein **Service Task** `serviceTask_sendConfirmationMail` dazu.
+3. Der Manual/Service-Weg aus Aufgabe 3 bleibt, aber die Delegates lesen ab jetzt die
+   `membershipId` statt der rohen E-Mail-Adresse.
 
 ## Aufgabe
 
-### 1. Domain umbenennen
+### 1. Business-Schicht der Anwendung aktivieren
 
-Aus der Newsletter-Subscription wird die Membership im Inner Circle. Benenne die
-bestehenden Klassen konsequent um – `Subscription` → `Membership`, `SubscriptionId` →
-`MembershipId`, `RegisterSubscriptionUseCase` → `RegisterMembershipUseCase` und so weiter.
-Der REST-Pfad wird zu `/api/memberships`, die Prozessvariable `subscriptionId` zu
-`membershipId`.
+Die REST- und Persistenz-Klassen sind mit `TODO Exercise 4` auskommentiert. Kommentiere sie ein –
+das ist Plumbing, keine Engine-Anbindung:
 
-> Der Prozess-Key bleibt `subscribeNewsletter` und die Datei weiterhin `newsletter.bpmn` –
-> so, wie es in echten Projekten auch bleibt, wenn ein Prozess fachlich weiterwächst. Wir
-> erwähnen das hier einmal und danach nicht mehr.
+- `adapter/inbound/rest/MembershipController.java`
+- `application/service/RegisterMembershipService.java`
+- `adapter/outbound/cibseven/MembershipProcessAdapter.java`
+- `adapter/outbound/db/*` (Entity, Mapper, JpaRepository, PersistenceAdapter)
+- die Use-Case-Interfaces in `application/port/inbound/*` (`domain/` und die Outbound-Ports sind
+  bereits Teil des aktiven Skeletts)
+- die Bestätigungs- und Confirm-Klassen (`SendConfirmationMail*`, `ConfirmMembership*`)
 
-### 2. Modell erweitern
+Die drei Stellen mit echter Engine-Anbindung (`MembershipProcessAdapter`, die beiden Delegates)
+tragen weiterhin ein `TODO` – die schreibst du selbst.
 
-Vor dem Versand der Bestätigungs-Mail kommen ein **Service Task** für die Reservierung und
-ein **Exclusive Gateway** dazu, das den Sequenzfluss in zwei Pfade teilt. Insgesamt sind es
-vier neue Elemente – und zwei bestehende bekommen neue Element-IDs und Namen, weil aus der
-Subscription eine Membership geworden ist.
+### 2. Modell umbauen
 
-Elemente, Delegate Expressions und die Gateway-Bedingung legst du im **Miragon BPMN Modeler**
-an (Element auswählen → Properties Panel), nicht im XML.
+Nimm das Modell aus Aufgabe 3 und ändere es im Miragon BPMN Modeler:
 
-**Neue Elemente:**
-
-| Element | Typ | ID | Name | Konfiguration |
-|---|---|---|---|---|
-| Platz reservieren | Service Task | `serviceTask_claimMembership` | Claim membership | Delegate Expression: `#{claimMembershipDelegate}` |
-| Kapazitätsentscheidung | Exclusive Gateway | `gateway_hasEmptySpots` | Has empty spots | Default-Flow: Ja-Pfad |
-| Ablehnungs-Mail | Service Task | `serviceTask_sendRejectionMail` | Send rejection mail | Delegate Expression: `#{sendRejectionMailDelegate}` |
-| Ablehnung | End Event | `endEvent_membershipRejected` | Membership rejected | – |
-
-**Umbenannte Elemente:**
-
-| Alt (Aufgabe 3) | Neu (Aufgabe 4) |
+| Änderung | Wert |
 |---|---|
-| `userTask_confirmSubscription` – Confirm subscription | `userTask_confirmMembership` – Confirm membership |
-| `endEvent_userSubscribed` – User subscribed | `endEvent_membershipConfirmed` – Membership confirmed |
+| Start Event → **Message Start Event** | ID `startEvent_submitRegistration`, Name „Submit registration form", Message Name `Message_SubscriptionRequested` |
+| Start-Formular entfernen | die `email`/`name`/`age`-Felder am Start Event löschen |
+| Neuer **Service Task** vor der Bestätigung | ID `serviceTask_sendConfirmationMail`, Name „Send confirmation mail", Delegate Expression `#{sendConfirmationMailDelegate}` |
 
-**Bedingung am Nein-Pfad:** `${!hasEmptySpots}`. Der Ja-Pfad ist der Default-Flow und
-braucht keine Bedingung.
+Der Ablauf ist danach: Message Start → `Send confirmation mail` → `Confirm membership` (User
+Task, Wait State) → `Send Welcome Mail` → Ende.
 
-### 3. Use Cases und Services ergänzen
+### 3. Registrierung persistieren und Prozess starten
 
-Nach dem Muster aus Aufgabe 3:
+**Datei:** `application/service/RegisterMembershipService.java`
 
-- **`ClaimMembershipUseCase` / `ClaimMembershipService`** – prüft die Kapazität und gibt
-  `true` zurück, wenn noch ein Platz frei war. Ein einfacher Zähler im Speicher genügt
-  (maximal 1000 Plätze); eine Datenbank brauchst du dafür nicht.
-- **`SendRejectionMailUseCase` / `SendRejectionMailService`** – lädt die Membership und
-  logget die Ablehnung mit der E-Mail-Adresse.
+Der REST-Endpunkt `POST /api/memberships` ruft `RegisterMembershipUseCase.register(...)` auf.
+Implementiere die Logik: ein `Membership`-Objekt aus dem Command bauen, über das Repository
+speichern, den Prozess über den Process-Port starten, `membership.id()` zurückgeben.
 
-> Die Kapazität ist bewusst schlicht gehalten. Die Referenzlösung nutzt einen
-> `AtomicInteger` samt Konstante `MAX_SPOTS` direkt im `ClaimMembershipService`. Wenn du
-> es sauberer magst, modelliere stattdessen ein Domain-Objekt `MembershipCapacity` mit
-> `maxSpots`, `claimedSpots`, `hasEmptySpots()` und `claim()` – fachlich ist beides gleichwertig.
+### 4. Prozessstart per Korrelation
 
-### 4. Delegates ergänzen
+**Datei:** `adapter/outbound/cibseven/MembershipProcessAdapter.java` – **selbst schreiben.**
 
-- **`ClaimMembershipDelegate`** – liest `membershipId`, ruft den Use Case auf und schreibt
-  dessen Ergebnis als Prozessvariable `hasEmptySpots` auf die `DelegateExecution`.
-- **`SendRejectionMailDelegate`** – liest `membershipId` und ruft den Use Case auf.
-
-> Das Setzen der Prozessvariable gehört in den **Delegate**, nicht in den Service: Der
-> Service kennt die Engine nicht und gibt nur ein `boolean` zurück. Genau diese Trennung
-> prüft der `ArchitectureTest`.
-
-### 5. Transaktionsgrenzen setzen
-
-> Theorie dazu: Trainingskapitel **„Async & Transaction Boundaries"** (Topic 4, *Execution
-> Resilience*) – Save Points, Default- und manuelle Grenzen, Rollback in Aktion. Hier ist
-> die erste Stelle, an der du es anwendest.
-
-Bis hierher lief der Prozess komplett **synchron**. Ab diesem Modell setzt du
-Transaktionsgrenzen – in zwei Stufen.
-
-**a) Grenzen an den Wait States.** Die Engine committet automatisch an jedem Wait State –
-an einem User Task muss sie den Zustand ohnehin speichern. Überall sonst setzt du die Grenze
-selbst, mit einer **asynchronen Continuation**: Die Marker `asyncBefore` und `asyncAfter`
-sagen der Engine, dass sie an dieser Stelle committen, einen Job anlegen und die Arbeit
-danach in einer **neuen** Transaktion fortsetzen soll.
-
-Ergänze die beiden Continuations, die hier fehlen:
-
-- `asyncBefore` am Message Start Event `startEvent_submitRegistration` – saubere Grenze
-  nach der Korrelation; der `correlateMessage`-Aufruf legt nur die Instanz an und kehrt zurück.
-- `asyncAfter` am User Task `userTask_confirmMembership` – die Completion committet sofort.
-  Sonst laufen Completion **und** der nachgelagerte Service Task in **einer** Transaktion:
-  Wirft er, rollt die Completion mit zurück und der Task erscheint wieder in der Tasklist.
-
-**b) Grenzen an den Service Tasks.** Mit `claimMembership` steht erstmals ein **nicht
-wiederholbarer** Schritt – die Platzreservierung – direkt vor einem Mailversand. Zwischen
-Message Start und User Task liegt **kein** Wait State; ohne weitere Marker laufen
-`claimMembership` und `sendConfirmationMail` deshalb in **einer** Engine-Transaktion.
-
-Wirft der Mailversand eine Exception, rollt die Engine die *gesamte* Transaktion zurück und
-führt den Job erneut aus. Ergebnis: `claimMembership` läuft ein zweites Mal – ein doppelt
-reservierter Platz, obwohl nur der Mailversand fehlgeschlagen ist.
-
-**Regel:** Trenne die *nicht wiederholbare* Arbeit vom *externen, nicht zurückrollbaren*
-Effekt durch eine eigene Transaktionsgrenze. Setze `asyncBefore` an jeden Service Task mit
-externem Effekt:
-
-| Marker | Element | Warum |
-|---|---|---|
-| `asyncBefore` | `serviceTask_sendConfirmationMail` | committet die Reservierung zuerst; ein Mail-Fehler wiederholt nur den Versand |
-| `asyncBefore` | `serviceTask_sendRejectionMail` | liegt sonst in derselben Transaktion wie `claimMembership` |
-| `asyncBefore` | `serviceTask_sendWelcomeMail` | Konsistenz; ab Aufgabe 6 zusätzlich auf einem Parallelzweig relevant |
-
-`claimMembership` bekommt bewusst **keinen** Marker – es soll früh committen, gemeinsam mit
-dem Token, das im Modell weiterrückt (das *Token* ist die gedachte Spielfigur, die den
-aktuellen Stand einer Instanz im Prozessmodell markiert). Der Marker gehört auf den *nachgelagerten* Aufruf, der die
-Reservierung sonst mit zurückrollt. Im Modeler: Element auswählen → Properties Panel →
-*Asynchronous Before*.
-
-### 6. Business Key setzen
-
-Setze beim Start des Prozesses die `membershipId` als Business Key. Der Correlation Builder im
-`MembershipProcessAdapter` (den du in Aufgabe 3 auf `createMessageCorrelation(...)` umgestellt
-hast) bietet dafür `processInstanceBusinessKey(...)`. Häng den Aufruf mit der `membershipId` in
-die bestehende Kette ein – die konkreten Argumente füllst du selbst:
+Ein Message Start Event lässt sich nicht über `startProcessInstanceByKey` auslösen. Stelle
+`startProcess(...)` auf die Korrelation der Nachricht `Message_SubscriptionRequested` um. Der
+`RuntimeService` liefert über `createMessageCorrelation(...)` einen Correlation Builder; setze
+die vier Prozessvariablen `membershipId`, `email`, `name`, `age`. Die Argumente füllst du selbst:
 
 ```java
 runtimeService.createMessageCorrelation(/* Message-Name */)
-        .processInstanceBusinessKey(/* membershipId */)
-        .setVariables(/* ... */)
+        .setVariables(/* membershipId, email, name, age */)
         .correlateStartMessage();
 ```
 
-Der Business Key verknüpft die Prozessinstanz mit dem fachlichen Objekt: Im Cockpit lässt
-sich jede Instanz eindeutig einer Anmeldung zuordnen und gezielt suchen.
+### 5. Delegates auf die `membershipId` umstellen
 
-### 7. Task-Formular für die Freigabe
+Bisher las der `SendWelcomeMailDelegate` die rohe `email`. Jetzt referenziert der Prozess die
+fachlichen Daten über die persistierte Membership:
 
-Der User Task `userTask_confirmMembership` hat bisher kein Formular – wer ihn in der Tasklist
-öffnet, sieht keine einzige Prozessvariable und kann ihn nur blind abschließen. Gib ihm ein
-**generiertes Task-Formular** (*Generated Task Form*, ein Bordmittel von Camunda 7 – keine
-zusätzliche Datei, kein HTML), damit die freigebende Person die Anmeldedaten sieht:
+- **`SendWelcomeMailDelegate`** und **`SendConfirmationMailDelegate`** lesen die Prozessvariable
+  `membershipId` aus der `DelegateExecution`, wandeln sie in eine `MembershipId` und rufen den
+  jeweiligen Use Case auf – **das schreibst du selbst.**
+- **`SendWelcomeMailService`** und **`SendConfirmationMailService`** laden die Membership über das
+  Repository und loggen die E-Mail-Adresse.
 
-| Feld-ID | Label | Typ | Zweck |
-|---|---|---|---|
-| `name` | Name | string | Kontext, wird aus der Prozessvariable vorbefüllt |
-| `email` | E-Mail | string | Kontext, vorbefüllt |
-| `age` | Age | long | Kontext, vorbefüllt |
-| `confirmed` | Confirm membership | boolean | die eigentliche Freigabe (Checkbox) |
+### 6. Bestätigung per REST-Endpunkt abschließen
 
-`name`, `email` und `age` tragen dieselben IDs wie die Prozessvariablen und werden dadurch
-automatisch vorbefüllt. `confirmed` ist neu und wird beim Abschließen als boolesche
-Prozessvariable gespeichert.
+Der Bestätigungslink aus der Mail landet als `POST /api/memberships/{membershipId}/confirm` in
+der Anwendung. Dieser Endpunkt schließt den wartenden User Task ab – nicht die Tasklist.
 
-Im Modeler: User Task auswählen → Properties Panel → Abschnitt **Forms** → Formularfelder
-anlegen. Im XML entsteht dabei ein `extensionElements`-Block mit `camunda:formData` direkt
-im User Task:
-
-```xml
-<bpmn:userTask id="userTask_confirmMembership" name="Confirm membership" camunda:asyncAfter="true">
-  <bpmn:extensionElements>
-    <camunda:formData>
-      <camunda:formField id="name" label="Name" type="string" />
-      <camunda:formField id="email" label="E-Mail" type="string" />
-      <camunda:formField id="age" label="Age" type="long" />
-      <camunda:formField id="confirmed" label="Confirm membership" type="boolean" />
-    </camunda:formData>
-  </bpmn:extensionElements>
-</bpmn:userTask>
-```
+- `MembershipController` bekommt eine Methode `confirm(...)`, die `ConfirmMembershipUseCase` aufruft.
+- `ConfirmMembershipService` reicht an den Process-Port weiter.
+- **`MembershipProcessAdapter.confirm(...)` – selbst schreiben:** Finde über den `TaskService` den
+  offenen Task `userTask_confirmMembership` zur passenden `membershipId` und schließe ihn ab. Die
+  API-Kette lautet `taskService.createTaskQuery()...singleResult()` gefolgt von `taskService.complete(...)`;
+  die Query-Bedingungen (Task-Definition-Key, Prozessvariable) füllst du selbst.
 
 ## Randbedingungen
 
-- Der Feldtyp muss zum Typ der Prozessvariable passen, sonst greift die Vorbefüllung nicht
-  (`age` ist `long`, nicht `string`).
-- `confirmed` steuert in dieser Aufgabe noch keinen Prozessfluss – es wird nur erfasst.
-- Die Kapazität lebt im Arbeitsspeicher und ist nach einem Neustart wieder bei null. Das
-  ist für das Training gewollt.
-- Element-IDs und Variablennamen kannst du jederzeit aus dem Referenzmodell übernehmen.
+- Der Prozess-Key bleibt `subscribeNewsletter`, der Message-Name exakt `Message_SubscriptionRequested`
+  – historische Namen, die stabil bleiben. Ein Tippfehler führt zur `MismatchingMessageCorrelationException`.
+- Die `membershipId` ist ab jetzt die Referenz zwischen Anwendung und Prozessinstanz; sie wird beim
+  Start als Prozessvariable gesetzt.
+- Der User Task `userTask_confirmMembership` hat in dieser Aufgabe **kein** Formular – er wird per
+  REST abgeschlossen. Ein Tasklist-Formular für den Freigabeschritt kommt in [Aufgabe 5](exercise-05.md) dazu.
 
 ## Erwartetes Ergebnis
 
-Der Prozess hat jetzt zwei Ausgänge – prüfe beide. Zuerst den Weg, den fast alle nehmen:
-
-**Freier Platz vorhanden:**
+Starte die Anwendung neu und registriere eine Person:
 
 ```bash
 curl -X POST http://localhost:8080/api/memberships \
   -H "Content-Type: application/json" \
-  -d '{"email": "carol@miravelo.com", "name": "Carol", "age": 27}'
+  -d '{"email": "bob@miravelo.com", "name": "Bob", "age": 25}'
 ```
 
-Der Prozess reserviert einen Platz, nimmt den Ja-Pfad und wartet am User Task
-`Confirm membership`. Öffne ihn in der Tasklist (`http://localhost:8080/webapp/#/seven/auth/start`,
-admin/admin): Name, E-Mail und Alter sind vorbefüllt. Setze den Haken bei *Confirm
-membership* und schließe den Task ab – die Instanz läuft über `Send Welcome Mail` bis
-`Membership confirmed`, und `confirmed` steht in der History auf `true`.
+1. Der Aufruf liefert die `membershipId` zurück. `Send confirmation mail` läuft durch – im Log
+   steht `Sending confirmation mail to bob@miravelo.com`.
+2. Die Prozessinstanz wartet am User Task `Confirm membership` (in `act_ru_task` sichtbar).
+3. Bestätige über den Endpunkt – mit der ID aus Schritt 1:
 
-**Kein Platz mehr frei:** Setze die maximale Platzzahl vorübergehend auf `0` (in der
-Referenzlösung die Konstante `MAX_SPOTS` in `ClaimMembershipService`), starte die Anwendung
-neu und schicke:
+   ```bash
+   curl -X POST http://localhost:8080/api/memberships/<membershipId>/confirm
+   ```
 
-```bash
-curl -X POST http://localhost:8080/api/memberships \
-  -H "Content-Type: application/json" \
-  -d '{"email": "dave@miravelo.com", "name": "Dave", "age": 30}'
-```
-
-Erwartetes Log: `Sending rejection mail to dave@miravelo.com`. Die Instanz endet an
-`Membership rejected`, ohne je an einem User Task zu warten.
+4. `Send Welcome Mail` läuft durch (`Sending welcome mail to bob@miravelo.com`), die Instanz endet.
 
 ## Selbstcheck
 
-- [ ] Alle Klassen sind auf *Membership* umbenannt, der REST-Pfad lautet `/api/memberships`
-- [ ] Das Gateway hat einen Default-Flow und genau eine Bedingung (`${!hasEmptySpots}`)
-- [ ] Der Ja-Pfad endet an `Membership confirmed`, der Nein-Pfad an `Membership rejected`
-- [ ] `asyncBefore` steht am Message Start Event und an den drei Mail-Tasks,
-      `asyncAfter` am User Task, `claimMembership` hat **keinen** Marker
-- [ ] Im Cockpit trägt die Instanz die `membershipId` als Business Key
-- [ ] Das Task-Formular zeigt die vorbefüllten Felder plus die Checkbox `confirmed`
+- [ ] Das Start Event ist ein Message Start Event mit dem Namen `Message_SubscriptionRequested`
+- [ ] Ein `POST /api/memberships` legt eine Membership an, startet die Instanz per Korrelation
+      und liefert die `membershipId` zurück
+- [ ] Beide Delegates lesen `membershipId`; die Services laden die Membership aus dem Repository
+- [ ] Ein `POST /api/memberships/{id}/confirm` schließt den wartenden `userTask_confirmMembership`
+      über den `TaskService` ab
+- [ ] Die Log-Zeilen (Bestätigung, dann Willkommen) erscheinen in der richtigen Reihenfolge
+- [ ] `./mvnw -pl services/process-application test -Dtest=ArchitectureTest` ist grün
 
 ## Hinweise
 
-**Idempotenz-Merksatz:** Ein Retry darf einen Service Task erneut ausführen. Sobald eine
-Aktion nur *einmal* passieren darf (Reservierung, Zahlung), muss sie entweder vor der Grenze
-committen oder idempotent sein. Bei externen Schnittstellen begegnet dir dasselbe Muster in
-[Aufgabe 9](exercise-09.md) und in [Extra-Aufgabe 1](extra-task-1.md) wieder.
+**Warum ein Message Start Event?** Ein None Start Event sagt „irgendwer startet hier irgendwie".
+Ein Message Start Event benennt den fachlichen Auslöser – *eine Registrierung ist eingegangen* –
+und macht ihn im Modell sichtbar. Dieselbe Korrelations-API brauchst du ab [Aufgabe 7](exercise-07.md)
+auch für Nachrichten **an laufende Instanzen**.
+
+**Warum die Bestätigung per REST statt per Tasklist?** In Aufgabe 2 war das Tasklist-Formular der
+einfache Einstieg. Produktionsnah kommt die Bestätigung aber aus einer eigenen Oberfläche oder –
+wie hier – aus einem Bestätigungslink; der Klick landet als REST-Aufruf, und der `TaskService`
+schließt den Wait State ab. Fachliche Interaktion läuft ab jetzt über eigene Endpunkte, nicht mehr
+über die generische Tasklist.
 
 ## Referenzlösung
 
@@ -276,7 +188,7 @@ committen oder idempotent sein. Bei externen Schnittstellen begegnet dir dasselb
 
 ## Nächster Schritt
 
-Der Prozess hat jetzt zwei Ausgänge – und niemand prüft automatisch, ob er den richtigen
-nimmt. In Aufgabe 5 sicherst du ihn mit einem Prozess-Test ab.
+In Aufgabe 5 bekommt der Inner Circle seine Exklusivität – mit Kapazitätsprüfung, Gateway und
+Transaktionsgrenzen.
 
 ➡️ [Weiter zu Aufgabe 5](exercise-05.md)

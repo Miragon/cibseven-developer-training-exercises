@@ -1,249 +1,261 @@
-# Exercise 6 – Subprocess, Boundary Events and Parallelism
+# Exercise 6 – Securing the process with tests
 
-> **Prerequisite:** Exercise 5 including the add-on is complete – the process tests run against the generated Process API.
+> **Prerequisite:** Exercise 5 is complete – the gateway, the capacity check, and both process outcomes are working.
 > **Working directory:** `services/process-application`
-> **New in this exercise:** embedded subprocess, Timer Boundary Events (interrupting and non-interrupting), Message Boundary Event, Parallel Gateway, an outbound adapter to Microsoft Teams.
+> **New in this exercise:** in-memory engine with h2, the job executor turned off, `@MockitoBean`, assertions with `BpmnAwareTests`.
 
 ## What this is about
 
-Miravelo notices a pattern: many applicants never confirm their membership – and in doing so
-block spots that others would love to have. This turns into three requirements:
+**Monday morning. The process is running. Supposedly.**
 
-1. Send a reminder mail **every day** as long as nobody confirms.
-2. Automatically cancel the membership after **three and a half days** without confirmation.
-3. Applicants can **withdraw** their application themselves.
+You've built a solid process: gateway, confirmation mail, rejection. In the
+Cockpit demo everything worked – once. But how do you know it will **still** work
+next week, when someone attaches a boundary event, reroutes a sequence flow, or
+flips a condition?
 
-And whoever makes it all the way to activation should be celebrated: in parallel with the
-welcome mail, a notification goes out to the community's **Microsoft Teams channel**. The two
-steps don't depend on each other – a case for a **Parallel Gateway**.
+Are you going to click through the Cockpit every single time? Start PostgreSQL, fire off curl calls,
+read logs? Nobody does that reliably. That's exactly where processes die quietly: a sequence flow
+points into the void after a refactoring, the gateway takes the wrong path – and nobody notices
+until someone gets a rejection despite a free spot.
+
+> *"Works on my machine" is not a test strategy. It's an excuse with better PR.*
+
+A **process test** starts the real process in an in-memory engine, lets the real
+delegates run, and only replaces the business logic behind them with mocks. Which path the
+process instance has to take is then written down as an **assertion** in the test – verifiable on every
+build instead of just once in a demo.
 
 ## Learning goals
 
 After this exercise you can
 
-- model an embedded subprocess and justify which activities it groups together,
-- use a non-interrupting Timer Boundary Event for recurring reminders,
-- use an interrupting Timer Boundary Event as a timeout,
-- trigger a Message Boundary Event from the outside via correlation,
-- span two independent branches with Parallel Gateways and merge them again,
-- place transaction boundaries correctly at boundary events and parallel branches,
-- secure the new paths in the process test.
+- secure a process as a unit test, without PostgreSQL and without any running infrastructure,
+- run the engine in the test on h2 and with the job executor turned off,
+- mock the use cases behind the delegates in a targeted way using `@MockitoBean`,
+- execute the async continuations yourself in the test and thereby drive the instance in a controlled way up to
+  the next wait state,
+- check process paths with `BpmnAwareTests` (`isWaitingAt`, `hasPassedInOrder`, `isEnded`).
 
 ## Target model
 
 ![BPMN model of the exercise](../assets/exercise-06.svg)
 
-Reference model: `../../models/exercise-06/newsletter.bpmn`
+There is **no new model**. You test the process from Exercise 5: Message Start →
+Claim → Gateway → confirmation → welcome mail, respectively rejection.
+
+Reference model (unchanged from Exercise 5): `../../models/exercise-06/membership.bpmn`
 
 ## The task
 
-### 1. Create the subprocess
+### 1. Add the test dependency
 
-You build and configure the entire model in this exercise in the **Miragon BPMN Modeler**
-(select the element → Properties Panel), not in the XML.
+The assertions come from the CIB Seven port of `camunda-bpm-assert`. The version is
+managed centrally in the root `pom.xml`:
 
-Group the confirmation mail and the confirmation into an embedded subprocess
-`subProcess_confirmMembership` ("Confirm membership"). An embedded subprocess
-has its own start and its own end and here contains four elements:
-
-| Element | Type | ID | Name |
-|---|---|---|---|
-| Start | None Start Event | `startEvent_confirmationRequired` | – |
-| Confirmation mail | Service Task | `serviceTask_sendConfirmationMail` | Send confirmation mail |
-| Confirmation | User Task | `userTask_confirmMembership` | Confirm membership |
-| End | None End Event | `endEvent_membershipConfirmed` | Membership confirmed |
-
-The subprocess is the element to which you attach the boundary events in the next step.
-That's exactly why you need it: an interrupting boundary event always cancels the activity
-it is attached to – and what should be cancelled is the **entire** confirmation, not just a
-single task.
-
-### 2. Attach boundary events
-
-All three attach to `subProcess_confirmMembership`:
-
-| Element | Type | ID | Name | Configuration |
-|---|---|---|---|---|
-| Reminder | Timer, **non**-interrupting | `timer_resendEveryDay` | Every day | **Cycle** `R/P1D` (repeats daily) |
-| Timeout | Timer, interrupting | `timer_abortAfter3HalfDays` | After 3½ days | **Duration** `P3DT12H` (3½ days) |
-| Withdrawal | Message, interrupting | `event_confirmationRejected` | Confirmation rejected | Message: `Message_ConfirmationRejected` |
-
-Mind the difference: the reminder needs a **Cycle** (`R/…`) so that it repeats. A duration
-would only fire once.
-
-### 3. Model the new tasks and end events
-
-Every boundary event needs a path that ends somewhere. The reminder gets its own short
-branch, the two cancellation paths share one:
-
-| Element | Type | ID | Name | Configuration |
-|---|---|---|---|---|
-| Reminder mail | Service Task | `serviceTask_reSendConfirmationMail` | Re-Send confirmation mail | `#{reSendConfirmationMailDelegate}` |
-| Release spot | Service Task | `serviceTask_revokeClaim` | Revoke claim | `#{revokeClaimDelegate}` |
-| End reminder | End Event | `endEvent_mailSentAgain` | Mail sent again | end of the reminder branch |
-| End cancellation | End Event | `endEvent_membershipDeclined` | Membership declined | after `Revoke claim` |
-| End activation | End Event | `endEvent_membershipActivated` | Membership activated | after the join |
-
-Both interrupting boundary events (`timer_abortAfter3HalfDays` and
-`event_confirmationRejected`) lead to `serviceTask_revokeClaim` and from there to
-`endEvent_membershipDeclined`.
-
-### 4. Add the Parallel Gateway
-
-Between the end of the subprocess and the activation end event come two Parallel
-Gateways:
-
-| Element | Type | ID | Branches |
-|---|---|---|---|
-| Fork | Parallel Gateway | `gateway_notifyFork` | → `serviceTask_sendWelcomeMail`, → `serviceTask_notifyCommunity` |
-| Join | Parallel Gateway | `gateway_notifyJoin` | ← both branches, → `endEvent_membershipActivated` |
-
-The new Service Task `serviceTask_notifyCommunity` ("Notify community") binds the
-delegate `#{notifyCommunityDelegate}`. Because the join waits for **both** branches, the
-membership only counts as activated once mail **and** notification are done.
-
-### 5. Add transaction boundaries
-
-Following the same principle as in [Exercise 4](exercise-04.md):
-
-| Marker | Element | Why |
-|---|---|---|
-| `asyncAfter` | `timer_resendEveryDay` | the reminder runs in its own transaction and repeats without touching the waiting subprocess |
-| `asyncAfter` | `timer_abortAfter3HalfDays` | a clean boundary **before** the cancellation (and, from Exercise 7 on, before the compensation) |
-| `asyncAfter` | `event_confirmationRejected` | likewise for the user-side withdrawal |
-| `asyncBefore` | `serviceTask_reSendConfirmationMail` | external effect – like all mail tasks |
-| `asyncBefore` | `serviceTask_sendWelcomeMail` | its own commit per parallel branch |
-| `asyncBefore` | `serviceTask_notifyCommunity` | its own commit per parallel branch |
-
-**Why a separate boundary per branch?** Without markers, `sendWelcomeMail` and
-`notifyCommunity` sit in **one** transaction. If the Teams call fails, the engine rolls
-back the job and retries it – the welcome mail would already be out and would go out
-**again** to the same address.
-
-### 6. Add use cases and delegates
-
-- **`ReSendConfirmationMailUseCase` / `ReSendConfirmationMailService`** – logs the
-  re-sending of the confirmation mail.
-- **`RevokeClaimUseCase` / `RevokeClaimService`** – logs the release and frees up the
-  capacity spot again.
-- **`ReSendConfirmationMailDelegate` / `RevokeClaimDelegate`** – analogous to the existing
-  delegates.
-
-### 7. Trigger the withdrawal via REST
-
-The Message Boundary Event is triggered from the outside. Add the endpoint
-
-```
-POST /api/memberships/{membershipId}/reject
+```xml
+<dependency>
+    <groupId>org.cibseven.bpm</groupId>
+    <artifactId>cibseven-bpm-assert</artifactId>
+    <scope>test</scope>
+</dependency>
 ```
 
-and correlate in the `MembershipProcessAdapter` with
-`runtimeService.createMessageCorrelation(...)`: message name from the model, filtered on
-the process variable `membershipId`.
+`spring-boot-starter-test` (JUnit 5, Mockito, AssertJ) and `h2` are already present.
 
-### 8. Wire up the community notification
+### 2. Create the test profile
 
-The notification runs entirely inside the engine – an ordinary delegate:
-
-- `adapter/inbound/cibseven/NotifyCommunityDelegate` – reads `membershipId`, calls the use case.
-- `application/port/inbound/NotifyCommunityUseCase` + `application/service/NotifyCommunityService` –
-  loads the membership, builds a `Notification` (title and text) and hands it to the out-port.
-- `application/port/outbound/NotificationPublisherOutPort` +
-  `adapter/outbound/teams/MicrosoftTeamsMessagePublisher` – posts the notification as an
-  **Adaptive Card** into a Teams channel (webhook from Power Automate *Workflows*).
-- `domain/Notification` – a record with `title` and `text`.
-
-Building the Adaptive Card and the REST call are infrastructure: take them from the
-reference solution. The `RestClient` is provided by `adapter/config/RestClientConfig`. The
-target URL lives in the `application.yaml`:
+**New file:** `src/test/resources/application-test.yaml`
 
 ```yaml
-notification:
-  teams:
-    # Real URL via the environment variable TEAMS_WEBHOOK_URL – no secret in the repository.
-    webhook-url: ${TEAMS_WEBHOOK_URL:https://CHANGE-ME}
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:h2:mem:cibseven-test;DB_CLOSE_DELAY=-1;INIT=CREATE SCHEMA IF NOT EXISTS exercise
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        default_schema: exercise
+
+camunda:
+  bpm:
+    admin-user:
+      id: admin
+      password: admin
+    database:
+      type: h2
+      schema-update: true
+    job-execution:
+      enabled: false   # <-- the key point: we run the async continuations ourselves
+    webapp:
+      enabled: false
+
+# The webapp bean validates this secret at start-up, even when the webapp is off:
+cibseven:
+  webclient:
+    authentication:
+      jwtSecret: M9nU3ORo3s+gK23D9mO5I2h+EIqnosCFDCJi+2bKoulKqZkeQT8pGYg5RhuORlf/fWhLu5meC/SPZCv9NNuj6SK/vE5Sid04UQGrnyh04EpBdiAosAO91xezjgmbSeALUtneibseGpS0tNE4RvLIl+gXiAKqNXyO
 ```
 
-### 9. Extend the process test
+> **Term: job executor.** The engine's background thread. It picks up the jobs that
+> arise from an asynchronous continuation (`asyncBefore` / `asyncAfter` from
+> [Exercise 5](exercise-05.md)) and works through them – exactly right in production,
+> but a source of randomness in a test: the test never knows how far the instance currently is.
+> That's why we turn it off and run the jobs ourselves.
 
-So far your test covers the happy path and the rejection due to missing capacity. Add three
-tests:
+### 3. The test helper – already provided
 
-- **Timeout (interrupting):** Wait at the user task, fire the timer with the helper
-  `fireTimer(processEngine, Elements.TIMER_ABORT_AFTER_3_HALF_DAYS.getValue())`, execute the
-  open jobs and check
-  `hasPassed(Elements.SERVICE_TASK_REVOKE_CLAIM.getValue(), Elements.END_EVENT_MEMBERSHIP_DECLINED.getValue())`.
-  Mock `RevokeClaimUseCase` for this.
-- **Withdrawal via message:** Instead of the timer, call `membershipProcess.rejectMembership(id)`
-  – same outcome.
-- **Reminder (non-interrupting):**
-  `fireTimer(..., Elements.TIMER_RESEND_EVERY_DAY.getValue())`, then check that
-  `reSendConfirmationMailUseCase` was called a **second** time and the process is
-  still waiting at the user task. Mock `ReSendConfirmationMailUseCase`.
+You neither write nor copy this plumbing: it already ships in the test module at
+`src/test/java/io/miragon/training/process/util/ProcessEngineTestUtils.java`. It is the same for
+every process test; you just call its methods. What it gives you:
 
-You'll find the `fireTimer` helper (executes a timer job regardless of its due date) in
-`ProcessEngineTestUtils`.
+- **`continueToNextWaitState(processEngine)`** – because the job executor is off (Step 2),
+  nobody picks up the async-continuation jobs (`asyncBefore`/`asyncAfter`). This method executes
+  them from the test thread until the instance reaches its next wait state (user task or end).
+  You call it right after starting the process and again after completing a task.
+- **`fireTimer(processEngine, activityId)`** – executes a timer job directly, ignoring its due
+  date. You don't need it here; it first comes into play with the boundary events in
+  [Exercise 7](exercise-07.md).
+- **`findProcessInstance(runtimeService, membershipId)`** – looks up the running instance by the
+  process key `subscribeNewsletter` and the `membershipId` variable, so your test can assert
+  against it.
+
+> The helper needs the engine classes to compile. That is already wired into the module's
+> `pom.xml` (the `cibseven-engine` core dependency), so it compiles from the start – you don't
+> add anything for it. Open the file once to see how the two or three lines per method work; then
+> just use it.
+
+### 4. Write the happy-path test yourself
+
+**New file:** `src/test/java/io/miragon/training/process/MembershipProcessTest.java`
+
+This part is yours to write. Start from the scaffold – the class annotations, the injected engine
+services, the mocked use cases and the `init(...)` call are the same for every process test:
+
+```java
+@SpringBootTest
+@ActiveProfiles("test")
+class MembershipProcessTest {
+
+    @Autowired private MembershipProcess membershipProcess;
+    @Autowired private RuntimeService runtimeService;
+    @Autowired private TaskService taskService;
+    @Autowired private ProcessEngine processEngine;
+
+    @MockitoBean private ClaimMembershipUseCase claimMembershipUseCase;
+    @MockitoBean private SendConfirmationMailUseCase sendConfirmationMailUseCase;
+    @MockitoBean private SendRejectionMailUseCase sendRejectionMailUseCase;
+    @MockitoBean private SendWelcomeMailUseCase sendWelcomeMailUseCase;
+
+    @BeforeEach
+    void setUp() {
+        init(processEngine); // BpmnAwareTests.init(...)
+    }
+}
+```
+
+Every process test follows the same **Given – When – Then** shape. Here is a **generic worked
+example** of the happy path: it shows the exact API calls, but the element IDs are placeholders –
+you replace each `"<…>"` with the real ID from your model.
+
+```java
+@Test
+void happyPath_membershipIsConfirmedAndWelcomeMailIsSent() {
+    // Given: the capacity check grants a spot
+    when(claimMembershipUseCase.claimMembership(any())).thenReturn(true);
+
+    // When: the process is started and driven to its first wait state
+    Membership membership = new Membership(new Email("jane@example.com"), new Name("Jane"), new Age(30));
+    membershipProcess.startProcess(membership);
+    ProcessInstance instance = findProcessInstance(runtimeService, membership.id().value().toString());
+    continueToNextWaitState(processEngine);
+
+    // Then: the instance waits at the user task
+    assertThat(instance).isWaitingAt("<user-task-id>");
+
+    // When: that user task is completed and the process runs on
+    String taskId = taskService.createTaskQuery()
+            .processInstanceId(instance.getProcessInstanceId()).singleResult().getId();
+    taskService.complete(taskId);
+    continueToNextWaitState(processEngine);
+
+    // Then: it ended along the confirm path and never touched the reject path
+    assertThat(instance)
+            .isEnded()
+            .hasPassedInOrder("<start>", "<…confirm-path activities, in order…>", "<confirmed-end>")
+            .hasNotPassed("<reject-activity>", "<rejected-end>");
+
+    // And: the welcome-mail use case was invoked
+    verify(sendWelcomeMailUseCase).sendWelcomeMail(membership.id());
+}
+```
+
+Everything else you need:
+
+- **Assertion vocabulary** (from `BpmnAwareTests`, via the statically imported `assertThat`):
+  `isWaitingAt(id)`, `isEnded()`, `hasPassedInOrder(ids…)`, `hasNotPassed(ids…)` – plus Mockito's
+  `when(...)`/`verify(...)` for the use cases.
+- **Driving and lookup** come from the provided helper: `continueToNextWaitState(processEngine)`
+  and `findProcessInstance(runtimeService, membership.id().value().toString())`.
+- **The element IDs** are deliberately not listed here – read them off `membership.bpmn` in the
+  modeler. The confirm path is start → claim → gateway → confirmation mail → user task → welcome
+  mail → confirmed end; at the gateway the reject path branches to the rejection mail → rejected end.
+
+### 5. Test the rejection path yourself
+
+Now the second test, `noCapacity_membershipIsRejected` – same approach, you write it:
+
+- `claimMembership` returns `false`.
+- The process instance runs without a wait state straight through to the rejected end event.
+- What's checked: the rejection-mail activity was passed, confirmation and
+  welcome mail were **not**, and `sendWelcomeMailUseCase` was never called
+  (`verify(..., never())`).
 
 ## Constraints
 
-- The timers in the reference model carry the **business** values (`R/P1D` and `P3DT12H`). If
-  you want to observe the behavior manually, temporarily set them to `R/PT1M` and
-  `PT3M` – you don't need this in the process test, where you trigger the timers directly.
-- The element IDs of the boundary events follow the grown convention `timer_` and
-  `event_` instead of `boundaryEvent_` – that's how it stands in the reference model, and
-  that's how it stays.
-- New element IDs automatically appear as `Elements.*` constants after the next `generate-sources`.
-- In the test, also mock `NotifyCommunityUseCase` so that no real Teams call goes out.
-- Never commit a real webhook URL – it comes from `TEAMS_WEBHOOK_URL`.
+- The test runs **without** PostgreSQL and without a running stack. Two knobs make
+  it fast and reproducible:
+  1. **h2 instead of PostgreSQL** – an in-memory database that is freshly created
+     and discarded for each test run (`ddl-auto: create-drop`).
+  2. **Job executor off** – you run the continuations yourself from the test thread. This way
+     you determine how far the instance is when you write your assertion.
+- Only **the use cases** get mocked. Delegates, model, and engine run for real – otherwise
+  you're testing your mocks instead of your process.
+- In this exercise the element IDs are still string literals in the test. Note how many there
+  are – the [add-on](exercise-06-addon.md) clears them away next.
 
 ## Expected result
 
-Create a membership and note the returned ID – you'll use it right away to trigger the
-withdrawal:
+Run just this one test class – from the repository root directory:
 
 ```bash
-MEMBERSHIP_ID=$(curl -s -X POST http://localhost:8080/api/memberships \
-  -H "Content-Type: application/json" \
-  -d '{"email": "eve@miravelo.com", "name": "Eve", "age": 26}')
-
-# With shortened timers: after a minute the reminder mail appears in the log,
-# the user task keeps waiting unchanged
-
-curl -X POST http://localhost:8080/api/memberships/$MEMBERSHIP_ID/reject
-# → Revoke claim runs, the instance ends at "Membership declined"
+./mvnw -pl services/process-application test -Dtest=MembershipProcessTest
 ```
 
-Without a withdrawal, the process cancels itself once the timeout timer elapses. If, on the
-other hand, the user task is confirmed, both parallel branches run and the instance ends at
-`Membership activated`.
+Both tests pass in a few seconds, without PostgreSQL running. If one
+fails, the assertion shows you at which activity the instance actually stood.
 
 ## Self-check
 
-- [ ] The subprocess contains a start event, both tasks and an end event
-- [ ] All three boundary events attach to the subprocess, and the interruption semantics are correct
-- [ ] Both interrupting paths lead through `Revoke claim` to `Membership declined`
-- [ ] Fork and join are Parallel Gateways, both branches carry `asyncBefore`
-- [ ] `POST /api/memberships/{id}/reject` cancels a waiting instance
-- [ ] The three new process tests are green
-
-## Hints
-
-The fact that the Teams integration sits right in the middle of the process application is
-deliberately not yet ideal. In [Exercise 9](exercise-09.md) you'll see the counter-model: a
-dedicated service that owns its process – including the isolation of its secrets. For now the
-delegate is enough.
+- [ ] `application-test.yaml` exists, the job executor is turned off in the test profile
+- [ ] `ProcessEngineTestUtils` brings the instance up to the next wait state
+- [ ] The happy-path test checks the order **and** the paths not taken
+- [ ] The rejection test checks that the welcome mail was never called
+- [ ] Both tests pass green, without the Docker stack running
 
 ## Reference solution
 
-`../../solutions/exercise-06/` – or load it directly:
-
-```bash
-./mvnw -pl services/process-application antrun:run@load-solution -Dsolution=06
-```
+`../../solutions/exercise-06/`
 
 ## Next step
 
-`revokeClaim` currently hangs as an explicit task on every cancellation path. In Exercise 7
-you'll leave that to the engine.
+The element IDs are still hand-typed strings in the test – fragile the moment someone renames
+in the modeler. The add-on turns them into verified constants.
 
-➡️ [Next: Exercise 7](exercise-07.md)
+➡️ [Next — Add-on: bpmn-to-code](exercise-06-addon.md)

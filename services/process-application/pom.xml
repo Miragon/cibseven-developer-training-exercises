@@ -106,13 +106,13 @@
                             <target xmlns:if="ant:if" xmlns:unless="ant:unless">
                                 <fail unless="solution"
                                       message="Please provide the solution number as two digits, e.g.: mvn -pl services/process-application antrun:run@load-solution -Dsolution=02"/>
-                                <condition property="solutionModuleDir" value="exercise-09/process-application">
-                                    <equals arg1="${solution}" arg2="09"/>
+                                <condition property="solutionModuleDir" value="exercise-10/process-application">
+                                    <equals arg1="${solution}" arg2="10"/>
                                 </condition>
                                 <property name="solutionModuleDir" value="exercise-${solution}"/>
                                 <property name="solutionSrc"
                                           location="${maven.multiModuleProjectDirectory}/solutions/${solutionModuleDir}/src"/>
-                                <fail message="Solution '${solutionModuleDir}' not found (valid values: 01-09, two-digit). Expected path: ${solutionSrc}">
+                                <fail message="Solution '${solutionModuleDir}' not found (valid values: 01-10, two-digit). Expected path: ${solutionSrc}">
                                     <condition>
                                         <not>
                                             <available file="${solutionSrc}" type="dir"/>
