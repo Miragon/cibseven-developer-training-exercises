@@ -1,7 +1,7 @@
 package io.miragon.training.application.service;
 
-// TODO Aufgabe 2: Diese Klasse einkommentieren (die Zeilen mit /* und */ entfernen)
-//  und anschließend die TODOs im Methodenrumpf implementieren.
+// TODO Exercise 2: Uncomment this class (remove the /* and */ lines)
+//  and then implement the TODOs in the method body.
 /*
 import io.miragon.training.application.port.inbound.RegisterSubscriptionUseCase;
 import io.miragon.training.application.port.outbound.SubscriptionProcess;
@@ -34,12 +34,12 @@ public class RegisterSubscriptionService implements RegisterSubscriptionUseCase 
     public SubscriptionId register(Command command) {
         log.info("Registering subscription for {}", command.email());
 
-        // TODO Aufgabe 2:
-        //  1. Erstelle ein Subscription-Objekt aus dem Command (Email, Name, Age)
-        //  2. Speichere es mit repository.save(...)
-        //  3. Starte den Prozess mit process.startProcess(...)
-        //  4. Gib die SubscriptionId zurück
-        throw new UnsupportedOperationException("Aufgabe 2: Implementiere die Subscription-Registrierung");
+        // TODO Exercise 2:
+        //  1. Create a Subscription object from the Command (Email, Name, Age)
+        //  2. Save it with repository.save(...)
+        //  3. Start the process with process.startProcess(...)
+        //  4. Return the SubscriptionId
+        throw new UnsupportedOperationException("Exercise 2: Implement the subscription registration");
     }
 }
 */

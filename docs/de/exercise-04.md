@@ -159,13 +159,15 @@ Reservierung sonst mit zurückrollt. Im Modeler: Element auswählen → Properti
 
 ### 6. Business Key setzen
 
-Setze beim Start des Prozesses die `membershipId` als Business Key. Der Correlation Builder
-im `MembershipProcessAdapter` bietet dafür `processInstanceBusinessKey(...)`:
+Setze beim Start des Prozesses die `membershipId` als Business Key. Der Correlation Builder im
+`MembershipProcessAdapter` (den du in Aufgabe 3 auf `createMessageCorrelation(...)` umgestellt
+hast) bietet dafür `processInstanceBusinessKey(...)`. Häng den Aufruf mit der `membershipId` in
+die bestehende Kette ein – die konkreten Argumente füllst du selbst:
 
 ```java
-runtimeService.createMessageCorrelation("Message_SubscriptionRequested")
-        .processInstanceBusinessKey(membership.id().value().toString())
-        .setVariables(...)
+runtimeService.createMessageCorrelation(/* Message-Name */)
+        .processInstanceBusinessKey(/* membershipId */)
+        .setVariables(/* ... */)
         .correlateStartMessage();
 ```
 

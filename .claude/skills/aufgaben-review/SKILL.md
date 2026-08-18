@@ -140,6 +140,30 @@ Typische Fehlerklassen, auf die gezielt zu achten ist:
    `grep -nE "[Dd]er Prozess (wartet|läuft|endet|startet|bricht|nimmt)" docs/de/exercise-*.md docs/de/extra-*.md`:
    Ist ein konkreter Durchlauf gemeint, muss dort **Prozessinstanz** oder **Instanz** stehen.
    Aussagen über das Modell („der Prozess startet ab jetzt per Nachricht") bleiben.
+11. **Engine-Kontext nur einkommentiert / Hinweis paste-fertig** – wo das Lernziel die
+   Anbindung an die Process Engine ist (Delegate, `DelegateExecution`, `RuntimeService`,
+   Prozessvariablen, Korrelation, External Task, Prozessstart), muss die teilnehmende Person
+   den Aufruf **selbst schreiben**. Zwei Befunde:
+   - Ein **Arbeitsschritt lässt Engine-Code nur einkommentieren**, statt ihn implementieren zu
+     lassen („kommentiere den Delegate ein", „entferne die `/* */`", „aktiviere die Klasse"),
+     ohne dass danach ein eigener Methodenkörper zu schreiben bleibt. Reines
+     Nicht-Engine-Plumbing (REST, JPA, Spring-/Maven-Config, Build-Plugins) darf dagegen
+     eingekommentiert werden.
+   - Ein **Hinweis liefert die fertige Aufruf- oder Cast-Zeile** zum Abtippen, statt nur die API
+     zu benennen. Maßgeblich ist der Unterabschnitt *Engine-Kontext: selbst implementieren* in
+     `docs/aufgaben-template.md`, Abschnitt 2. Grobsuche nach paste-fertigen Engine-Aufrufen:
+
+     ```bash
+     grep -nE 'runtimeService\.|createMessageCorrelation\(|execution\.(get|set)Variable\(|startProcessInstanceByKey\(|\.correlate|processInstanceBusinessKey\(' docs/de/exercise-*.md docs/de/extra-*.md
+     ```
+
+     Jeder Treffer wird einzeln bewertet: Nennt der Text nur die API (Methodenname in Prosa, mit
+     `...` oder als abstraktes Skelett mit Platzhaltern wie `.processInstanceBusinessKey(/* membershipId */)`;
+     exakte Daten in Backticks), ist das in Ordnung – ein solches Skelett ist sogar erwünscht, weil
+     es die Form der API zeigt. Steht dort eine vollständige, zusammengesetzte Aufrufzeile (mit
+     echten Argumenten oder Cast), ist es ein Befund – auf ein Skelett oder einen API-Zeiger
+     straffen. Ausnahme: ein bewusst *einmal* vorgeführtes Beispiel einer neuen, unbekannten API
+     (etwa der erste Prozess-Test in Aufgabe 5, der erste Worker in Extra-Aufgabe 1).
 
 ### Schritt 3 – Vier Review-Perspektiven
 

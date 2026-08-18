@@ -20,7 +20,7 @@ Exercises 0–8.
    <module>services/logistics-service</module>
    ```
 
-3. Fill in the `TODO Aufgabe 9` spots (details in [`docs/exercise-09.md`](../../../docs/en/exercise-09.md)):
+3. Fill in the `TODO Exercise 9` spots (details in [`docs/exercise-09.md`](../../../docs/en/exercise-09.md)):
    - **`send-welcome-kit.bpmn`** – deliberately contains only an empty model with a start event.
      Model the `sendWelcomeKit` process yourself (process ID, signal + manual start event,
      external service task with topic, end event).

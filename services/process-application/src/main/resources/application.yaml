@@ -1,10 +1,10 @@
-# TODO Aufgabe 1: Konfiguration einkommentieren.
+# TODO Exercise 1: Uncomment the configuration.
 #
-# Sie verbindet die Engine mit der PostgreSQL aus dem stack/ (docker-compose), legt den
-# Cockpit-Admin-User an und konfiguriert den Webclient (u. a. das JWT-Secret fürs Cockpit-Login).
-# Ohne diese Konfiguration findet die Engine keine Datenbank und die Anwendung startet nicht.
+# It connects the engine to the PostgreSQL from stack/ (docker-compose), creates the
+# Cockpit admin user and configures the web client (among other things the JWT secret for the Cockpit login).
+# Without this configuration the engine finds no database and the application does not start.
 #
-# Die Engine läuft auf Port 8080 mit eigenem Schema `exercise`.
+# The engine runs on port 8080 with its own schema `exercise`.
 
 server:
   port: 8080

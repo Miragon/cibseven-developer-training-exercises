@@ -20,7 +20,7 @@ Aufgaben 0–8 aufgeräumt.
    <module>services/logistics-service</module>
    ```
 
-3. Die `TODO Aufgabe 9`-Stellen ausfüllen (Details in [`docs/exercise-09.md`](../../../docs/de/exercise-09.md)):
+3. Die `TODO Exercise 9`-Stellen ausfüllen (Details in [`docs/exercise-09.md`](../../../docs/de/exercise-09.md)):
    - **`send-welcome-kit.bpmn`** – enthält bewusst nur ein leeres Modell mit einem Start-Event.
      Modelliere den `sendWelcomeKit`-Prozess selbst (Prozess-ID, Signal- + manuelles Start-Event,
      External Service Task mit Topic, End-Event).

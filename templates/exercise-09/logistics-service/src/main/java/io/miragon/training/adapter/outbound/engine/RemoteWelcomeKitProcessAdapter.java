@@ -8,23 +8,14 @@ import org.springframework.stereotype.Component;
 /**
  * Drives the (remote) engine to start the OWNED {@code sendWelcomeKit} process (Direction 2: worker -> engine).
  *
- * <p>TODO Aufgabe 9: use the generated, typed client. Once you enabled the generator (see pom.xml) and
- * {@code EngineClientConfig} provides the {@code ProcessDefinitionApi} bean, inject it here and start the
- * process by key, passing the member name as a typed variable:
+ * <p>TODO Exercise 9: use the generated, typed client. Once the generator is active (see pom.xml) and
+ * {@code EngineClientConfig} provides the {@code ProcessDefinitionApi} bean, inject it via the
+ * constructor and start your own process by key. You fill in the concrete arguments yourself:
  *
  * <pre>
- *   // imports: org.cibseven.rest.client.api.ProcessDefinitionApi,
- *   //          org.cibseven.rest.client.model.StartProcessInstanceDto,
- *   //          org.cibseven.rest.client.model.VariableValueDto
- *   private final ProcessDefinitionApi processDefinitionApi;
- *
- *   public RemoteWelcomeKitProcessAdapter(ProcessDefinitionApi processDefinitionApi) {
- *       this.processDefinitionApi = processDefinitionApi;
- *   }
- *
- *   var request = new StartProcessInstanceDto()
- *       .variables(Map.of("name", new VariableValueDto().value(memberName).type("String")));
- *   processDefinitionApi.startProcessInstanceByKey(SendWelcomeKitProcessApi.PROCESS_ID.getValue(), request);
+ *   // inject ProcessDefinitionApi via the constructor, then:
+ *   var request = new StartProcessInstanceDto().variables(...);   // "name" as a VariableValueDto (type String)
+ *   processDefinitionApi.startProcessInstanceByKey(..., request); // process key: SendWelcomeKitProcessApi.PROCESS_ID
  * </pre>
  */
 @Component
@@ -35,6 +26,6 @@ public class RemoteWelcomeKitProcessAdapter implements WelcomeKitProcess {
     @Override
     public void startWelcomeKit(String memberName) {
         throw new UnsupportedOperationException(
-                "TODO Aufgabe 9: start the process via the generated client (ProcessDefinitionApi)");
+                "TODO Exercise 9: start the process via the generated client (ProcessDefinitionApi)");
     }
 }

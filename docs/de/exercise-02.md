@@ -62,11 +62,11 @@ sequenceDiagram
 
 ## Aufgabe
 
-### 1. Business-Schicht einkommentieren
+### 1. Business-Schicht reaktivieren
 
-Die Klassen für diese Aufgabe sind mit `TODO Aufgabe 2` auskommentiert – sie hingen an der
-erst in Aufgabe 1 aktivierten Engine. Entferne in diesen Dateien jeweils die Zeilen mit
-`/*` und `*/`:
+Die Klassen für diese Aufgabe sind mit `TODO Exercise 2` auskommentiert – sie hingen an der
+erst in Aufgabe 1 aktivierten Engine und wurden bis dahin geparkt. Entferne in diesen Dateien
+jeweils die Zeilen mit `/*` und `*/`, damit sie wieder kompilieren:
 
 - `application/service/RegisterSubscriptionService.java`
 - `application/service/SendWelcomeMailService.java`
@@ -74,6 +74,11 @@ erst in Aufgabe 1 aktivierten Engine. Entferne in diesen Dateien jeweils die Zei
 - `adapter/inbound/cibseven/BaseDelegate.java`
 - `adapter/inbound/cibseven/SendWelcomeMailDelegate.java`
 - `adapter/outbound/cibseven/SubscriptionProcessAdapter.java`
+
+Das Einkommentieren ist nur die Vorbereitung, nicht das Ergebnis. `SubscriptionController` und
+die Delegate-Basisklasse `BaseDelegate` sind danach fertig; die beiden Services (Schritte 4–5)
+und – das eigentliche Herz dieser Aufgabe – der Delegate und der Prozess-Adapter (Schritte 6–7)
+tragen weiterhin ein `TODO`. Die Engine-Anbindung dort schreibst du selbst.
 
 ### 2. Modell technisch vervollständigen
 
@@ -137,21 +142,28 @@ Willkommens-Mail geht.
 
 **Datei:** `adapter/inbound/cibseven/SendWelcomeMailDelegate.java`
 
-Ersetze das `TODO` in `executeTask(execution)`:
+Ersetze das `TODO` in `executeTask(execution)` durch die Engine-Anbindung – **das schreibst
+du selbst**:
 
-- Lies die Prozessvariable `subscriptionId` aus der `DelegateExecution`.
-- Rufe damit `useCase.sendWelcomeMail(...)` auf.
+- Lies die Prozessvariable `subscriptionId` über die `DelegateExecution` aus.
+- Wandle den Wert in eine `SubscriptionId` und rufe damit `useCase.sendWelcomeMail(...)` auf.
+
+Welche Methode der `DelegateExecution` die Variable liefert und wie du den String konvertierst,
+findest du selbst heraus – der Aufgabentext nennt dir die API, nicht die fertige Zeile.
 
 ### 7. `SubscriptionProcessAdapter` implementieren
 
 **Datei:** `adapter/outbound/cibseven/SubscriptionProcessAdapter.java`
 
-Ersetze das `TODO` in `startProcess(subscription)`:
+Ersetze das `TODO` in `startProcess(subscription)` durch den Prozessstart über den
+`RuntimeService` – **auch das schreibst du selbst**:
 
-- Starte die Instanz mit `runtimeService.startProcessInstanceByKey(...)` und dem Prozess-Key
-  `subscribeNewsletter`.
+- Starte eine Instanz zum Prozess-Key `subscribeNewsletter`. Die passende `RuntimeService`-Methode,
+  die eine Instanz per Key startet, heißt `startProcessInstanceByKey`.
 - Übergib die Prozessvariablen `subscriptionId`, `email`, `name` und `age` als Map. Die
   Schlüssel müssen exakt den Variablennamen im Modell entsprechen.
+
+Wie du Prozess-Key und Variablen-Map zum Aufruf zusammensetzt, baust du selbst zusammen.
 
 ## Randbedingungen
 
@@ -197,7 +209,8 @@ Tasks läuft der Service Task durch und im Log erscheint
 
 ## Selbstcheck
 
-- [ ] Alle sechs Klassen sind einkommentiert und kompilieren
+- [ ] Die sechs Klassen kompilieren wieder; `SendWelcomeMailDelegate` und
+      `SubscriptionProcessAdapter` sind selbst implementiert (kein `UnsupportedOperationException`-Stub mehr)
 - [ ] Der Service Task nutzt `#{sendWelcomeMailDelegate}` statt der Inline-Expression
 - [ ] Ein `POST /api/subscriptions` erzeugt eine Prozessinstanz mit den vier Prozessvariablen
 - [ ] Nach Abschluss des User Tasks steht die Log-Zeile mit der E-Mail-Adresse im Log

@@ -147,7 +147,7 @@ calls "new member activated" into the room; who reacts to it is none of its busi
 
 This is where the real work sits. The order is deliberate: first model the process,
 then generate the APIs, then write the code. Work through the
-`TODO Aufgabe 9` spots one after another.
+`TODO Exercise 9` spots one after another.
 
 ### 3. Model the process
 

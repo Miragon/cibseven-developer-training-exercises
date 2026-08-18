@@ -147,7 +147,7 @@ Kein `RuntimeService`, kein Delegate – die Engine wirft das Signal nativ. Der 
 
 Hier steckt die eigentliche Arbeit. Die Reihenfolge ist bewusst gewählt: erst den Prozess
 modellieren, dann die APIs generieren, dann den Code schreiben. Arbeite die
-`TODO Aufgabe 9`-Stellen der Reihe nach ab.
+`TODO Exercise 9`-Stellen der Reihe nach ab.
 
 ### 3. Prozess modellieren
 

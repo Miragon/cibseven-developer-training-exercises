@@ -61,7 +61,7 @@ docker exec -i postgres psql -U admin -d cibseven-training < stack/init-schemas.
 
 ### 3. Enable the dependencies
 
-Open `services/process-application/pom.xml` and uncomment the `TODO Aufgabe 1` block:
+Open `services/process-application/pom.xml` and uncomment the `TODO Exercise 1` block:
 the two CIB Seven starters (`webapp-4` and `rest-4`). Only with these are the engine,
 the Cockpit webapp, and the REST API even present in the module. The versions come centrally
 from the root `pom.xml` – so add them **without** a `<version>`.
@@ -71,7 +71,7 @@ from the root `pom.xml` – so add them **without** a `<version>`.
 ### 4. Enable the configuration
 
 In `services/process-application/src/main/resources/application.yaml`, uncomment the
-`TODO Aufgabe 1` block: database connection, Cockpit admin user, and webclient. Without a
+`TODO Exercise 1` block: database connection, Cockpit admin user, and webclient. Without a
 database connection the engine won't start.
 
 ### 5. Arm the application
@@ -196,7 +196,7 @@ same spot afterwards.
   work in across all exercises.
 - The module already contains the complete skeleton of the hexagonal architecture. The business
   layer (services, REST controllers, delegates, process adapter) is commented out with
-  `TODO Aufgabe 2` and isn't needed here yet.
+  `TODO Exercise 2` and isn't needed here yet.
 - All modules run on port `8080` and in the schema `exercise`. Always start only one at a time.
 
 ## Expected result

@@ -4,24 +4,23 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
- * Platzhalter für den Prozess-Test aus Aufgabe 5.
+ * Placeholder for the process test from Exercise 5.
  *
- * <p>In Aufgabe 5 baust du diesen Test zu einem echten Prozess-Test aus: In-Memory-Engine
- * (h2, Job-Executor aus), die Use Cases hinter den Delegates werden gemockt, und du treibst den
- * Prozess mit den Helfern aus {@code process/util} bis zu seinen Wait States. Den Helfer
- * {@code ProcessEngineTestUtils} findest du bereits fertig im Modul unter {@code process/util};
- * die beiden Tests (Happy Path + Ablehnung) schreibst du selbst. Die genaue Anleitung (Dependency,
- * {@code application-test.yaml}, Helfer, Assertions) steht in {@code docs/de/exercise-05.md};
- * die vollständige Lösung liegt unter {@code solutions/exercise-05/}.
+ * <p>In Exercise 5 you grow this test into a real process test: an in-memory engine
+ * (h2, job executor off), the use cases behind the delegates are mocked, and you drive the
+ * process with the helpers from {@code process/util} up to its wait states. The helper
+ * {@code ProcessEngineTestUtils} is already provided in the module under {@code process/util};
+ * you write the two tests (happy path + rejection) yourself. The exact instructions (dependency,
+ * {@code application-test.yaml}, helpers, assertions) are in {@code docs/en/exercise-05.md};
+ * the full solution lives under {@code solutions/exercise-05/}.
  *
- * <p>Bis dahin ist der Test deaktiviert, damit das Starter-Modul auch ohne aktivierte Engine
- * kompiliert.
+ * <p>Until then the test is disabled so the starter module compiles even without an active engine.
  */
-@Disabled("TODO Aufgabe 5: Prozess-Test implementieren – siehe docs/de/exercise-05.md")
+@Disabled("TODO Exercise 5: Implement the process test – see docs/en/exercise-05.md")
 class MembershipProcessTest {
 
     @Test
     void happyPath_membershipIsConfirmedAndWelcomeMailIsSent() {
-        throw new UnsupportedOperationException("Aufgabe 5: Implementiere diesen Prozess-Test");
+        throw new UnsupportedOperationException("Exercise 5: Implement this process test");
     }
 }

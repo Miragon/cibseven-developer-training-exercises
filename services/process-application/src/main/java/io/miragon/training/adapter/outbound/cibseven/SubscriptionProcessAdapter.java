@@ -1,8 +1,8 @@
 package io.miragon.training.adapter.outbound.cibseven;
 
-// TODO Aufgabe 2: Diese Klasse einkommentieren (die Zeilen mit /* und */ entfernen)
-//  und anschließend das TODO in startProcess(...) implementieren.
-//  Sie benötigt die CIB-Seven-Engine, die du in Aufgabe 1 scharf schaltest.
+// TODO Exercise 2: Uncomment this class (remove the /* and */ lines)
+//  and then implement the TODO in startProcess(...).
+//  It needs the CIB Seven engine that you switch on in Exercise 1.
 /*
 import io.miragon.training.application.port.outbound.SubscriptionProcess;
 import io.miragon.training.domain.Subscription;
@@ -22,15 +22,16 @@ public class SubscriptionProcessAdapter implements SubscriptionProcess {
 
     @Override
     public void startProcess(Subscription subscription) {
-        // TODO Aufgabe 2:
-        //  Starte eine neue Prozessinstanz mit dem Key "subscribeNewsletter".
-        //  Übergib folgende Prozess-Variablen als Map:
-        //    - "subscriptionId" -> subscription.id().value().toString()
-        //    - "email"          -> subscription.email().value()
-        //    - "name"           -> subscription.name().value()
-        //    - "age"            -> subscription.age().value()
-        //  Hinweis: runtimeService.startProcessInstanceByKey(key, variables)
-        throw new UnsupportedOperationException("Aufgabe 2: Starte den Prozess via RuntimeService");
+        // TODO Exercise 2: Start the process instance yourself via the RuntimeService.
+        //  - Process key: "subscribeNewsletter".
+        //  - Pass these four process variables as a Map (the keys must be named exactly like this):
+        //      "subscriptionId" <- subscription.id().value().toString()
+        //      "email"          <- subscription.email().value()
+        //      "name"           <- subscription.name().value()
+        //      "age"            <- subscription.age().value()
+        //  Which RuntimeService method starts an instance by key (startProcessInstanceByKey)
+        //  and how you assemble the key and variables Map is something you build yourself – no ready-made call line.
+        throw new UnsupportedOperationException("Exercise 2: Start the process via the RuntimeService");
     }
 }
 */

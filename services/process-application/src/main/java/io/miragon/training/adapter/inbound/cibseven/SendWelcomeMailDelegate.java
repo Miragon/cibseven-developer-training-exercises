@@ -1,8 +1,8 @@
 package io.miragon.training.adapter.inbound.cibseven;
 
-// TODO Aufgabe 2: Diese Klasse einkommentieren (die Zeilen mit /* und */ entfernen)
-//  und anschließend das TODO in executeTask(...) implementieren.
-//  Sie benötigt die CIB-Seven-Engine, die du in Aufgabe 1 scharf schaltest.
+// TODO Exercise 2: Uncomment this class (remove the /* and */ lines)
+//  and then implement the TODO in executeTask(...).
+//  It needs the CIB Seven engine that you switch on in Exercise 1.
 /*
 import io.miragon.training.application.port.inbound.SendWelcomeMailUseCase;
 import io.miragon.training.domain.SubscriptionId;
@@ -22,12 +22,12 @@ public class SendWelcomeMailDelegate extends BaseDelegate {
 
     @Override
     protected void executeTask(DelegateExecution execution) {
-        // TODO Aufgabe 2:
-        //  1. Lese die Variable "subscriptionId" aus der DelegateExecution
-        //     Hinweis: (String) execution.getVariable("subscriptionId")
-        //  2. Erstelle eine SubscriptionId: new SubscriptionId(UUID.fromString(...))
-        //  3. Rufe useCase.sendWelcomeMail(subscriptionId) auf
-        throw new UnsupportedOperationException("Aufgabe 2: Verbinde den Delegate mit dem Use Case");
+        // TODO Exercise 2: Implement this delegate's engine binding yourself.
+        //  - Read the process variable "subscriptionId" from the DelegateExecution (getVariable).
+        //  - Convert the value into a SubscriptionId and call useCase.sendWelcomeMail(...) with it.
+        //  How you obtain the variable via the DelegateExecution and convert the String is something
+        //  you look up yourself – there is deliberately no ready-made call line here.
+        throw new UnsupportedOperationException("Exercise 2: Connect the delegate to the use case");
     }
 }
 */

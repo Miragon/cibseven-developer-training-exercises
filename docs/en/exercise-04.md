@@ -160,12 +160,14 @@ element → Properties Panel → *Asynchronous Before*.
 ### 6. Set the business key
 
 When the process starts, set the `membershipId` as the business key. The correlation builder
-in `MembershipProcessAdapter` offers `processInstanceBusinessKey(...)` for this:
+in `MembershipProcessAdapter` (which you switched to `createMessageCorrelation(...)` in
+Exercise 3) offers `processInstanceBusinessKey(...)` for this. Hook the call with the
+`membershipId` into the existing chain – you fill in the concrete arguments yourself:
 
 ```java
-runtimeService.createMessageCorrelation("Message_SubscriptionRequested")
-        .processInstanceBusinessKey(membership.id().value().toString())
-        .setVariables(...)
+runtimeService.createMessageCorrelation(/* message name */)
+        .processInstanceBusinessKey(/* membershipId */)
+        .setVariables(/* ... */)
         .correlateStartMessage();
 ```
 

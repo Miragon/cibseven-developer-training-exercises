@@ -1,6 +1,6 @@
 package io.miragon.training.adapter.inbound.rest;
 
-// TODO Aufgabe 2: Diese Klasse einkommentieren (die Zeilen mit /* und */ entfernen).
+// TODO Exercise 2: Uncomment this class (remove the /* and */ lines).
 /*
 import io.miragon.training.application.port.inbound.RegisterSubscriptionUseCase;
 import org.springframework.http.ResponseEntity;

@@ -60,7 +60,7 @@ docker exec -i postgres psql -U admin -d cibseven-training < stack/init-schemas.
 
 ### 3. Dependencies aktivieren
 
-Öffne `services/process-application/pom.xml` und kommentiere den Block `TODO Aufgabe 1` ein:
+Öffne `services/process-application/pom.xml` und kommentiere den Block `TODO Exercise 1` ein:
 die beiden CIB-Seven-Starter (`webapp-4` und `rest-4`). Erst damit sind Engine,
 Cockpit-Webapp und REST-API überhaupt im Modul. Die Versionen kommen zentral aus der
 Root-`pom.xml` – trage sie also **ohne** `<version>` ein.
@@ -70,7 +70,7 @@ Root-`pom.xml` – trage sie also **ohne** `<version>` ein.
 ### 4. Konfiguration aktivieren
 
 Kommentiere in `services/process-application/src/main/resources/application.yaml` den Block
-`TODO Aufgabe 1` ein: Datenbank-Anbindung, Cockpit-Admin-User und Webclient. Ohne
+`TODO Exercise 1` ein: Datenbank-Anbindung, Cockpit-Admin-User und Webclient. Ohne
 Datenbankverbindung startet die Engine nicht.
 
 ### 5. Anwendung scharf schalten
@@ -197,7 +197,7 @@ immer noch an derselben Stelle.
   Modul, in dem du alle Aufgaben bearbeitest.
 - Das Modul enthält bereits das vollständige Skelett der hexagonalen Architektur. Die
   Business-Schicht (Services, REST-Controller, Delegates, Prozess-Adapter) ist mit
-  `TODO Aufgabe 2` auskommentiert und wird hier noch nicht gebraucht.
+  `TODO Exercise 2` auskommentiert und wird hier noch nicht gebraucht.
 - Alle Module laufen auf Port `8080` und im Schema `exercise`. Starte immer nur eines.
 
 ## Erwartetes Ergebnis
