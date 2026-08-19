@@ -6,17 +6,6 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    ignore:
-      # CIB Seven 2.x is built against Spring Framework 6 / Spring Boot 3.x.
-      # Spring Boot 4.x (Spring Framework 7) breaks CIB Seven at startup.
-      # Re-enable once CIB Seven ships a Spring Boot 4-compatible release.
-      - dependency-name: "org.springframework.boot:*"
-        update-types:
-          - "version-update:semver-major"
-    labels:
-      - "dependencies"
-    assignees:
-      - "emaarco"
     groups:
       maven-dependencies:
         patterns:
@@ -31,10 +20,6 @@ updates:
     directory: "/stack"
     schedule:
       interval: "weekly"
-    labels:
-      - "dependencies"
-    assignees:
-      - "emaarco"
     groups:
       docker-compose:
         patterns:
@@ -49,10 +34,6 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
-    labels:
-      - "dependencies"
-    assignees:
-      - "emaarco"
     groups:
       github-actions:
         patterns:
