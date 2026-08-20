@@ -25,10 +25,10 @@
           <camunda:formField id="age" label="Age" type="long"/>
         </camunda:formData>
       </bpmn:extensionElements>
-      <bpmn:outgoing>Flow_startToConfirm</bpmn:outgoing>
+      <bpmn:outgoing>flow_membershipWantedToConfirmMembership</bpmn:outgoing>
     </bpmn:startEvent>
 
-    <bpmn:sequenceFlow id="Flow_startToConfirm"
+    <bpmn:sequenceFlow id="flow_membershipWantedToConfirmMembership"
                        sourceRef="startEvent_membershipWanted"
                        targetRef="userTask_confirmMembership"/>
 
@@ -39,25 +39,25 @@
           <camunda:formField id="confirmed" label="Confirm membership" type="boolean"/>
         </camunda:formData>
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_startToConfirm</bpmn:incoming>
-      <bpmn:outgoing>Flow_confirmToWelcome</bpmn:outgoing>
+      <bpmn:incoming>flow_membershipWantedToConfirmMembership</bpmn:incoming>
+      <bpmn:outgoing>flow_confirmMembershipToSendWelcomeMail</bpmn:outgoing>
     </bpmn:userTask>
 
-    <bpmn:sequenceFlow id="Flow_confirmToWelcome"
+    <bpmn:sequenceFlow id="flow_confirmMembershipToSendWelcomeMail"
                        sourceRef="userTask_confirmMembership"
                        targetRef="manualTask_sendWelcomeMail"/>
 
     <bpmn:manualTask id="manualTask_sendWelcomeMail" name="Send welcome mail">
-      <bpmn:incoming>Flow_confirmToWelcome</bpmn:incoming>
-      <bpmn:outgoing>Flow_welcomeToEnd</bpmn:outgoing>
+      <bpmn:incoming>flow_confirmMembershipToSendWelcomeMail</bpmn:incoming>
+      <bpmn:outgoing>flow_sendWelcomeMailToMemberJoined</bpmn:outgoing>
     </bpmn:manualTask>
 
-    <bpmn:sequenceFlow id="Flow_welcomeToEnd"
+    <bpmn:sequenceFlow id="flow_sendWelcomeMailToMemberJoined"
                        sourceRef="manualTask_sendWelcomeMail"
                        targetRef="endEvent_memberJoined"/>
 
     <bpmn:endEvent id="endEvent_memberJoined" name="Member joined">
-      <bpmn:incoming>Flow_welcomeToEnd</bpmn:incoming>
+      <bpmn:incoming>flow_sendWelcomeMailToMemberJoined</bpmn:incoming>
     </bpmn:endEvent>
 
   </bpmn:process>
@@ -84,15 +84,15 @@
           <dc:Bounds x="551" y="125" width="78" height="14"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_startToConfirm_di" bpmnElement="Flow_startToConfirm">
+      <bpmndi:BPMNEdge id="flow_membershipWantedToConfirmMembership_di" bpmnElement="flow_membershipWantedToConfirmMembership">
         <di:waypoint x="188" y="100"/>
         <di:waypoint x="250" y="100"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_confirmToWelcome_di" bpmnElement="Flow_confirmToWelcome">
+      <bpmndi:BPMNEdge id="flow_confirmMembershipToSendWelcomeMail_di" bpmnElement="flow_confirmMembershipToSendWelcomeMail">
         <di:waypoint x="350" y="100"/>
         <di:waypoint x="410" y="100"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_welcomeToEnd_di" bpmnElement="Flow_welcomeToEnd">
+      <bpmndi:BPMNEdge id="flow_sendWelcomeMailToMemberJoined_di" bpmnElement="flow_sendWelcomeMailToMemberJoined">
         <di:waypoint x="510" y="100"/>
         <di:waypoint x="572" y="100"/>
       </bpmndi:BPMNEdge>

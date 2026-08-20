@@ -2,27 +2,27 @@
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1d2hcmz" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.24.0">
   <bpmn:process id="subscribeNewsletter" isExecutable="true" camunda:historyTimeToLive="180">
     <bpmn:startEvent id="startEvent_submitRegistration" name="Submit registration form">
-      <bpmn:outgoing>Flow_0p7ko1g</bpmn:outgoing>
+      <bpmn:outgoing>flow_submitRegistrationToSendConfirmationMail</bpmn:outgoing>
       <bpmn:messageEventDefinition id="MessageEventDefinition_submitRegistration" messageRef="Message_SubscriptionRequested" />
     </bpmn:startEvent>
-    <bpmn:sequenceFlow id="Flow_0p7ko1g" sourceRef="startEvent_submitRegistration" targetRef="serviceTask_sendConfirmationMail" />
-    <bpmn:sequenceFlow id="Flow_0ya530i" sourceRef="userTask_confirmMembership" targetRef="serviceTask_sendWelcomeMail" />
+    <bpmn:sequenceFlow id="flow_submitRegistrationToSendConfirmationMail" sourceRef="startEvent_submitRegistration" targetRef="serviceTask_sendConfirmationMail" />
+    <bpmn:sequenceFlow id="flow_confirmMembershipToSendWelcomeMail" sourceRef="userTask_confirmMembership" targetRef="serviceTask_sendWelcomeMail" />
     <bpmn:userTask id="userTask_confirmMembership" name="Confirm membership">
-      <bpmn:incoming>Flow_13584xc</bpmn:incoming>
-      <bpmn:outgoing>Flow_0ya530i</bpmn:outgoing>
+      <bpmn:incoming>flow_sendConfirmationMailToConfirmMembership</bpmn:incoming>
+      <bpmn:outgoing>flow_confirmMembershipToSendWelcomeMail</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:serviceTask id="serviceTask_sendWelcomeMail" name="Send Welcome Mail" camunda:delegateExpression="#{sendWelcomeMailDelegate}">
-      <bpmn:incoming>Flow_0ya530i</bpmn:incoming>
-      <bpmn:outgoing>Flow_1s74azu</bpmn:outgoing>
+      <bpmn:incoming>flow_confirmMembershipToSendWelcomeMail</bpmn:incoming>
+      <bpmn:outgoing>flow_sendWelcomeMailToMembershipConfirmed</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:endEvent id="endEvent_membershipConfirmed" name="Membership confirmed">
-      <bpmn:incoming>Flow_1s74azu</bpmn:incoming>
+      <bpmn:incoming>flow_sendWelcomeMailToMembershipConfirmed</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_1s74azu" sourceRef="serviceTask_sendWelcomeMail" targetRef="endEvent_membershipConfirmed" />
-    <bpmn:sequenceFlow id="Flow_13584xc" sourceRef="serviceTask_sendConfirmationMail" targetRef="userTask_confirmMembership" />
+    <bpmn:sequenceFlow id="flow_sendWelcomeMailToMembershipConfirmed" sourceRef="serviceTask_sendWelcomeMail" targetRef="endEvent_membershipConfirmed" />
+    <bpmn:sequenceFlow id="flow_sendConfirmationMailToConfirmMembership" sourceRef="serviceTask_sendConfirmationMail" targetRef="userTask_confirmMembership" />
     <bpmn:serviceTask id="serviceTask_sendConfirmationMail" name="Send confirmation mail" camunda:delegateExpression="#{sendConfirmationMailDelegate}">
-      <bpmn:incoming>Flow_0p7ko1g</bpmn:incoming>
-      <bpmn:outgoing>Flow_13584xc</bpmn:outgoing>
+      <bpmn:incoming>flow_submitRegistrationToSendConfirmationMail</bpmn:incoming>
+      <bpmn:outgoing>flow_sendConfirmationMailToConfirmMembership</bpmn:outgoing>
     </bpmn:serviceTask>
   </bpmn:process>
   <bpmn:message id="Message_SubscriptionRequested" name="Message_SubscriptionRequested" />
@@ -50,19 +50,19 @@
           <dc:Bounds x="161" y="202" width="80" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_0p7ko1g_di" bpmnElement="Flow_0p7ko1g">
+      <bpmndi:BPMNEdge id="flow_submitRegistrationToSendConfirmationMail_di" bpmnElement="flow_submitRegistrationToSendConfirmationMail">
         <di:waypoint x="218" y="177" />
         <di:waypoint x="270" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0ya530i_di" bpmnElement="Flow_0ya530i">
+      <bpmndi:BPMNEdge id="flow_confirmMembershipToSendWelcomeMail_di" bpmnElement="flow_confirmMembershipToSendWelcomeMail">
         <di:waypoint x="510" y="177" />
         <di:waypoint x="540" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1s74azu_di" bpmnElement="Flow_1s74azu">
+      <bpmndi:BPMNEdge id="flow_sendWelcomeMailToMembershipConfirmed_di" bpmnElement="flow_sendWelcomeMailToMembershipConfirmed">
         <di:waypoint x="640" y="177" />
         <di:waypoint x="692" y="177" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_13584xc_di" bpmnElement="Flow_13584xc">
+      <bpmndi:BPMNEdge id="flow_sendConfirmationMailToConfirmMembership_di" bpmnElement="flow_sendConfirmationMailToConfirmMembership">
         <di:waypoint x="370" y="177" />
         <di:waypoint x="410" y="177" />
       </bpmndi:BPMNEdge>

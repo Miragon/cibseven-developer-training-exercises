@@ -50,13 +50,13 @@ public final class SendWelcomeKitProcessApi {
    * Worker code typically does not need these.
    */
   public static final class Flows {
-    public static final BpmnFlow FLOW_MANUAL_TO_START = new BpmnFlow("Flow_manualToStart", null, "startEvent_manualStart", "gateway_start", null, false);
+    public static final BpmnFlow FLOW_MANUAL_START_TO_START = new BpmnFlow("flow_manualStartToStart", null, "startEvent_manualStart", "gateway_start", null, false);
 
-    public static final BpmnFlow FLOW_SHIP_TO_END = new BpmnFlow("Flow_shipToEnd", null, "serviceTask_shipWelcomeKit", "endEvent_welcomeKitShipped", null, false);
+    public static final BpmnFlow FLOW_MEMBER_ACTIVATED_TO_START = new BpmnFlow("flow_memberActivatedToStart", null, "startEvent_memberActivated", "gateway_start", null, false);
 
-    public static final BpmnFlow FLOW_SIGNAL_TO_START = new BpmnFlow("Flow_signalToStart", null, "startEvent_memberActivated", "gateway_start", null, false);
+    public static final BpmnFlow FLOW_SHIP_WELCOME_KIT_TO_WELCOME_KIT_SHIPPED = new BpmnFlow("flow_shipWelcomeKitToWelcomeKitShipped", null, "serviceTask_shipWelcomeKit", "endEvent_welcomeKitShipped", null, false);
 
-    public static final BpmnFlow FLOW_START_TO_SHIP = new BpmnFlow("Flow_startToShip", null, "gateway_start", "serviceTask_shipWelcomeKit", null, false);
+    public static final BpmnFlow FLOW_START_TO_SHIP_WELCOME_KIT = new BpmnFlow("flow_startToShipWelcomeKit", null, "gateway_start", "serviceTask_shipWelcomeKit", null, false);
   }
 
   /**

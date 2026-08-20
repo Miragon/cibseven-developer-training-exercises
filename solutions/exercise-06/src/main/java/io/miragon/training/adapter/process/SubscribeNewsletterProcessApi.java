@@ -67,21 +67,21 @@ public final class SubscribeNewsletterProcessApi {
    * Worker code typically does not need these.
    */
   public static final class Flows {
-    public static final BpmnFlow FLOW_0_CAD_0_I_8 = new BpmnFlow("Flow_0cad0i8", "No", "gateway_hasEmptySpots", "serviceTask_sendRejectionMail", "${!hasEmptySpots}", false);
+    public static final BpmnFlow FLOW_CLAIM_MEMBERSHIP_TO_HAS_EMPTY_SPOTS = new BpmnFlow("flow_claimMembershipToHasEmptySpots", null, "serviceTask_claimMembership", "gateway_hasEmptySpots", null, false);
 
-    public static final BpmnFlow FLOW_0_LOIW_0_Z = new BpmnFlow("Flow_0loiw0z", null, "serviceTask_sendRejectionMail", "endEvent_membershipRejected", null, false);
+    public static final BpmnFlow FLOW_CONFIRM_MEMBERSHIP_TO_SEND_WELCOME_MAIL = new BpmnFlow("flow_confirmMembershipToSendWelcomeMail", null, "userTask_confirmMembership", "serviceTask_sendWelcomeMail", null, false);
 
-    public static final BpmnFlow FLOW_0_P_7_KO_1_G = new BpmnFlow("Flow_0p7ko1g", null, "startEvent_submitRegistration", "serviceTask_claimMembership", null, false);
+    public static final BpmnFlow FLOW_HAS_EMPTY_SPOTS_TO_SEND_CONFIRMATION_MAIL = new BpmnFlow("flow_hasEmptySpotsToSendConfirmationMail", "Yes", "gateway_hasEmptySpots", "serviceTask_sendConfirmationMail", null, true);
 
-    public static final BpmnFlow FLOW_0_YA_530_I = new BpmnFlow("Flow_0ya530i", null, "userTask_confirmMembership", "serviceTask_sendWelcomeMail", null, false);
+    public static final BpmnFlow FLOW_HAS_EMPTY_SPOTS_TO_SEND_REJECTION_MAIL = new BpmnFlow("flow_hasEmptySpotsToSendRejectionMail", "No", "gateway_hasEmptySpots", "serviceTask_sendRejectionMail", "${!hasEmptySpots}", false);
 
-    public static final BpmnFlow FLOW_13584_XC = new BpmnFlow("Flow_13584xc", null, "serviceTask_sendConfirmationMail", "userTask_confirmMembership", null, false);
+    public static final BpmnFlow FLOW_SEND_CONFIRMATION_MAIL_TO_CONFIRM_MEMBERSHIP = new BpmnFlow("flow_sendConfirmationMailToConfirmMembership", null, "serviceTask_sendConfirmationMail", "userTask_confirmMembership", null, false);
 
-    public static final BpmnFlow FLOW_1_PL_6_NN_4 = new BpmnFlow("Flow_1pl6nn4", "Yes", "gateway_hasEmptySpots", "serviceTask_sendConfirmationMail", null, true);
+    public static final BpmnFlow FLOW_SEND_REJECTION_MAIL_TO_MEMBERSHIP_REJECTED = new BpmnFlow("flow_sendRejectionMailToMembershipRejected", null, "serviceTask_sendRejectionMail", "endEvent_membershipRejected", null, false);
 
-    public static final BpmnFlow FLOW_1_S_74_AZU = new BpmnFlow("Flow_1s74azu", null, "serviceTask_sendWelcomeMail", "endEvent_membershipConfirmed", null, false);
+    public static final BpmnFlow FLOW_SEND_WELCOME_MAIL_TO_MEMBERSHIP_CONFIRMED = new BpmnFlow("flow_sendWelcomeMailToMembershipConfirmed", null, "serviceTask_sendWelcomeMail", "endEvent_membershipConfirmed", null, false);
 
-    public static final BpmnFlow FLOW_1_SPTHMA = new BpmnFlow("Flow_1spthma", null, "serviceTask_claimMembership", "gateway_hasEmptySpots", null, false);
+    public static final BpmnFlow FLOW_SUBMIT_REGISTRATION_TO_CLAIM_MEMBERSHIP = new BpmnFlow("flow_submitRegistrationToClaimMembership", null, "startEvent_submitRegistration", "serviceTask_claimMembership", null, false);
   }
 
   /**
