@@ -74,7 +74,7 @@ Properties Panel), not in the XML.
 | Element | Type | ID | Name | Configuration |
 |---|---|---|---|---|
 | Start | None Start Event | `startEvent_confirmationRejected` | Confirmation rejected | – |
-| Categorization | Business Rule Task | `serviceTask_categorizeApplicant` | Categorize applicant | Decision Ref `categorizeApplicant`, Result Variable `isHighValue`, Map Decision Result `singleEntry` |
+| Categorization | Business Rule Task | `businessRuleTask_categorizeApplicant` | Categorize applicant | Decision Ref `categorizeApplicant`, Result Variable `isHighValue`, Map Decision Result `singleEntry` |
 | Branch | Exclusive Gateway | `gateway_highValue` | High value? | Default flow: no-path |
 | Personal contact | User Task | `userTask_writeRegretMail` | Write an email expressing regret | `asyncAfter="true"` |
 | End of yes-path | End Event | `endEvent_triedToReacquire` | Tried to reaquire applicant | – |
@@ -92,7 +92,7 @@ In the main process, a single element replaces all the previous abort steps. The
 |---|---|---|---|---|
 | Rejection handling | Call Activity | `callActivity_handleRejection` | Handle rejection | Called Element: `handleRejection` |
 
-- Incoming flows: from `timer_abortAfter3HalfDays` and from `event_confirmationRejected`
+- Incoming flows: from `event_abortAfter3HalfDays` and from `event_confirmationRejected`
 - Outgoing flow: to `endEvent_membershipDeclined` (the Compensating End Event from Exercise 8)
 
 The compensation stays untouched: after returning from the Call Activity, the Compensating End Event fires, and the engine invokes `serviceTask_revokeClaim`.

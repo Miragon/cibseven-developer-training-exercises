@@ -177,7 +177,7 @@ class MembershipProcessTest {
         MembershipId id = new MembershipId();
         ProcessInstance instance = startWaitingAtConfirmation(id, "amy@example.com", "Amy");
 
-        fireTimer(processEngine, Elements.TIMER_ABORT_AFTER_3_HALF_DAYS.getValue());
+        fireTimer(processEngine, Elements.EVENT_ABORT_AFTER_3_HALF_DAYS.getValue());
         continueToNextWaitState(processEngine, instance.getProcessInstanceId());
 
         assertThat(instance)
@@ -211,7 +211,7 @@ class MembershipProcessTest {
         ProcessInstance instance = startWaitingAtConfirmation(id, "cara@example.com", "Cara");
         verify(sendConfirmationMailUseCase, times(1)).sendConfirmationMail(id);
 
-        fireTimer(processEngine, Elements.TIMER_RESEND_EVERY_DAY.getValue());
+        fireTimer(processEngine, Elements.EVENT_RESEND_EVERY_DAY.getValue());
         continueToNextWaitState(processEngine, instance.getProcessInstanceId());
 
         assertThat(instance).isWaitingAt(Elements.USER_TASK_CONFIRM_MEMBERSHIP.getValue());

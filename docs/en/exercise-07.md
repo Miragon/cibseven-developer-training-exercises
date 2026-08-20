@@ -64,8 +64,8 @@ All three attach to `subProcess_confirmMembership`:
 
 | Element | Type | ID | Name | Configuration |
 |---|---|---|---|---|
-| Reminder | Timer, **non**-interrupting | `timer_resendEveryDay` | Every day | **Cycle** `R/P1D` (repeats daily) |
-| Timeout | Timer, interrupting | `timer_abortAfter3HalfDays` | After 3½ days | **Duration** `P3DT12H` (3½ days) |
+| Reminder | Timer, **non**-interrupting | `event_resendEveryDay` | Every day | **Cycle** `R/P1D` (repeats daily) |
+| Timeout | Timer, interrupting | `event_abortAfter3HalfDays` | After 3½ days | **Duration** `P3DT12H` (3½ days) |
 | Withdrawal | Message, interrupting | `event_confirmationRejected` | Confirmation rejected | Message: `Message_ConfirmationRejected` |
 
 Mind the difference: the reminder needs a **Cycle** (`R/…`) so that it repeats. A duration
@@ -84,7 +84,7 @@ branch, the two cancellation paths share one:
 | End cancellation | End Event | `endEvent_membershipDeclined` | Membership declined | after `Revoke claim` |
 | End activation | End Event | `endEvent_membershipActivated` | Membership activated | after the join |
 
-Both interrupting boundary events (`timer_abortAfter3HalfDays` and
+Both interrupting boundary events (`event_abortAfter3HalfDays` and
 `event_confirmationRejected`) lead to `serviceTask_revokeClaim` and from there to
 `endEvent_membershipDeclined`.
 
@@ -108,8 +108,8 @@ Following the same principle as in [Exercise 5](exercise-05.md):
 
 | Marker | Element | Why |
 |---|---|---|
-| `asyncAfter` | `timer_resendEveryDay` | the reminder runs in its own transaction and repeats without touching the waiting subprocess |
-| `asyncAfter` | `timer_abortAfter3HalfDays` | a clean boundary **before** the cancellation (and, from Exercise 8 on, before the compensation) |
+| `asyncAfter` | `event_resendEveryDay` | the reminder runs in its own transaction and repeats without touching the waiting subprocess |
+| `asyncAfter` | `event_abortAfter3HalfDays` | a clean boundary **before** the cancellation (and, from Exercise 8 on, before the compensation) |
 | `asyncAfter` | `event_confirmationRejected` | likewise for the user-side withdrawal |
 | `asyncBefore` | `serviceTask_reSendConfirmationMail` | external effect – like all mail tasks |
 | `asyncBefore` | `serviceTask_sendWelcomeMail` | its own commit per parallel branch |

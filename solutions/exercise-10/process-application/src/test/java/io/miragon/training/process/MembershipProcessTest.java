@@ -149,7 +149,7 @@ class MembershipProcessTest {
         MembershipId id = new MembershipId();
         ProcessInstance instance = startWaitingAtConfirmation(id, 40); // age 40 -> DMN: not high value
 
-        fireTimer(processEngine, SubscribeNewsletterProcessApi.Elements.TIMER_ABORT_AFTER_3_HALF_DAYS.getValue());
+        fireTimer(processEngine, SubscribeNewsletterProcessApi.Elements.EVENT_ABORT_AFTER_3_HALF_DAYS.getValue());
         continueToNextWaitState(processEngine);
 
         assertThat(instance)
@@ -189,7 +189,7 @@ class MembershipProcessTest {
         ProcessInstance instance = startWaitingAtConfirmation(id, 30);
         verify(sendConfirmationMailUseCase, times(1)).sendConfirmationMail(id);
 
-        fireTimer(processEngine, SubscribeNewsletterProcessApi.Elements.TIMER_RESEND_EVERY_DAY.getValue());
+        fireTimer(processEngine, SubscribeNewsletterProcessApi.Elements.EVENT_RESEND_EVERY_DAY.getValue());
         continueToNextWaitState(processEngine, instance.getProcessInstanceId());
 
         assertThat(instance).isWaitingAt(SubscribeNewsletterProcessApi.Elements.USER_TASK_CONFIRM_MEMBERSHIP.getValue());

@@ -92,7 +92,7 @@ Panel), nicht im XML.
 | Element | Typ | ID | Name | Konfiguration |
 |---|---|---|---|---|
 | Start | None Start Event | `startEvent_confirmationRejected` | Confirmation rejected | – |
-| Kategorisierung | Business Rule Task | `serviceTask_categorizeApplicant` | Categorize applicant | Decision Ref `categorizeApplicant`, Result Variable `isHighValue`, Map Decision Result `singleEntry` |
+| Kategorisierung | Business Rule Task | `businessRuleTask_categorizeApplicant` | Categorize applicant | Decision Ref `categorizeApplicant`, Result Variable `isHighValue`, Map Decision Result `singleEntry` |
 | Verzweigung | Exclusive Gateway | `gateway_highValue` | High value? | Default-Flow: Nein-Pfad |
 | Persönlicher Kontakt | User Task | `userTask_writeRegretMail` | Write an email expressing regret | `asyncAfter="true"` |
 | Ende ja-Pfad | End Event | `endEvent_triedToReacquire` | Tried to reaquire applicant | – |
@@ -114,7 +114,7 @@ Prozesses:
 |---|---|---|---|---|
 | Ablehnungsbehandlung | Call Activity | `callActivity_handleRejection` | Handle rejection | Called Element: `handleRejection` |
 
-- Eingehende Flows: von `timer_abortAfter3HalfDays` und von `event_confirmationRejected`
+- Eingehende Flows: von `event_abortAfter3HalfDays` und von `event_confirmationRejected`
 - Ausgehender Flow: auf `endEvent_membershipDeclined` (das Compensating End Event aus
   Aufgabe 8)
 
