@@ -47,7 +47,7 @@ Properties Panel), not in the XML.
 
 | Element | Type | ID | Configuration |
 |---|---|---|---|
-| Compensation boundary | Compensation Boundary Event | `boundary_compensateClaim` | attaches to `serviceTask_claimMembership` |
+| Compensation boundary | Compensation Boundary Event | `event_compensateClaim` | attaches to `serviceTask_claimMembership` |
 | Link | Association | `association_compensateClaim` | from the boundary to `serviceTask_revokeClaim` |
 | Handler | Service Task | `serviceTask_revokeClaim` | `isForCompensation="true"`, delegate stays `#{revokeClaimDelegate}` |
 
@@ -55,7 +55,7 @@ The handler therefore sits **outside** the sequence flow: no incoming flow, no o
 
 ### 2. Decouple the abort paths
 
-Connect `timer_abortAfter3HalfDays` and `event_confirmationRejected` **directly** to
+Connect `event_abortAfter3HalfDays` and `event_confirmationRejected` **directly** to
 `endEvent_membershipDeclined`. The service task `serviceTask_revokeClaim` thereby drops out of
 both sequence flows.
 

@@ -50,7 +50,7 @@ Properties Panel), nicht im XML.
 
 | Element | Typ | ID | Konfiguration |
 |---|---|---|---|
-| Kompensations-Boundary | Compensation Boundary Event | `boundary_compensateClaim` | hängt an `serviceTask_claimMembership` |
+| Kompensations-Boundary | Compensation Boundary Event | `event_compensateClaim` | hängt an `serviceTask_claimMembership` |
 | Verknüpfung | Association | `association_compensateClaim` | vom Boundary auf `serviceTask_revokeClaim` |
 | Handler | Service Task | `serviceTask_revokeClaim` | `isForCompensation="true"`, Delegate bleibt `#{revokeClaimDelegate}` |
 
@@ -59,7 +59,7 @@ ausgehender Flow.
 
 ### 2. Abbruchpfade entkoppeln
 
-Verbinde `timer_abortAfter3HalfDays` und `event_confirmationRejected` **direkt** mit
+Verbinde `event_abortAfter3HalfDays` und `event_confirmationRejected` **direkt** mit
 `endEvent_membershipDeclined`. Der Service Task `serviceTask_revokeClaim` fällt damit aus
 beiden Sequenzflüssen heraus.
 

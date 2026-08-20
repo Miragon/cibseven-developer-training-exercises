@@ -64,8 +64,8 @@ Alle drei hängen an `subProcess_confirmMembership`:
 
 | Element | Typ | ID | Name | Konfiguration |
 |---|---|---|---|---|
-| Erinnerung | Timer, **nicht** unterbrechend | `timer_resendEveryDay` | Every day | **Cycle** `R/P1D` (wiederholt sich täglich) |
-| Timeout | Timer, unterbrechend | `timer_abortAfter3HalfDays` | After 3½ days | **Duration** `P3DT12H` (3½ Tage) |
+| Erinnerung | Timer, **nicht** unterbrechend | `event_resendEveryDay` | Every day | **Cycle** `R/P1D` (wiederholt sich täglich) |
+| Timeout | Timer, unterbrechend | `event_abortAfter3HalfDays` | After 3½ days | **Duration** `P3DT12H` (3½ Tage) |
 | Rückzug | Message, unterbrechend | `event_confirmationRejected` | Confirmation rejected | Message: `Message_ConfirmationRejected` |
 
 Achte auf den Unterschied: Die Erinnerung braucht einen **Cycle** (`R/…`), damit sie sich
@@ -84,7 +84,7 @@ eigenen kurzen Zweig, die beiden Abbruchwege teilen sich einen:
 | Ende Abbruch | End Event | `endEvent_membershipDeclined` | Membership declined | nach `Revoke claim` |
 | Ende Aktivierung | End Event | `endEvent_membershipActivated` | Membership activated | nach dem Join |
 
-Beide unterbrechenden Boundary Events (`timer_abortAfter3HalfDays` und
+Beide unterbrechenden Boundary Events (`event_abortAfter3HalfDays` und
 `event_confirmationRejected`) führen auf `serviceTask_revokeClaim` und von dort auf
 `endEvent_membershipDeclined`.
 
@@ -108,8 +108,8 @@ Nach demselben Prinzip wie in [Aufgabe 5](exercise-05.md):
 
 | Marker | Element | Warum |
 |---|---|---|
-| `asyncAfter` | `timer_resendEveryDay` | die Erinnerung läuft in eigener Transaktion und wiederholt sich, ohne den wartenden Subprozess zu berühren |
-| `asyncAfter` | `timer_abortAfter3HalfDays` | saubere Grenze **vor** dem Abbruch (und ab Aufgabe 8 vor der Kompensation) |
+| `asyncAfter` | `event_resendEveryDay` | die Erinnerung läuft in eigener Transaktion und wiederholt sich, ohne den wartenden Subprozess zu berühren |
+| `asyncAfter` | `event_abortAfter3HalfDays` | saubere Grenze **vor** dem Abbruch (und ab Aufgabe 8 vor der Kompensation) |
 | `asyncAfter` | `event_confirmationRejected` | dito für den nutzerseitigen Rückzug |
 | `asyncBefore` | `serviceTask_reSendConfirmationMail` | externer Effekt – wie alle Mail-Tasks |
 | `asyncBefore` | `serviceTask_sendWelcomeMail` | eigener Commit pro Parallelzweig |
