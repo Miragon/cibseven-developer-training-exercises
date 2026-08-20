@@ -25,10 +25,10 @@
           <camunda:formField id="age" label="Age" type="long"/>
         </camunda:formData>
       </bpmn:extensionElements>
-      <bpmn:outgoing>Flow_start_confirm</bpmn:outgoing>
+      <bpmn:outgoing>Flow_startToConfirm</bpmn:outgoing>
     </bpmn:startEvent>
 
-    <bpmn:sequenceFlow id="Flow_start_confirm"
+    <bpmn:sequenceFlow id="Flow_startToConfirm"
                        sourceRef="startEvent_membershipWanted"
                        targetRef="userTask_confirmMembership"/>
 
@@ -39,27 +39,27 @@
           <camunda:formField id="confirmed" label="Confirm membership" type="boolean"/>
         </camunda:formData>
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_start_confirm</bpmn:incoming>
-      <bpmn:outgoing>Flow_confirm_welcome</bpmn:outgoing>
+      <bpmn:incoming>Flow_startToConfirm</bpmn:incoming>
+      <bpmn:outgoing>Flow_confirmToWelcome</bpmn:outgoing>
     </bpmn:userTask>
 
-    <bpmn:sequenceFlow id="Flow_confirm_welcome"
+    <bpmn:sequenceFlow id="Flow_confirmToWelcome"
                        sourceRef="userTask_confirmMembership"
                        targetRef="serviceTask_sendWelcomeMail"/>
 
     <bpmn:serviceTask id="serviceTask_sendWelcomeMail"
                       name="Send Welcome Mail"
                       camunda:delegateExpression="#{sendWelcomeMailDelegate}">
-      <bpmn:incoming>Flow_confirm_welcome</bpmn:incoming>
-      <bpmn:outgoing>Flow_welcome_end</bpmn:outgoing>
+      <bpmn:incoming>Flow_confirmToWelcome</bpmn:incoming>
+      <bpmn:outgoing>Flow_welcomeToEnd</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:sequenceFlow id="Flow_welcome_end"
+    <bpmn:sequenceFlow id="Flow_welcomeToEnd"
                        sourceRef="serviceTask_sendWelcomeMail"
                        targetRef="endEvent_memberJoined"/>
 
     <bpmn:endEvent id="endEvent_memberJoined" name="Member joined">
-      <bpmn:incoming>Flow_welcome_end</bpmn:incoming>
+      <bpmn:incoming>Flow_welcomeToEnd</bpmn:incoming>
     </bpmn:endEvent>
 
   </bpmn:process>
@@ -86,15 +86,15 @@
           <dc:Bounds x="551" y="125" width="78" height="14"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_start_confirm_di" bpmnElement="Flow_start_confirm">
+      <bpmndi:BPMNEdge id="Flow_startToConfirm_di" bpmnElement="Flow_startToConfirm">
         <di:waypoint x="188" y="100"/>
         <di:waypoint x="250" y="100"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_confirm_welcome_di" bpmnElement="Flow_confirm_welcome">
+      <bpmndi:BPMNEdge id="Flow_confirmToWelcome_di" bpmnElement="Flow_confirmToWelcome">
         <di:waypoint x="350" y="100"/>
         <di:waypoint x="410" y="100"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_welcome_end_di" bpmnElement="Flow_welcome_end">
+      <bpmndi:BPMNEdge id="Flow_welcomeToEnd_di" bpmnElement="Flow_welcomeToEnd">
         <di:waypoint x="510" y="100"/>
         <di:waypoint x="572" y="100"/>
       </bpmndi:BPMNEdge>

@@ -1,9 +1,20 @@
 {
   "extends": [
     "bpmnlint:recommended",
-    "plugin:@miragon/rules/recommended",
+    "plugin:@miragon/rules/all",
     "plugin:camunda-compat/camunda-platform-7-24"
   ],
+  "rules": {
+    "@miragon/rules/element-id-naming": [
+      "error",
+      {
+        "case": "camelCase",
+        "prefixes": {
+          "bpmn:SequenceFlow": "Flow_"
+        }
+      }
+    ]
+  },
   "moddleExtensions": {
     "camunda": "camunda-bpmn-moddle/resources/camunda.json"
   }
