@@ -4,7 +4,7 @@
   "private": true,
   "description": "Dev tooling for the CIB seven training exercises: BPMN linting via the @miragon/bpmnlint-plugin-rules plugin (bpmnlint:recommended + Miragon recommended-for-automation + Camunda 7 deployability, default configs), configured via the root .bpmnlintrc.",
   "scripts": {
-    "lint:bpmn": "bpmnlint \"services/**/src/main/resources/bpmn/*.bpmn\""
+    "lint:bpmn": "bpmnlint --max-warnings=0 \"models/**/*.bpmn\" \"services/**/src/main/resources/bpmn/*.bpmn\""
   },
   "devDependencies": {
     "@miragon/bpmnlint-plugin-rules": "0.5.0",
